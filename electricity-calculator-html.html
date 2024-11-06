@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Usage Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .rates-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .results {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .results div {
+            margin-bottom: 10px;
+        }
+
+        .total-cost {
+            font-weight: bold;
+            font-size: 18px;
+            padding-top: 10px;
+            margin-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        @media (max-width: 600px) {
+            .rates-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 class="card-title">Electricity Usage Calculator</h1>
+        
+        <div class="rates-container">
+            <div class="input-group">
+                <label for="peakRate">Peak Rate (cents/kWh)</label>
+                <input type="number" id="peakRate" placeholder="e.g. 28.5" min="0" step="0.001">
+            </div>
+            <div class="input-group">
+                <label for="offPeakRate">Off-Peak Rate (cents/kWh)</label>
+                <input type="number" id="offPeakRate" placeholder="e.g. 18.5" min="0" step="0.001">
+            </div>
+        </div>
+
+        <div class="months-grid" id="monthsGrid"></div>
+
+        <div class="results" id="results">
+            <div id="totalUsage"></div>
+            <div id="peakCost"></div>
+            <div id="offPeakCost"></div>
+            <div id="totalCost" class="total-cost"></div>
+        </div>
+    </div>
+
+    <script>
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        // Create month input fields
+        const monthsGrid = document.getElementById('monthsGrid');
+        months.forEach(month => {
+            const div = document.createElement('div');
+            div.className = 'input-group';
+            div.innerHTML = `
+                <label for="${month}">${month}</label>
+                <input type="number" id="${month}" placeholder="kWh" min="0">
+            `;
+            monthsGrid.appendChild(div);
+        });
+
+        // Calculate functions
+        function calculateTotal() {
+            return months.reduce((sum, month) => {
+                const value = document.getElementById(month).value;
+                return sum + (Number(value) || 0);
+            }, 0);
+        }
+
+        function calculateCost(usage, rate) {
+            const rateInDollars = rate / 100; // Convert cents to dollars
+            return usage * rateInDollars;
+        }
+
+        function updateResults() {
+            const totalUsage = calculateTotal();
+            const peakRate = document.getElementById('peakRate').value;
+            const offPeakRate = document.getElementById('offPeakRate').value;
+
+            document.getElementById('totalUsage').textContent = 
+                `Total Yearly Usage: ${totalUsage.toLocaleString()} kWh`;
+
+            if (peakRate) {
+                const peakCost = calculateCost(totalUsage, peakRate);
+                document.getElementById('peakCost').textContent = 
+                    `Peak Rate Cost: $${peakCost.toFixed(2)}`;
+            }
+
+            if (offPeakRate) {
+                const offPeakCost = calculateCost(totalUsage, offPeakRate);
+                document.getElementById('offPeakCost').textContent = 
+                    `Off-Peak Rate Cost: $${offPeakCost.toFixed(2)}`;
+            }
+
+            if (peakRate && offPeakRate) {
+                const totalCost = calculateCost(totalUsage, peakRate) + 
+                                calculateCost(totalUsage, offPeakRate);
+                document.getElementById('totalCost').textContent = 
+                    `Total Combined Cost: $${totalCost.toFixed(2)}`;
+            }
+        }
+
+        // Add event listeners to all inputs
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updateResults);
+        });
+    </script>
+</body>
+</html>
