@@ -52,38 +52,12 @@
             font-size: 14px;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
-        }
-
-        .time-group {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
-            align-items: end;
-        }
-
-        .time-inputs {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-
-        .time-inputs h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .time-label {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #495057;
         }
 
         .months-grid {
@@ -127,9 +101,6 @@
             .rates-container {
                 grid-template-columns: 1fr;
             }
-            .time-group {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
@@ -148,58 +119,10 @@
             </div>
         </div>
 
-        <div class="time-inputs">
-            <h3>Rate Time Periods</h3>
-            <div class="input-group">
-                <div class="time-label">Peak Rate Period</div>
-                <div class="time-group">
-                    <select id="peakStartTime">
-                        <option value="1">1:00</option>
-                        <option value="2">2:00</option>
-                        <option value="3">3:00</option>
-                        <option value="4">4:00</option>
-                        <option value="5">5:00</option>
-                        <option value="6">6:00</option>
-                        <option value="7">7:00</option>
-                        <option value="8">8:00</option>
-                        <option value="9">9:00</option>
-                        <option value="10">10:00</option>
-                        <option value="11">11:00</option>
-                        <option value="12">12:00</option>
-                    </select>
-                    <select id="peakStartPeriod">
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </select>
-                    <span>to</span>
-                    <select id="peakEndTime">
-                        <option value="1">1:00</option>
-                        <option value="2">2:00</option>
-                        <option value="3">3:00</option>
-                        <option value="4">4:00</option>
-                        <option value="5">5:00</option>
-                        <option value="6">6:00</option>
-                        <option value="7">7:00</option>
-                        <option value="8">8:00</option>
-                        <option value="9">9:00</option>
-                        <option value="10">10:00</option>
-                        <option value="11">11:00</option>
-                        <option value="12">12:00</option>
-                    </select>
-                    <select id="peakEndPeriod">
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
         <div class="months-grid" id="monthsGrid"></div>
 
         <div class="results" id="results">
             <div id="totalUsage"></div>
-            <div id="peakUsage"></div>
-            <div id="offPeakUsage"></div>
             <div id="peakCost"></div>
             <div id="offPeakCost"></div>
             <div id="totalCost" class="total-cost"></div>
@@ -229,28 +152,7 @@
             monthsGrid.appendChild(div);
         });
 
-        function convertTo24Hour(hour, period) {
-            hour = parseInt(hour);
-            if (period === 'PM' && hour !== 12) hour += 12;
-            if (period === 'AM' && hour === 12) hour = 0;
-            return hour;
-        }
-
-        function calculateHoursDifference() {
-            const startHour = convertTo24Hour(
-                document.getElementById('peakStartTime').value,
-                document.getElementById('peakStartPeriod').value
-            );
-            const endHour = convertTo24Hour(
-                document.getElementById('peakEndTime').value,
-                document.getElementById('peakEndPeriod').value
-            );
-
-            let hours = endHour - startHour;
-            if (hours < 0) hours += 24;
-            return hours;
-        }
-
+        // Calculate functions
         function calculateTotal() {
             return months.reduce((sum, month) => {
                 const value = document.getElementById(month).value;
@@ -267,43 +169,33 @@
             const totalUsage = calculateTotal();
             const peakRate = document.getElementById('peakRate').value;
             const offPeakRate = document.getElementById('offPeakRate').value;
-            
-            const peakHours = calculateHoursDifference();
-            const offPeakHours = 24 - peakHours;
-
-            const peakUsage = (totalUsage * (peakHours / 24)).toFixed(2);
-            const offPeakUsage = (totalUsage * (offPeakHours / 24)).toFixed(2);
 
             document.getElementById('totalUsage').textContent = 
                 `Total Yearly Usage: ${totalUsage.toLocaleString()} kWh`;
-            document.getElementById('peakUsage').textContent =
-                `Peak Usage (${peakHours} hours): ${peakUsage} kWh`;
-            document.getElementById('offPeakUsage').textContent =
-                `Off-Peak Usage (${offPeakHours} hours): ${offPeakUsage} kWh`;
 
             if (peakRate) {
-                const peakCost = calculateCost(peakUsage, peakRate);
+                const peakCost = calculateCost(totalUsage, peakRate);
                 document.getElementById('peakCost').textContent = 
                     `Peak Rate Cost: $${peakCost.toFixed(2)}`;
             }
 
             if (offPeakRate) {
-                const offPeakCost = calculateCost(offPeakUsage, offPeakRate);
+                const offPeakCost = calculateCost(totalUsage, offPeakRate);
                 document.getElementById('offPeakCost').textContent = 
                     `Off-Peak Rate Cost: $${offPeakCost.toFixed(2)}`;
             }
 
             if (peakRate && offPeakRate) {
-                const totalCost = calculateCost(peakUsage, peakRate) + 
-                                calculateCost(offPeakUsage, offPeakRate);
+                const totalCost = calculateCost(totalUsage, peakRate) + 
+                                calculateCost(totalUsage, offPeakRate);
                 document.getElementById('totalCost').textContent = 
                     `Total Combined Cost: $${totalCost.toFixed(2)}`;
             }
         }
 
         // Add event listeners to all inputs
-        document.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('change', updateResults);
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', updateResults);
         });
     </script>
 </body>
