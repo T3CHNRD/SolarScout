@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Usage Calculator - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #34495e;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #2c3e50;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .hero {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .hero h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #2980b9;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Electricity Usage Calculator</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="calculator.html">Calculator</a>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h2>Track Your Electricity Usage and Costs</h2>
+            <p>A simple and effective way to monitor your electricity consumption and calculate costs based on peak and off-peak rates.</p>
+            <a href="calculator.html" class="cta-button">Try Calculator Now</a>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <h3>Monthly Tracking</h3>
+                <p>Input and track your electricity usage for each month of the year to get a comprehensive view of your consumption patterns.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Dual Rate Calculator</h3>
+                <p>Calculate costs using both peak and off-peak rates to get an accurate estimate of your electricity expenses.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3>Easy to Use</h3>
+                <p>Simple and intuitive interface makes it easy to input your data and get instant calculations of your electricity costs.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Electricity Usage Calculator. All rights reserved.</p>
+    </footer>
+</body>
+</html>
