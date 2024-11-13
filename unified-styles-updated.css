@@ -1,0 +1,23 @@
+:root {
+  /* Primary Colors */
+  --area51: #4C5866;
+  --area51-light: #6E7A89;
+  --light-blue: #7FB5D1;
+  --lighter-blue: #A5D8E6;
+  --high-purple: #9B6B9E;
+  --light-purple: #B794BB;
+  
+  /* Accent Colors */
+  --forest-green: #2F5233;
+  --leaf-green: #4CAF50;
+  --sky-blue: #48CAE4;
+  --earth-brown: #76520E;
+  --sunlight: #FFD700;
+  
+  /* Supporting Colors */
+  --text-primary: var(--area51);
+  --text-secondary: var(--area51-light);
+  --background-primary: #ffffff;
+  --background-secondary: #f5f5f5;
+  --border-color: #e0e0e0;
+}
