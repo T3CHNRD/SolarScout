@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Scout Calculator</title>
+    <style>
+        :root {
+            --purple-gradient-dark: #4c3a5f;
+            --purple-gradient-light: #826894;
+            --nav-purple: rgba(255, 255, 255, 0.1);
+            --text-white: #ffffff;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --border-color: #e0e0e0;
+            --accent-blue: #7fb0d0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --section-bg: #f8f9fa;
+            --area51-light: #2d2d2d;
+        }
+    
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+    
+        .header, .footer {
+            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
+            color: var(--text-white);
+        }
+    
+        .header {
+            padding: 2rem 0;
+            text-align: center;
+        }
+    
+        .header h1 {
+            margin: 0 0 1.5rem 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+    
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+    
+        .nav-button {
+            background: var(--nav-purple);
+            border: none;
+            color: var(--text-white);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+    
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    
+        .calculator-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            max-width: 800px;
+            margin: -2rem auto 2rem;
+            padding: 2rem;
+            position: relative;
+            flex: 1;
+        }
+    
+        .section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: var(--section-bg);
+            border-radius: 8px;
+        }
+    
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--purple-gradient-dark);
+            margin: 0 0 1rem 0;
+        }
+    
+        .section-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+    
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+    
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+    
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+    
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--purple-gradient-light);
+        }
+    
+        .time-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+    
+        .time-block {
+            display: flex;
+            gap: 0.5rem;
+        }
+    
+        .time-block select {
+            width: auto;
+        }
+    
+        .months-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+    
+        .month-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    
+        .month-input label {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+    
+        .results {
+            background: linear-gradient(135deg, var(--purple-gradient-dark), var(--purple-gradient-light));
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            color: var(--text-white);
+        }
+    
+        .result-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    
+        .result-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+    
+        .recommendation {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--section-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--purple-gradient-light);
+        }
+    
+        .estimation-note {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+            font-style: italic;
+            margin: 2rem 0 0 0;
+        }
+    
+        .footer {
+            padding: 1rem;
+            text-align: center;
+            margin-top: auto;
+        }
+    
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--text-white);
+            opacity: 0.9;
+        }
+    
+        @media (max-width: 768px) {
+            .calculator-card {
+                margin: -1rem 1rem 2rem;
+                padding: 1.5rem;
+            }
+    
+            .time-selection {
+                grid-template-columns: 1fr;
+            }
+    
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+    
+            .nav-button {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Energy Usage Calculator</h1>
+        <div class="nav-buttons">
+            <a href="ecoflow-animated-refined.html" class="nav-button">Back to Home</a>
+            <button class="nav-button" onclick="resetCalculator()">Reset Calculator</button>
+            <a href="blackoutbuddy.html" class="nav-button">Blackout Buddy</a>
+        </div>
+    </div>
+
+    <div class="calculator-card">
+        <div class="section">
+            <div class="section-title">Electricity Rate Settings</div>
+            <div class="section-description">
+                Enter your electricity rates from your utility bill. These are typically measured in cents per kilowatt-hour (¢/kWh).
+            </div>
+            <div class="input-group">
+                <label>Peak Rate (cents/kWh)</label>
+                <input type="number" id="peakRate" min="0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label>Off-Peak Rate (cents/kWh)</label>
+                <input type="number" id="offPeakRate" min="0" step="0.01">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Time-of-Use Settings</div>
+            <div class="section-description">
+                Select when your peak rate hours begin and end. These are typically during high-demand periods when electricity costs more.
+            </div>
+            <div class="time-selection">
+                <div class="input-group">
+                    <label>Peak Hours Start</label>
+                    <div class="time-block">
+                        <select id="peakStart">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                        <select id="peakStartAMPM">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Peak Hours End</label>
+                    <div class="time-block">
+                        <select id="peakEnd">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                            <option value="9">9</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                        <select id="peakEndAMPM">
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Monthly Usage Entry</div>
+            <div class="section-description">
+                Enter your electricity usage for each month in kilowatt-hours (kWh). You can find this information on your monthly utility bills.
+            </div>
+            <div class="months-grid">
+                <div class="month-input">
+                    <label>January (kWh)</label>
+                    <input type="number" id="month1" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>February (kWh)</label>
+                    <input type="number" id="month2" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>March (kWh)</label>
+                    <input type="number" id="month3" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>April (kWh)</label>
+                    <input type="number" id="month4" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>May (kWh)</label>
+                    <input type="number" id="month5" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>June (kWh)</label>
+                    <input type="number" id="month6" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>July (kWh)</label>
+                    <input type="number" id="month7" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>August (kWh)</label>
+                    <input type="number" id="month8" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>September (kWh)</label>
+                    <input type="number" id="month9" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>October (kWh)</label>
+                    <input type="number" id="month10" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>November (kWh)</label>
+                    <input type="number" id="month11" min="0" step="0.1">
+                </div>
+                <div class="month-input">
+                    <label>December (kWh)</label>
+                    <input type="number" id="month12" min="0" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="results">
+            <div id="totalUsage" class="result-item">Total Usage: 0 kWh</div>
+            <div id="peakUsage" class="result-item">Peak Usage: 0 kWh</div>
+            <div id="offPeakUsage" class="result-item">Off-Peak Usage: 0 kWh</div>
+            <div id="peakCost" class="result-item">Peak Cost: $0.00</div>
+            <div id="offPeakCost" class="result-item">Off-Peak Cost: $0.00</div>
+            <div id="totalCost" class="result-item">Total Cost: $0.00</div>
+        </div>
+
+        <div id="deltaRecommendation" class="recommendation">
+            <!-- Recommendations will be populated by JavaScript -->
+        </div>
+
+        <div class="estimation-note">
+            Note: All calculations and totals are estimates based on provided usage data. Actual costs and usage may vary.
+        </div>
+    </div>
+    <script>
+        // Utility function to parse number inputs safely
+        const parseInput = (value) => {
+            const parsed = parseFloat(value);
+            return isNaN(parsed) ? 0 : parsed;
+        };
+    
+        // Function to calculate time-based usage split
+        function calculatePeakHours() {
+            const peakStart = document.getElementById('peakStart').value;
+            const peakStartAMPM = document.getElementById('peakStartAMPM').value;
+            const peakEnd = document.getElementById('peakEnd').value;
+            const peakEndAMPM = document.getElementById('peakEndAMPM').value;
+    
+            // Convert to 24-hour format
+            let start = parseInt(peakStart);
+            let end = parseInt(peakEnd);
+            
+            // Convert start time to 24-hour format
+            if (peakStartAMPM === 'PM' && start !== 12) {
+                start += 12;
+            } else if (peakStartAMPM === 'AM' && start === 12) {
+                start = 0;
+            }
+            
+            // Convert end time to 24-hour format
+            if (peakEndAMPM === 'PM' && end !== 12) {
+                end += 12;
+            } else if (peakEndAMPM === 'AM' && end === 12) {
+                end = 0;
+            }
+    
+            // Calculate hours in peak period
+            let peakHours;
+            if (end > start) {
+                // Normal case (e.g., 9 AM to 5 PM)
+                peakHours = end - start;
+            } else {
+                // Overnight case (e.g., 10 PM to 6 AM)
+                peakHours = (24 - start) + end;
+            }
+    
+            // Return the ratio of peak hours to total day
+            return peakHours / 24;
+        }
+    
+        // Function to update all calculations
+        function updateCalculations() {
+            const peakRate = parseInput(document.getElementById('peakRate').value) / 100; // Convert cents to dollars
+            const offPeakRate = parseInput(document.getElementById('offPeakRate').value) / 100;
+            const peakTimeRatio = calculatePeakHours();
+    
+            // Calculate total usage
+            let totalUsage = 0;
+            for (let i = 1; i <= 12; i++) {
+                totalUsage += parseInput(document.getElementById(`month${i}`).value);
+            }
+    
+            // Calculate peak and off-peak usage
+            const peakUsage = totalUsage * peakTimeRatio;
+            const offPeakUsage = totalUsage - peakUsage;
+    
+            // Calculate costs
+            const peakCost = peakUsage * peakRate;
+            const offPeakCost = offPeakUsage * offPeakRate;
+            const totalCost = peakCost + offPeakCost;
+    
+            // Update display
+            document.getElementById('totalUsage').textContent = `Total Usage: ${totalUsage.toFixed(1)} kWh`;
+            document.getElementById('peakUsage').textContent = `Peak Usage: ${peakUsage.toFixed(1)} kWh`;
+            document.getElementById('offPeakUsage').textContent = `Off-Peak Usage: ${offPeakUsage.toFixed(1)} kWh`;
+            document.getElementById('peakCost').textContent = `Peak Cost: $${peakCost.toFixed(2)}`;
+            document.getElementById('offPeakCost').textContent = `Off-Peak Cost: $${offPeakCost.toFixed(2)}`;
+            document.getElementById('totalCost').textContent = `Total Cost: $${totalCost.toFixed(2)}`;
+    
+            // Update Delta recommendation
+            updateDeltaRecommendation(totalUsage / 12); // Average monthly usage
+        }
+    
+        // Delta product definitions
+        const deltaProducts = [
+            {
+                name: "DELTA Mini",
+                baseCapacity: 0.882,
+                maxCapacity: 0.882,
+                output: "1400W (2100W surge)",
+                expandable: false,
+                suitableDaily: 0.7
+            },
+            {
+                name: "DELTA 2",
+                baseCapacity: 1.024,
+                maxCapacity: 2.048,
+                output: "1800W (2700W surge)",
+                expandable: true,
+                extraBatteries: 1,
+                suitableDaily: 0.8
+            },
+            {
+                name: "DELTA Max",
+                baseCapacity: 2.016,
+                maxCapacity: 6.048,
+                output: "2400W (5000W surge)",
+                expandable: true,
+                extraBatteries: 2,
+                suitableDaily: 1.6
+            },
+            {
+                name: "DELTA Pro",
+                baseCapacity: 3.6,
+                maxCapacity: 10.8,
+                output: "3600W (7200W surge)",
+                expandable: true,
+                extraBatteries: 2,
+                suitableDaily: 2.9
+            },
+            {
+                name: "DELTA Pro 3",
+                baseCapacity: 4.096,
+                maxCapacity: 12.288,
+                output: "4000W (8000W surge)",
+                expandable: true,
+                extraBatteries: 2,
+                suitableDaily: 3.3
+            },
+            {
+                name: "DELTA Pro Ultra",
+                baseCapacity: 6,
+                maxCapacity: 30,
+                output: "7200W output",
+                expandable: true,
+                extraBatteries: 5,
+                suitableDaily: 4.8
+            }
+        ];
+    // Function to reset calculator
+function resetCalculator() {
+    // Reset rate inputs
+    document.getElementById('peakRate').value = '';
+    document.getElementById('offPeakRate').value = '';
+    
+    // Reset time selects
+    document.getElementById('peakStart').value = '1';
+    document.getElementById('peakStartAMPM').value = 'AM';
+    document.getElementById('peakEnd').value = '1';
+    document.getElementById('peakEndAMPM').value = 'AM';
+    
+    // Reset all monthly inputs
+    for (let i = 1; i <= 12; i++) {
+        document.getElementById(`month${i}`).value = '';
+    }
+    
+    // Reset all displays
+    document.getElementById('totalUsage').textContent = 'Total Usage: 0 kWh';
+    document.getElementById('peakUsage').textContent = 'Peak Usage: 0 kWh';
+    document.getElementById('offPeakUsage').textContent = 'Off-Peak Usage: 0 kWh';
+    document.getElementById('peakCost').textContent = 'Peak Cost: $0.00';
+    document.getElementById('offPeakCost').textContent = 'Off-Peak Cost: $0.00';
+    document.getElementById('totalCost').textContent = 'Total Cost: $0.00';
+    
+    // Clear recommendation
+    document.getElementById('deltaRecommendation').innerHTML = '';
+
+    // Optional: Add visual feedback
+    alert('Calculator has been reset!');
+}
+
+// Add event listener for the reset button as a backup
+document.addEventListener('DOMContentLoaded', function() {
+    const resetButton = document.querySelector('button[onclick="resetCalculator()"]');
+    if (resetButton) {
+        resetButton.addEventListener('click', resetCalculator);
+    }
+});
+        // Function to update Delta product recommendations
+        function updateDeltaRecommendation(averageMonthlyUsage) {
+            const yearlyUsage = averageMonthlyUsage * 12;
+            const dailyUsage = yearlyUsage / 365;
+            let recommendation = '';
+    
+            const suitableProducts = deltaProducts.filter(product => {
+                return (dailyUsage <= product.suitableDaily * 1.2); // 20% margin
+            });
+    
+            if (suitableProducts.length === 0) {
+                recommendation = `
+                    <div class="recommendation-content">
+                        <h3>Recommended: DELTA Pro Ultra</h3>
+                        <p>Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial. The DELTA Pro Ultra with expansion batteries 
+                        would be most suitable for your needs.</p>
+                        <p>- Base Capacity: 6kWh (expandable up to 30kWh)</p>
+                        <p>- Maximum Output: 7200W</p>
+                    </div>
+                `;
+            } else {
+                const bestFit = suitableProducts[0];
+                recommendation = `
+                    <div class="recommendation-content">
+                        <h3>Recommended: ${bestFit.name}</h3>
+                        <p>Based on your daily usage of ${dailyUsage.toFixed(2)} kWh:</p>
+                        <p>- Base Capacity: ${bestFit.baseCapacity}kWh</p>
+                        <p>- Output: ${bestFit.output}</p>
+                        ${bestFit.expandable ? 
+                            `<p>- Expandable up to ${bestFit.maxCapacity}kWh with ${bestFit.extraBatteries} extra batteries</p>` 
+                            : ''}
+                    </div>
+                `;
+            }
+    
+            document.getElementById('deltaRecommendation').innerHTML = recommendation;
+        }
+    
+        // Function to reset calculator
+        function resetCalculator() {
+            document.getElementById('peakRate').value = '';
+            document.getElementById('offPeakRate').value = '';
+            document.getElementById('peakStart').value = '1';
+            document.getElementById('peakStartAMPM').value = 'AM';
+            document.getElementById('peakEnd').value = '1';
+            document.getElementById('peakEndAMPM').value = 'AM';
+            
+            // Reset all monthly inputs
+            for (let i = 1; i <= 12; i++) {
+                document.getElementById(`month${i}`).value = '';
+            }
+            
+            updateCalculations();
+        }
+    
+        // Add event listeners to all inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add listeners to rate inputs
+            document.getElementById('peakRate').addEventListener('input', updateCalculations);
+            document.getElementById('offPeakRate').addEventListener('input', updateCalculations);
+            
+            // Add listeners to time selects
+            document.getElementById('peakStart').addEventListener('change', updateCalculations);
+            document.getElementById('peakStartAMPM').addEventListener('change', updateCalculations);
+            document.getElementById('peakEnd').addEventListener('change', updateCalculations);
+            document.getElementById('peakEndAMPM').addEventListener('change', updateCalculations);
+            
+            // Add listeners to all month inputs
+            for (let i = 1; i <= 12; i++) {
+                document.getElementById(`month${i}`).addEventListener('input', updateCalculations);
+            }
+        });
+    </script>
+    </body>
+    </html>
+
+    <footer class="footer">
+        <div class="footer-text">
+            © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
+        </div>
+    </footer>
