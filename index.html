@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electricity Usage Calculator - Home</title>
+    <title>Solar Scout Guide - Home</title>
     <style>
         * {
             margin: 0;
@@ -11,24 +11,46 @@
             box-sizing: border-box;
         }
 
+        :root {
+            /* Original Colors */
+            --forest-green: #2F5233;
+            --leaf-green: #4CAF50;
+            --sky-blue: #48CAE4;
+            --earth-brown: #76520E;
+            --sunlight: #FFD700;
+            
+            /* New Accent Colors */
+            --area51: #4C5866;
+            --area51-light: #6E7A89;
+            --light-blue: #7FB5D1;
+            --lighter-blue: #A5D8E6;
+            --high-purple: #9B6B9E;
+            --light-purple: #B794BB;
+            
+            /* Header/Footer Gradient */
+            --header-gradient: linear-gradient(135deg, var(--area51) 0%, var(--high-purple) 100%);
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             background-color: #f5f5f5;
             min-height: 100vh;
         }
 
         header {
-            background-color: #2c3e50;
+            background: var(--header-gradient);
             color: white;
             padding: 1rem;
             text-align: center;
+            box-shadow: 0 2px 15px rgba(76, 88, 102, 0.2);
         }
 
         nav {
-            background-color: #34495e;
+            background: rgba(76, 88, 102, 0.95);
             padding: 1rem;
             text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         nav a {
@@ -37,11 +59,12 @@
             padding: 0.5rem 1rem;
             margin: 0 0.5rem;
             border-radius: 4px;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
         }
 
         nav a:hover {
-            background-color: #2c3e50;
+            background: var(--area51-light);
+            transform: translateY(-2px);
         }
 
         main {
@@ -50,100 +73,212 @@
             padding: 0 1rem;
         }
 
-        .hero {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .hero h2 {
-            color: #2c3e50;
-            margin-bottom: 1rem;
-        }
-
-        .features {
+        .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
         }
 
         .feature-card {
-            background-color: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--area51-light);
         }
 
-        .feature-card h3 {
-            color: #2c3e50;
-            margin-bottom: 1rem;
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(127, 181, 209, 0.1), 
+                rgba(155, 107, 158, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .cta-button {
-            display: inline-block;
-            background-color: #3498db;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-top: 1rem;
-            transition: background-color 0.3s;
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--high-purple);
+            box-shadow: 0 10px 20px rgba(76, 88, 102, 0.15);
         }
 
-        .cta-button:hover {
-            background-color: #2980b9;
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+        }
+
+        /* SVG Animations */
+        .house-svg .window {
+            animation: glow 3s infinite alternate ease-in-out;
+        }
+
+        .house-svg:hover .window {
+            animation: glow 1.5s infinite alternate ease-in-out;
+        }
+
+        .rv-svg .wheels {
+            animation: bounce 3s infinite ease-in-out;
+        }
+
+        .rv-svg:hover .battery-indicator {
+            animation: charge 1.5s infinite;
+        }
+
+        .solar-svg .sun-rays {
+            animation: rotate 20s infinite linear;
+            transform-origin: center;
+        }
+
+        .solar-svg:hover .sun-rays {
+            animation: rotate 10s infinite linear;
+        }
+
+        @keyframes glow {
+            from { fill: var(--light-purple); }
+            to { fill: var(--high-purple); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(2px); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes charge {
+            0% { fill: var(--light-blue); }
+            50% { fill: var(--lighter-blue); }
+            100% { fill: var(--light-blue); }
         }
 
         footer {
-            background-color: #2c3e50;
+            background: var(--header-gradient);
             color: white;
             text-align: center;
-            padding: 1rem;
+            padding: 1.5rem;
             margin-top: 2rem;
+            box-shadow: 0 -2px 15px rgba(76, 88, 102, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.25rem 0;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Electricity Usage Calculator</h1>
+        <h1>Solar Scout Guide </h1>
     </header>
 
     <nav>
         <a href="index.html">Home</a>
-        <a href="https://t3chnrd.github.io/energycalc/energycalc.html">Calculator</a>
+        <a href="finalcalcwithstyle.html">Solar Scout Whole Home Power Planner </a>
+        <a href="blackoutbuddy.html">Blackout Buddy Device Calculator</a>
+        <a href="https://www.linspyre.com/ecoholics/calc_voc.html">Solar Basics</a>
     </nav>
 
     <main>
-        <section class="hero">
-            <h2>Track Your Electricity Usage and Costs</h2>
-            <p>A simple and effective way to monitor your electricity consumption and calculate costs based on peak and off-peak rates.</p>
-            <a href="https://t3chnrd.github.io/energycalc/energycalc.html" class="cta-button">Try Calculator Now</a>
-        </section>
-
-        <section class="features">
+        <section class="feature-grid">
+            <!-- Home Power System Card -->
             <div class="feature-card">
-                <h3>Monthly Tracking</h3>
-                <p>Input and track your electricity usage for each month of the year to get a comprehensive view of your consumption patterns.</p>
+                <svg class="feature-icon house-svg" viewBox="0 0 200 200">
+                    <!-- House Base -->
+                    <path d="M40,100 L100,40 L160,100 L160,180 L40,180 Z" fill="var(--area51)"/>
+                    <!-- Roof with Solar Panels -->
+                    <g class="solar-panels">
+                        <rect x="60" y="50" width="20" height="20" fill="var(--light-blue)" class="panel"/>
+                        <rect x="85" y="50" width="20" height="20" fill="var(--light-blue)" class="panel"/>
+                        <rect x="110" y="50" width="20" height="20" fill="var(--light-blue)" class="panel"/>
+                    </g>
+                    <!-- Windows -->
+                    <rect x="60" y="120" width="20" height="20" fill="var(--high-purple)" class="window"/>
+                    <rect x="110" y="120" width="20" height="20" fill="var(--high-purple)" class="window"/>
+                    <!-- Door -->
+                    <rect x="85" y="140" width="20" height="40" fill="var(--earth-brown)"/>
+                    <!-- Power Lines -->
+                    <path d="M60,70 Q100,90 140,70" stroke="var(--lighter-blue)" stroke-width="2" fill="none" 
+                        class="power-line" stroke-dasharray="4 2"/>
+                </svg>
+                <h3>Whole Home System</h3>
+                <p>Calculate your home's energy needs and find the perfect EcoFlow system to power your entire house. 
+                   Understand capacity requirements, solar integration, and backup duration.</p>
             </div>
 
+            <!-- Portable Power Card -->
             <div class="feature-card">
-                <h3>Dual Rate Calculator</h3>
-                <p>Calculate costs using both peak and off-peak rates to get an accurate estimate of your electricity expenses.</p>
+                <svg class="feature-icon rv-svg" viewBox="0 0 200 200">
+                    <!-- RV Body -->
+                    <path d="M20,120 L50,80 L150,80 L180,120 L180,160 L20,160 Z" fill="var(--area51-light)"/>
+                    <!-- Windows -->
+                    <rect x="60" y="90" width="30" height="20" fill="var(--light-blue)"/>
+                    <rect x="100" y="90" width="30" height="20" fill="var(--light-blue)"/>
+                    <!-- Wheels -->
+                    <circle cx="60" cy="160" r="15" fill="var(--area51)" class="wheels"/>
+                    <circle cx="140" cy="160" r="15" fill="var(--area51)" class="wheels"/>
+                    <!-- Battery Indicator -->
+                    <rect x="30" y="130" width="30" height="10" fill="var(--light-blue)" class="battery-indicator"/>
+                </svg>
+                <h3>Portable Power</h3>
+                <p>Discover which EcoFlow portable battery best fits your needs. Perfect for camping, RVs, 
+                   or emergency backup power for essential devices, for home, camping, or portable use.</p>
             </div>
 
+            <!-- Solar Guide Card -->
             <div class="feature-card">
-                <h3>Easy to Use</h3>
-                <p>Simple and intuitive interface makes it easy to input your data and get instant calculations of your electricity costs.</p>
+                <svg class="feature-icon solar-svg" viewBox="0 0 200 200">
+                    <!-- Sun -->
+                    <circle cx="100" cy="100" r="30" fill="var(--sunlight)"/>
+                    <!-- Sun Rays -->
+                    <g class="sun-rays">
+                        <path d="M100,50 L100,30 M150,100 L170,100 M100,150 L100,170 M50,100 L30,100
+                               M135,65 L150,50 M135,135 L150,150 M65,135 L50,150 M65,65 L50,50" 
+                              stroke="var(--high-purple)" stroke-width="4"/>
+                    </g>
+                    <!-- Solar Panel -->
+                    <g transform="translate(70,120)">
+                        <rect width="60" height="40" fill="var(--light-blue)"/>
+                        <line x1="0" y1="20" x2="60" y2="20" stroke="var(--area51)" stroke-width="1"/>
+                        <line x1="20" y1="0" x2="20" y2="40" stroke="var(--area51)" stroke-width="1"/>
+                        <line x1="40" y1="0" x2="40" y2="40" stroke="var(--area51)" stroke-width="1"/>
+                    </g>
+                </svg>
+                <h3>Solar Solutions</h3>
+                <p>Harness the sun's power with the Ecoholics guide to solar panels. Learn how to maximize 
+                   your energy independence with our comprehensive solar integration guide.</p>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 Electricity Usage Calculator. All rights reserved.</p>
+        <p>&copy; 2024 T3CHNRD - Designed with help by Claude. All rights reserved.</p>
     </footer>
 </body>
 </html>
