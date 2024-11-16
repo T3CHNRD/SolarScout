@@ -232,9 +232,11 @@
             }
         ];
 
-        const deltaProducts = [
+        const ecoFlowProducts = [
+            // DELTA Products
             {
                 name: "DELTA Mini",
+                series: "DELTA",
                 baseCapacity: 0.882,
                 maxPower: 1400,
                 surgePower: 2100,
@@ -242,6 +244,7 @@
             },
             {
                 name: "DELTA 2",
+                series: "DELTA",
                 baseCapacity: 1.024,
                 maxPower: 1800,
                 surgePower: 2700,
@@ -250,6 +253,7 @@
             },
             {
                 name: "DELTA Max",
+                series: "DELTA",
                 baseCapacity: 2.016,
                 maxPower: 2400,
                 surgePower: 5000,
@@ -258,6 +262,7 @@
             },
             {
                 name: "DELTA Pro",
+                series: "DELTA",
                 baseCapacity: 3.6,
                 maxPower: 3600,
                 surgePower: 7200,
@@ -266,6 +271,7 @@
             },
             {
                 name: "DELTA Pro 3",
+                series: "DELTA",
                 baseCapacity: 4.096,
                 maxPower: 4000,
                 surgePower: 8000,
@@ -274,11 +280,81 @@
             },
             {
                 name: "DELTA Pro Ultra",
+                series: "DELTA",
                 baseCapacity: 6,
                 maxPower: 7200,
                 surgePower: 7200,
                 expandable: true,
                 maxCapacity: 30
+            },
+            
+            // RIVER Products
+            {
+                name: "RIVER Pro",
+                series: "RIVER",
+                baseCapacity: 0.72,
+                maxPower: 600,
+                surgePower: 1200,
+                expandable: true,
+                maxCapacity: 1.44
+            },
+            {
+                name: "RIVER 2",
+                series: "RIVER",
+                baseCapacity: 0.24,
+                maxPower: 300,
+                surgePower: 600,
+                expandable: false
+            },
+            {
+                name: "RIVER 2 Max",
+                series: "RIVER",
+                baseCapacity: 0.512,
+                maxPower: 500,
+                surgePower: 1000,
+                expandable: false
+            },
+            {
+                name: "RIVER 2 Pro",
+                series: "RIVER",
+                baseCapacity: 0.716,
+                maxPower: 800,
+                surgePower: 1600,
+                expandable: false
+            },
+            {
+                name: "RIVER 3",
+                series: "RIVER",
+                baseCapacity: 0.245,
+                maxPower: 300,
+                surgePower: 600,
+                expandable: false
+            },
+            {
+                name: "RIVER 3 Plus",
+                series: "RIVER",
+                baseCapacity: 0.286,
+                maxPower: 600,
+                surgePower: 1200,
+                expandable: true,
+                maxCapacity: 0.572
+            },
+            {
+                name: "RIVER 3 Max",
+                series: "RIVER",
+                baseCapacity: 0.572,
+                maxPower: 600,
+                surgePower: 1200,
+                expandable: true,
+                maxCapacity: 0.858
+            },
+            {
+                name: "RIVER 3 Max Plus",
+                series: "RIVER",
+                baseCapacity: 0.858,
+                maxPower: 600,
+                surgePower: 1200,
+                expandable: true
             }
         ];
 
@@ -352,7 +428,7 @@
             let recommendation = '';
             
             // Find suitable products based on power and capacity requirements
-            const suitableProducts = deltaProducts.filter(product => 
+            const suitableProducts = ecoFlowProducts.filter(product => 
                 product.maxPower >= runningWatts &&
                 product.surgePower >= startingWatts &&
                 product.baseCapacity >= (dailyKwh * 0.8) // 80% of daily needs
@@ -382,9 +458,11 @@
                     `;
                 }
             } else {
+                // Sort suitable products by baseCapacity ascending to find the smallest sufficient
+                suitableProducts.sort((a, b) => a.baseCapacity - b.baseCapacity);
                 const bestFit = suitableProducts[0];
                 recommendation = `
-                    <h3>Recommended: ${bestFit.name}</h3>
+                    <h3>Recommended: ${bestFit.name} (${bestFit.series} Series)</h3>
                     <p>Based on your power needs:</p>
                     <ul>
                         <li>Running Power: ${runningWatts.toLocaleString()} W</li>
@@ -393,14 +471,15 @@
                     </ul>
                     <p>System Specifications:</p>
                     <ul>
-                        <li>Base Capacity: ${bestFit.baseCapacity}kWh</li>
-                        <li>Maximum Output: ${bestFit.maxPower}W</li>
-                        <li>Surge Capacity: ${bestFit.surgePower}W</li>
+                        <li>Series: ${bestFit.series}</li>
+                        <li>Base Capacity: ${bestFit.baseCapacity} kWh</li>
+                        <li>Maximum Output: ${bestFit.maxPower} W</li>
+                        <li>Surge Capacity: ${bestFit.surgePower} W</li>
                     </ul>
                 `;
                 if (bestFit.expandable) {
                     recommendation += `
-                        <p>Expandable up to ${bestFit.maxCapacity}kWh with extra batteries</p>
+                        <p>Expandable up to ${bestFit.maxCapacity} kWh with extra batteries.</p>
                     `;
                 }
             }
@@ -429,3 +508,4 @@
     </script>
 </body>
 </html>
+
