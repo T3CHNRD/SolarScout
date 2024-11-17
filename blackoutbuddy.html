@@ -3,43 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appliance Power Calculator</title>
-    <style>
-        * {
-            box-sizing: border-box;
+    <title>BlackoutBuddy - Power Usage Calculator</title>
+   <style>
+        :root {
+            --purple-gradient-dark: #4c3a5f;
+            --purple-gradient-light: #826894;
+            --nav-purple: rgba(255, 255, 255, 0.1);
+            --text-white: #ffffff;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --border-color: #e0e0e0;
+            --accent-blue: #7fb0d0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --section-bg: #f8f9fa;
+            --area51-light: #2d2d2d;
+        }
+ 
+        {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+    
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             margin: 0;
             padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
+            background-color: #f0f2f5;
+            color: var(--text-dark);
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
+            flex-direction: column;
+        }
+    
+        .header, .footer {
+            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
+            color: var(--text-white);
+        }
+    
+        .header {
+            padding: 2rem 0;
+            text-align: center;
+        }
+    
+        .header h1 {
+            margin: 0 0 1.5rem 0;
+            font-size: 2rem;
+            font-weight: 600;
         }
 
         .title {
-            color: #2c3e50;
-            margin-bottom: 20px;
+           text-align: center;
+           margin: 1rem auto;
+           max-width: 90%;  /* Adjust percentage as needed */
+        }
+    
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+    
+        .nav-button {
+            background: var(--nav-purple);
+            border: none;
+            color: var(--text-white);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+    
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    
+        .calculator-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            max-width: 1200px;
+            margin: -2rem auto 2rem;
+            padding: 2rem;
+            position: relative;
+            flex: 1;
+        }
+    
+        .section {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: var(--section-bg);
+            border-radius: 8px;
+        }
+    
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
             text-align: center;
-            font-size: 24px;
+            color: var(--purple-gradient-dark);
+            margin: 0 0 1rem 0;
+        }
+    
+        .section-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+    
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+    
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+    
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+    
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--purple-gradient-light);
+        }
+    
+        .instructions {
+            margin: 1rem 0;
+            text-align: center;
+            padding: 1rem;
+            background: var(--your-background-color);
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+
+        .instructions ol {
+            display: inline-block;  /* This helps maintain proper list alignment while centered */
+            text-align: left;       /* This keeps the list items left-aligned for better readability */
+            margin: 1rem auto;
         }
 
         .appliance-grid {
@@ -48,102 +157,108 @@
             padding: 20px;
             background-color: #f8f9fa;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
         }
 
         .appliance-row {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-            gap: 15px;
+            gap: 40px;
             align-items: center;
             padding: 10px;
             background: white;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .grid-header {
-            font-weight: bold;
-            background-color: #2c3e50;
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        select, input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .calculated-value {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
+              }
+    
         .results {
-            padding: 20px;
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, var(--purple-gradient-dark), var(--purple-gradient-light));
+            padding: 1.5rem;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 2rem;
+            color: var(--text-white);
+        }
+    
+        .result-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    
+        .result-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+    
+        .recommendation {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--section-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--purple-gradient-light);
+        }
+    
+        .estimation-note {
+            text-align: center;
+            padding: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+            font-style: italic;
+            margin: 2rem 0 0 0;
+        }
+    
+        .footer {
+            background:linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
+            color: var(--text-white);
+            padding: 1rem;
+            text-align: center;
+            margin-top: auto;
         }
 
-        .total-power {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
+    
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--text-white);
+            opacity: 0.9;
         }
-
-        .recommendation-section {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: white;
-            border-radius: 4px;
-            border-left: 4px solid #3498db;
-        }
-
-        .warning {
-            color: #e74c3c;
-            margin-top: 10px;
-        }
-
-        .button {
-            padding: 8px 16px;
-            background-color: #2c3e50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .button:hover {
-            background-color: #34495e;
-        }
-
-        #resetButton {
-            background-color: #e74c3c;
-        }
-
-        #resetButton:hover {
-            background-color: #c0392b;
+    
+        @media (max-width: 768px) {
+            .calculator-card {
+                margin: -1rem 1rem 2rem;
+                padding: 1.5rem;
+            }
+    
+    
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+    
+            .nav-button {
+                width: 80%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="card">
+    <div class="calculator-card">
         <div class="header">
-            <a href="index.html" class="button">← Back to Home</a>
-            <button id="resetButton" class="button">Reset Calculator</button>
+            <a href="index.html" class="nav-button">Back to Home</a>
+            <button id="resetButton" class="nav-button">Reset Calculator</button>
         </div>
 
-        <h1 class="title">Appliance Power Usage Calculator</h1>
+        <h1 class="title">BlackoutBuddy - Portable Power Usage Calculator</h1>
+
+        <div class="instructions">
+            <p>Welcome to BlackoutBuddy! This calculator helps you plan your portable power needs:</p>
+            <ol>
+                <li>Select your appliances from the list below</li>
+                <li>Enter how many hours per day you plan to run each item</li>
+                <li>The calculator will show your total power needs and recommend solutions</li>
+                <li>All pre-filled numbers are average estimates. Please adjust these numbers to match your specific product's wattage</li>
+                <li>If you select "Other" from the dropdown menu, you will need to manually enter the wattage for your appliance</li>
+                <li>For multiple days, convert to total hours (example: 2 days = 48 hours, 3 days = 72 hours)</li>
+            </ol>
 
         <div class="appliance-grid">
             <div class="appliance-row grid-header">
@@ -153,23 +268,27 @@
                 <div>Hours/Day</div>
                 <div>Daily kWh</div>
             </div>
-            
-            <!-- Appliance rows will be generated here by JavaScript -->
             <div id="applianceRows"></div>
         </div>
 
         <div class="results">
             <div class="total-power">
-                <div id="totalWatts"></div>
-                <div id="totalStarting"></div>
-                <div id="totalKwh"></div>
+                <div id="totalWatts">Total Running Watts: 0 W</div>
+                <div id="totalStarting">Total Starting Watts: 0 W</div>
+                <div id="totalKwh">Total Daily Usage: 0 kWh</div>
             </div>
-            <div id="recommendation" class="recommendation-section"></div>
+            <div id="recommendation" class="recommendation-section">
+                Select appliances to get recommendations.
+            </div>
         </div>
     </div>
 
+    <footer class="footer">
+        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
+      </footer>
+
     <script>
-        const commonAppliances = [
+            const commonAppliances = [
             {
                 name: "Refrigerator",
                 runningWatts: 150,
@@ -201,6 +320,12 @@
                 category: "Kitchen"
             },
             {
+                name: "Coffee Pot - Keurig",
+                runningWatts: 1500,
+                startingWatts: 1500,
+                category: "Kitchen"
+            },
+            {
                 name: "Air Conditioner (Window)",
                 runningWatts: 1000,
                 startingWatts: 2200,
@@ -221,7 +346,7 @@
             {
                 name: "Television",
                 runningWatts: 100,
-                startingWatts: 100,
+                startingWatts: 150,
                 category: "Entertainment"
             },
             {
@@ -243,7 +368,7 @@
                 category: "Other"
             },
             {
-                name: "Electric Dryer",
+                name: "Electric Clothes Dryer",
                 runningWatts: 3000,
                 startingWatts: 5000,
                 category: "Laundry"
@@ -388,14 +513,14 @@
                     <input type="number" class="running-watts" placeholder="Running Watts" onchange="calculatePower()">
                     <input type="number" class="starting-watts" placeholder="Starting Watts" onchange="calculatePower()">
                     <input type="number" class="hours" placeholder="Hours" min="0" max="24" onchange="calculatePower()">
-                    <div class="daily-kwh calculated-value">0 kWh</div>
+                    <div class="daily-kwh">0 kWh</div>
                 </div>
             `;
         }
 
         function initializeCalculator() {
             const container = document.getElementById('applianceRows');
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 5; i++) {
                 container.innerHTML += createApplianceRow(i);
             }
         }
@@ -445,11 +570,10 @@
         function recommendSystem(runningWatts, startingWatts, dailyKwh) {
             let recommendation = '';
             
-            // Find suitable products based on power and capacity requirements
             const suitableProducts = ecoFlowProducts.filter(product => 
                 product.maxPower >= runningWatts &&
                 product.surgePower >= startingWatts &&
-                product.baseCapacity >= (dailyKwh * 0.8) // 80% of daily needs
+                product.baseCapacity >= (dailyKwh * 0.8)
             );
 
             if (suitableProducts.length === 0) {
@@ -461,26 +585,12 @@
                         <li>Starting Power: ${startingWatts.toLocaleString()} W</li>
                         <li>Daily Usage: ${dailyKwh.toFixed(2)} kWh</li>
                     </ul>
-                    <p>The DELTA Pro Ultra with expansion batteries would be most suitable:</p>
-                    <ul>
-                        <li>Base Capacity: 6kWh (expandable up to 30kWh)</li>
-                        <li>Maximum Output: 7200W</li>
-                    </ul>
+                    <p>The DELTA Pro Ultra with expansion batteries would be most suitable.</p>
                 `;
-                if (runningWatts > 7200) {
-                    recommendation += `
-                        <div class="warning">
-                            Note: Your continuous power needs exceed even our largest unit. 
-                            Consider splitting your loads or using multiple units.
-                        </div>
-                    `;
-                }
             } else {
-                // Sort suitable products by baseCapacity ascending to find the smallest sufficient
-                suitableProducts.sort((a, b) => a.baseCapacity - b.baseCapacity);
                 const bestFit = suitableProducts[0];
                 recommendation = `
-                    <h3>Recommended: ${bestFit.name} (${bestFit.series} Series)</h3>
+                    <h3>Recommended: ${bestFit.name}</h3>
                     <p>Based on your power needs:</p>
                     <ul>
                         <li>Running Power: ${runningWatts.toLocaleString()} W</li>
@@ -505,7 +615,6 @@
             document.getElementById('recommendation').innerHTML = recommendation;
         }
 
-        // Add reset functionality
         document.getElementById('resetButton').addEventListener('click', function() {
             if (confirm('Are you sure you want to reset all values?')) {
                 document.querySelectorAll('.appliance-select').forEach(select => {
@@ -521,9 +630,7 @@
             }
         });
 
-        // Initialize the calculator
         initializeCalculator();
     </script>
 </body>
 </html>
-
