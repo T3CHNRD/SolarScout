@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Scout Guide - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Original Colors */
+            --forest-green: #2F5233;
+            --leaf-green: #4CAF50;
+            --sky-blue: #48CAE4;
+            --earth-brown: #76520E;
+            --sunlight: #FFD700;
+            
+            /* New Accent Colors */
+            --area51: #4C5866;
+            --area51-light: #6E7A89;
+            --light-blue: #7FB5D1;
+            --lighter-blue: #A5D8E6;
+            --high-purple: #9B6B9E;
+            --light-purple: #B794BB;
+            
+            /* Header/Footer Gradient */
+            --header-gradient: linear-gradient(135deg, var(--area51) 0%, var(--high-purple) 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--header-gradient);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 15px rgba(76, 88, 102, 0.2);
+        }
+
+        nav {
+            background: rgba(76, 88, 102, 0.95);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: var(--area51-light);
+            transform: translateY(-2px);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--area51-light);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(127, 181, 209, 0.1), 
+                rgba(155, 107, 158, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--high-purple);
+            box-shadow: 0 10px 20px rgba(76, 88, 102, 0.15);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+        }
+
+        /* SVG Animations */
+        .house-svg .window {
+            animation: glow 3s infinite alternate ease-in-out;
+        }
+
+        .house-svg:hover .window {
+            animation: glow 1.5s infinite alternate ease-in-out;
+        }
+
+        .rv-svg .wheels {
+            animation: bounce 3s infinite ease-in-out;
+        }
+
+        .rv-svg:hover .battery-indicator {
+            animation: charge 1.5s infinite;
+        }
+
+        .solar-svg .sun-rays {
+            animation: rotate 20s infinite linear;
+            transform-origin: center;
+        }
+
+        .solar-svg:hover .sun-rays {
+            animation: rotate 10s infinite linear;
+        }
+
+        @keyframes glow {
+            from { fill: var(--light-purple); }
+            to { fill: var(--high-purple); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(2px); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes charge {
+            0% { fill: var(--light-blue); }
+            50% { fill: var(--lighter-blue); }
+            100% { fill: var(--light-blue); }
+        }
+
+        footer {
+            background: var(--header-gradient);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 -2px 15px rgba(76, 88, 102, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.25rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Solar Scout Guide </h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="About.html">About Solar Scout</a>
+        <a href="finalcalcwithstyle.html">Solar Scout Whole Home Power Planner </a>
+        <a href="blackoutbuddy.html">Blackout Buddy Device Calculator</a>
+        <a href="https://www.linspyre.com/ecoholics/calc_voc.html">Solar Basics</a>
+        
+    </nav>
+
+    <main>
+        <section class="feature-grid">
+            <!-- Home Power System Card -->
+            <div class="feature-card">
+                <svg class="feature-icon house-svg" viewBox="0 0 200 200">
+                    <!-- House Base -->
+                    <path d="M40,100 L100,40 L160,100 L160,180 L40,180 Z" fill="var(--area51)"/>
+                    <!-- Roof with Solar Panels -->
+                    <g class="solar-panels">
+                        <rect x="60" y="50" width="20" height="20" fill="var(--light-blue)" class="panel"/>
+                        <rect x="85" y="50" width="20" height="20" fill="var(--light-blue)" class="panel"/>
+                        <rect x="110" y="50" width="20" height="20" fill="var(--light-blue)" class="panel"/>
+                    </g>
+                    <!-- Windows -->
+                    <rect x="60" y="120" width="20" height="20" fill="var(--high-purple)" class="window"/>
+                    <rect x="110" y="120" width="20" height="20" fill="var(--high-purple)" class="window"/>
+                    <!-- Door -->
+                    <rect x="85" y="140" width="20" height="40" fill="var(--earth-brown)"/>
+                    <!-- Power Lines -->
+                    <path d="M60,70 Q100,90 140,70" stroke="var(--lighter-blue)" stroke-width="2" fill="none" 
+                        class="power-line" stroke-dasharray="4 2"/>
+                </svg>
+                <h3>Whole Home System</h3>
+                <p>Calculate your home's energy needs and find the perfect EcoFlow system to power your entire house. 
+                   Understand capacity requirements, solar integration, and backup duration. find out more here.</p>
+                   <a href="About-whole-home-power.html">Find out more here</a>
+            </div>
+
+            <!-- Portable Power Card -->
+            <div class="feature-card">
+                <svg class="feature-icon rv-svg" viewBox="0 0 200 200">
+                    <!-- RV Body -->
+                    <path d="M20,120 L50,80 L150,80 L180,120 L180,160 L20,160 Z" fill="var(--area51-light)"/>
+                    <!-- Windows -->
+                    <rect x="60" y="90" width="30" height="20" fill="var(--light-blue)"/>
+                    <rect x="100" y="90" width="30" height="20" fill="var(--light-blue)"/>
+                    <!-- Wheels -->
+                    <circle cx="60" cy="160" r="15" fill="var(--area51)" class="wheels"/>
+                    <circle cx="140" cy="160" r="15" fill="var(--area51)" class="wheels"/>
+                    <!-- Battery Indicator -->
+                    <rect x="30" y="130" width="30" height="10" fill="var(--light-blue)" class="battery-indicator"/>
+                </svg>
+                <h3>Portable Power</h3>
+                <p>Discover which EcoFlow portable battery best fits your needs. Perfect for camping, RVs, 
+                   or emergency backup power for essential devices, for home, camping, or portable use. find out more here</p>
+                   <a href="About-portable-power.html">Find out more here</a>
+            </div>
+
+            <!-- Solar Guide Card -->
+            <div class="feature-card">
+                <svg class="feature-icon solar-svg" viewBox="0 0 200 200">
+                    <!-- Sun -->
+                    <circle cx="100" cy="100" r="30" fill="var(--sunlight)"/>
+                    <!-- Sun Rays -->
+                    <g class="sun-rays">
+                        <path d="M100,50 L100,30 M150,100 L170,100 M100,150 L100,170 M50,100 L30,100
+                               M135,65 L150,50 M135,135 L150,150 M65,135 L50,150 M65,65 L50,50" 
+                              stroke="var(--high-purple)" stroke-width="4"/>
+                    </g>
+                    <!-- Solar Panel -->
+                    <g transform="translate(70,120)">
+                        <rect width="60" height="40" fill="var(--light-blue)"/>
+                        <line x1="0" y1="20" x2="60" y2="20" stroke="var(--area51)" stroke-width="1"/>
+                        <line x1="20" y1="0" x2="20" y2="40" stroke="var(--area51)" stroke-width="1"/>
+                        <line x1="40" y1="0" x2="40" y2="40" stroke="var(--area51)" stroke-width="1"/>
+                    </g>
+                </svg>
+                <div>
+                    <h3>Solar Solutions</h3>
+                    <p>Harness the sun's power with the Ecoholics guide to solar panels. Learn how to maximize your energy independence with our comprehensive solar integration guide. Find out more about the EcoFlow Community and about solar solutions here.</p>
+                    <a href="https://www.linspyre.com/ecoholics/maxsolar.html">Check out Ecoholics webpage</a>
+                </div>
+            </section>
+        </main>
+
+    <footer>
+        <p>&copy; 2024 T3CHNRD - Designed with help by Claude. All rights reserved.</p>
+    </footer>
+</body>
+</html>
