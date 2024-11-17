@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My EcoFlow Journey</title>
+    <style>
+        :root {
+            /* Primary Colors */
+            --area51: #4C5866;
+            --area51-light: #6E7A89;
+            --light-blue: #7FB5D1;
+            --lighter-blue: #A5D8E6;
+            --high-purple: #9B6B9E;
+            --light-purple: #B794BB;
+            /* Accent Colors */
+            --forest-green: #2F5233;
+            --leaf-green: #4CAF50;
+            --sky-blue: #48CAE4;
+            --earth-brown: #76520E;
+            --sunlight: #FFD700;
+            /* Gradients */
+            --header-gradient: linear-gradient(135deg, var(--area51) 0%, var(--high-purple) 100%);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--white);
+            color: #ffffff;
+        }
+
+        .header {
+            background: var(--header-gradient);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+    
+        .nav-button {
+            background: var(--nav-purple);
+            border: none;
+            color: var(--text-white);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+    
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #000000;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .section h2 {
+            color: var(--high-purple);
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--high-purple);
+            position: absolute;
+            left: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background: var(--header-gradient);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <nav class="nav-buttons">
+            <a href="index.html" class="nav-button">Home</a>
+            <a href="About.html" class="nav-button">About</a>
+            <a href="calculator.html" class="nav-button">Calculator</a>
+            <a href="blackoutbuddy.html" class="nav-button">Blackout Buddy</a>
+            <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
+        </nav>
+        <h1>My EcoFlow Journey</h1>
+    </div>
+
+    <div class="main">
+        <div class="card">
+            <div class="section">
+                <h2>How I Discovered EcoFlow</h2>
+                <p>Hello, I am T3CHNRD (that is pronounced Tech Nerd) the Solar Scout, and I am here to tell you how I found my way into the Solar world! I discovered EcoFlow after exploring various power solutions from brands like Goal Zero, Bluetti, and Jackery. What set EcoFlow apart was its innovative Smart Home Panel and comprehensive ecosystem that offered true automation and integration for daily energy management, not just emergency backup. My current setup includes two Delta Pros with extra batteries, smart generators, a Delta Mini, a River 2, and 1600 watts of power from rigid solar panels, enabling my home to run on solar power for nine hours daily. This system proved invaluable during a three-day winter power outage, and combined with excellent community support and continuous product innovation, EcoFlow has transformed my approach to sustainable energy management and independence from traditional utilities.</p>
+</div>
+
+            <div class="section">
+                <h2>Why EcoFlow?</h2>
+                <ul>
+                    <l<li>Fast charging capabilities</li>
+                    <li>Expandable capacity - many of the EcoFlow units have extra batteries you can attach to expand the capacity, for instance:
+                        <ul>
+                            <li>RIVER Pro</li>
+                            <li>RIVER 3 Plus</li>
+                            <li>RIVER 3 Max</li>
+                            <li>DELTA 2</li>
+                            <li>DELTA 3</li>
+                            <li>DELTA Pro</li>
+                            <li>DELTA Pro Ultra</li>
+                        </ul>
+                        This is just to name a few. On the DELTA Pro, you can even hook a generator to it and charge it that way.
+                    </li>
+                    <li>Silent operation</li>
+                    <li>Clean energy solution</li>
+                    <li>Smart features - can be controlled from a smartphone app!</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>My Experience</h2>
+                <p>Since integrating EcoFlow into my life, I've experienced the freedom of reliable, portable power. My primary setup consists of two DELTA Pros with two extra batteries and two smart generators. I use this system daily for load shifting - running my home on battery power during peak utility rates, then recharging during off-peak hours, I can also charge the system by 1600W of EcoFlow solar panels. For my man cave, I've found the perfect solution in a DELTA mini and River 2 combo that powers a space heater during cold winter days. I've also embraced other EcoFlow products like their blankets, cups, lamp lights, and flashlight. From whole-home power management to portable comfort solutions, EcoFlow has proven to be an invaluable investment in my journey toward energy independence.</p>
+
+            <div class="section">
+                <h2>Why I Created these Calculator</h2>
+                <p>Understanding power needs can be complicated. In the many EcoFlow Facebook groups, one of the most common questions is "Can I use my River battery or Delta battery to power my specific device?" - from CPAP machines to RV coffee makers, new users often need help determining their power requirements. I created these calculators (Blackout Buddy and Solar Scout Whole Home Power Planner) to help others navigate their journey to energy independence. By sharing my experience and providing tools to make informed decisions, I hope to help both newcomers to the EcoFlow community and those planning larger whole-home systems find the perfect power solution for their needs.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
+    </footer>
+</body>
+</html>
