@@ -24,12 +24,19 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif
+            display: block;
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            width: 100%;
             background-color: var(--white);
             color: #ffffff;
+        }
+
+        .header, .footer {
+            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
+            color: var(--text-white);
         }
 
         .header {
@@ -59,19 +66,24 @@
         .nav-button:hover {
             background: rgba(255, 255, 255, 0.2);
         }
+    
 
         .main {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: auto;
+            margin: 0;
+            width: 100%;
             padding: 2rem;
         }
 
         .card {
             background-color: #ffffff;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            max-width: 800px;
+            margin: -2rem auto 2rem;
             padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            flex: 1;
             color: #000000;
         }
 
@@ -105,10 +117,21 @@
         }
 
         footer {
-            text-align: center;
-            padding: 1rem;
+            width: 100%;
+            margin: 0;
+            padding: 1.5rem 0;
+            position: relative;
             background: var(--header-gradient);
-            color: #ffffff;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            box-shadow: 0 -2px 15px rgba(76, 88, 102, 0.2);
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--text-white);
+            opacity: 0.9;
         }
     </style>
 </head>
@@ -116,8 +139,7 @@
     <div class="header">
         <nav class="nav-buttons">
             <a href="index.html" class="nav-button">Home</a>
-            <a href="About.html" class="nav-button">About</a>
-            <a href="calculator.html" class="nav-button">Calculator</a>
+            <a href="finalcalcwithstyle.html" class="nav-button">Solar Scout Whole Home Power Planner</a>
             <a href="blackoutbuddy.html" class="nav-button">Blackout Buddy</a>
             <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
         </nav>
@@ -128,7 +150,10 @@
         <div class="card">
             <div class="section">
                 <h2>How I Discovered EcoFlow</h2>
-                <p>Hello, I am T3CHNRD (that is pronounced Tech Nerd) the Solar Scout, and I am here to tell you how I found my way into the Solar world! I discovered EcoFlow after exploring various power solutions from brands like Goal Zero, Bluetti, and Jackery. What set EcoFlow apart was its innovative Smart Home Panel and comprehensive ecosystem that offered true automation and integration for daily energy management, not just emergency backup. My current setup includes two Delta Pros with extra batteries, smart generators, a Delta Mini, a River 2, and 1600 watts of power from rigid solar panels, enabling my home to run on solar power for nine hours daily. This system proved invaluable during a three-day winter power outage, and combined with excellent community support and continuous product innovation, EcoFlow has transformed my approach to sustainable energy management and independence from traditional utilities.</p>
+                <p>Hello, I am T3CHNRD (that is pronounced Tech Nerd) the Solar Scout, and I am here to tell you how I found my way into the Solar world!</p> 
+               <p> I discovered EcoFlow after exploring various power solutions from brands like Goal Zero, Bluetti, and Jackery. What set EcoFlow apart was its innovative Smart Home Panel and comprehensive ecosystem that offered true automation and integration for daily energy management, not just emergency backup. </p>
+                <p>My current setup includes two Delta Pros with extra batteries, smart generators, a Delta Mini, a River 2, and 1600 watts of power from rigid solar panels, enabling my home to run on solar power for nine hours daily.</p>
+                <p>This system proved invaluable during a three-day winter power outage, and combined with excellent community support and continuous product innovation, EcoFlow has transformed my approach to sustainable energy management and independence from traditional utilities.</p>
 </div>
 
             <div class="section">
@@ -155,17 +180,23 @@
 
             <div class="section">
                 <h2>My Experience</h2>
-                <p>Since integrating EcoFlow into my life, I've experienced the freedom of reliable, portable power. My primary setup consists of two DELTA Pros with two extra batteries and two smart generators. I use this system daily for load shifting - running my home on battery power during peak utility rates, then recharging during off-peak hours, I can also charge the system by 1600W of EcoFlow solar panels. For my man cave, I've found the perfect solution in a DELTA mini and River 2 combo that powers a space heater during cold winter days. I've also embraced other EcoFlow products like their blankets, cups, lamp lights, and flashlight. From whole-home power management to portable comfort solutions, EcoFlow has proven to be an invaluable investment in my journey toward energy independence.</p>
+                <p>Since integrating EcoFlow into my life, I've experienced the freedom of reliable, portable power. My primary setup consists of two DELTA Pros with two extra batteries and two smart generators.</p>
+                <p>I use this system daily for load shifting - running my home on battery power during peak utility rates, then recharging during off-peak hours, I can also charge the system by 1600W of EcoFlow solar panels. </p>
+                <p>For my man cave, I've found the perfect solution in a DELTA mini and River 2 combo that powers a space heater during cold winter days. I've also embraced other EcoFlow products like their blankets, cups, lamp lights, and flashlight.</p>
+                <p>From whole-home power management to portable comfort solutions, EcoFlow has proven to be an invaluable investment in my journey toward energy independence.</p>
 
             <div class="section">
                 <h2>Why I Created these Calculator</h2>
-                <p>Understanding power needs can be complicated. In the many EcoFlow Facebook groups, one of the most common questions is "Can I use my River battery or Delta battery to power my specific device?" - from CPAP machines to RV coffee makers, new users often need help determining their power requirements. I created these calculators (Blackout Buddy and Solar Scout Whole Home Power Planner) to help others navigate their journey to energy independence. By sharing my experience and providing tools to make informed decisions, I hope to help both newcomers to the EcoFlow community and those planning larger whole-home systems find the perfect power solution for their needs.</p>
+                <p>Understanding power needs can be complicated. In the many EcoFlow Facebook groups, one of the most common questions is "Can I use my River battery or Delta battery to power my specific device?" - from CPAP machines to RV coffee makers, new users often need help determining their power requirements. </p>
+                <p>I created these calculators (Blackout Buddy and Solar Scout Whole Home Power Planner) to help others navigate their journey to energy independence. By sharing my experience and providing tools to make informed decisions.</p>
+                <p>I hope to help both newcomers to the EcoFlow community and those planning larger whole-home systems find the perfect power solution for their needs.</p>
             </div>
         </div>
     </div>
 
     <footer>
         © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
+
     </footer>
 </body>
 </html>
