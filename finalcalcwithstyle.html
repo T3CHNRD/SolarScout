@@ -222,6 +222,40 @@
             .nav-button {
                 width: 80%;
             }
+
+            .recommendation-content {
+        margin-bottom: 20px;
+    }
+
+    .product-links {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0;
+    }
+
+    .product-links li {
+        margin: 10px 0;
+    }
+
+    .product-links a {
+        color: #4c3a5f;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .product-links a:hover {
+        color: #826894;
+    }
+
+    .recommendation-disclaimer {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        margin-top: 15px;
+        border-left: 4px solid #FFD700;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
         }
     </style>
 </head>
@@ -555,42 +589,70 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
         // Function to update Delta product recommendations
-        function updateDeltaRecommendation(averageMonthlyUsage) {
-            const yearlyUsage = averageMonthlyUsage * 12;
-            const dailyUsage = yearlyUsage / 365;
-            let recommendation = '';
+       // Find the existing updateDeltaRecommendation function and replace it with this:
+function updateDeltaRecommendation(averageMonthlyUsage) {
+    const yearlyUsage = averageMonthlyUsage * 12;
+    const dailyUsage = yearlyUsage / 365;
     
-            const suitableProducts = deltaProducts.filter(product => {
-                return (dailyUsage <= product.suitableDaily * 1.2); // 20% margin
-            });
+    // Define product links map
+    const productLinks = {
+        "DELTA Mini": "https://us.ecoflow.com/products/delta-mini-portable-power-station?sca_ref=7408943.R33f7CbNF7",
+        "DELTA 2": "https://us.ecoflow.com/products/delta-2-portable-power-station?_pos=1&_sid=cd6c8860b&_ss=r&variant=40569176326217&sca_ref=7408943.R33f7CbNF7&sca_source=EcoFlow DELTA 2",
+        "DELTA Max": "https://us.ecoflow.com/products/delta-max-portable-power-station?sca_ref=7408943.R33f7CbNF7",
+        "DELTA Pro": "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7",
+        "DELTA Pro 3": "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3",
+        "DELTA Pro Ultra": "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    };
+
+    const suitableProducts = deltaProducts.filter(product => {
+        return (dailyUsage <= product.suitableDaily * 1.2); // 20% margin
+    });
+
+    let recommendationHTML = '<div class="recommendation-content">';
     
-            if (suitableProducts.length === 0) {
-                recommendation = `
-                    <div class="recommendation-content">
-                        <h3>Recommended: DELTA Pro Ultra</h3>
-                        <p>Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial. The DELTA Pro Ultra with expansion batteries 
-                        would be most suitable for your needs.</p>
-                        <p>- Base Capacity: 6kWh (expandable up to 30kWh)</p>
-                        <p>- Maximum Output: 7200W</p>
-                    </div>
-                `;
-            } else {
-                const bestFit = suitableProducts[0];
-                recommendation = `
-                    <div class="recommendation-content">
-                        <h3>Recommended: ${bestFit.name}</h3>
-                        <p>Based on your daily usage of ${dailyUsage.toFixed(2)} kWh:</p>
-                        <p>- Base Capacity: ${bestFit.baseCapacity}kWh</p>
-                        <p>- Output: ${bestFit.output}</p>
-                        ${bestFit.expandable ? 
-                            `<p>- Expandable up to ${bestFit.maxCapacity}kWh with ${bestFit.extraBatteries} extra batteries</p>` 
-                            : ''}
-                    </div>
-                `;
-            }
-    
-            document.getElementById('deltaRecommendation').innerHTML = recommendation;
-        }
+    if (suitableProducts.length === 0) {
+        recommendationHTML += `
+            <h3>Recommended Power Solutions</h3>
+            <p>Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial. We recommend considering:</p>
+            <ul class="product-links">
+                <li><a href="${productLinks['DELTA Pro Ultra']}" target="_blank">DELTA Pro Ultra</a> - Maximum Power Backup</li>
+            </ul>
+            <p>Features:</p>
+            <ul>
+                <li>Base Capacity: 6kWh (expandable up to 30kWh)</li>
+                <li>Maximum Output: 7200W</li>
+            </ul>
+        `;
+    } else {
+        const bestFit = suitableProducts[0];
+        recommendationHTML += `
+            <h3>Recommended Power Solutions</h3>
+            <p>Based on your daily usage of ${dailyUsage.toFixed(2)} kWh, here are our recommendations:</p>
+            <ul class="product-links">
+        `;
+        
+        // Add best fit and alternative options
+        suitableProducts.forEach(product => {
+            recommendationHTML += `
+                <li><a href="${productLinks[product.name]}" target="_blank">${product.name}</a> - 
+                    Base Capacity: ${product.baseCapacity}kWh${product.expandable ? ` (expandable to ${product.maxCapacity}kWh)` : ''}</li>
+            `;
+        });
+        
+        recommendationHTML += '</ul>';
+    }
+
+    // Add disclaimer
+    recommendationHTML += `
+        <div class="recommendation-disclaimer">
+            <strong>Note:</strong> This recommendation is based on the information provided. You may need multiple units
+            or a larger capacity battery system if you require longer run times or have additional power needs.
+            Please consult with a professional for critical power backup solutions.
+        </div>
+    </div>`;
+
+    document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
+}
     
         // Function to reset calculator
         function resetCalculator() {
