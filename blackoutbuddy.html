@@ -231,6 +231,7 @@
             color: var(--text-white);
             opacity: 0.9;
         }
+        
     
         @media (max-width: 1200px) {
             .calculator-card {
@@ -248,13 +249,135 @@
                 width: 80%;
             }
         }
+/* Base styles remain unchanged */
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  /* Navigation */
+  .nav-button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin: 5px 0;
+    padding: 10px;
+  }
+
+  /* Title */
+  .title {
+    font-size: 1.5rem;
+    padding: 10px;
+    text-align: center;
+  }
+
+  /* Instructions */
+  .instructions {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  /* Appliance grid */
+  .appliance-grid {
+    overflow-x: auto;
+    padding: 10px;
+  }
+
+  .appliance-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
+    gap: 10px;
+    padding: 8px;
+  }
+
+  .grid-header {
+    font-size: 0.9rem;
+  }
+
+  /* Results section */
+  .results {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  .total-power {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .recommendation-section {
+    padding: 15px;
+    margin-top: 15px;
+  }
+}
+
+/* Small phone screens */
+@media screen and (max-width: 480px) {
+  .appliance-row {
+    font-size: 0.85rem;
+    grid-template-columns: minmax(100px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr);
+    gap: 5px;
+  }
+
+  .grid-header {
+    font-size: 0.8rem;
+  }
+
+  /* Make the table horizontally scrollable on very small screens */
+  .appliance-grid {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Adjust spacing */
+  .instructions ol {
+    padding-left: 20px;
+    margin: 10px 0;
+  }
+
+  /* Make buttons more tappable */
+  button, input, select {
+    min-height: 44px; /* Standard minimum touch target size */
+  }
+}
+
+/* Medium tablets */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .calculator-card {
+    margin: 20px auto;
+    max-width: 90%;
+  }
+
+  .appliance-row {
+    gap: 15px;
+  }
+
+  .nav-button {
+    padding: 8px 15px;
+    margin: 0 5px;
+  }
+}
+
+/* Ensure inputs and interactive elements are easily tappable */
+@media (hover: none) and (pointer: coarse) {
+  input, select, button {
+    padding: 12px;
+    margin: 5px 0;
+  }
+  
+  /* Add some space between interactive elements */
+  .appliance-row > * {
+    margin: 5px 0;
+  }
+}
+        
     </style>
 </head>
 <body>
     <div class="calculator-card">
         <div class="header">
             <a href="index.html" class="nav-button">Home</a>
-            <a href="about.html" class="nav-button">About Solar Scout</a>
+            <a href="about.html" class="nav-button"> About Solar Scout</a>
             <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
             <a href="finalcalcwithstyle.html" class="nav-button">Solar Scout Whole Home Power Planner</a>
             <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
