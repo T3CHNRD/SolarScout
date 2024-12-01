@@ -188,6 +188,17 @@
             margin-top: 2rem;
             color: var(--text-white);
         }
+        .recommendation-section {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+.recommendation-section li {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
     
         .result-item {
             padding: 0.75rem;
@@ -381,7 +392,14 @@
             <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
             <a href="finalcalcwithstyle.html" class="nav-button">Solar Scout Whole Home Power Planner</a>
             <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
-            <button id="resetButton" class="nav-button">Reset Calculator</button>
+            <br>
+            <br>
+            <br>
+            <div style="margin-top: 2em; text-align: right; padding-right: 65px;">
+                <button id="resetButton" class="nav-button">Reset Calculator</button>
+                <button onclick="printResults()" class="nav-button">Print Results</button>
+              </div>
+           
         </div>
 
         <h1 class="title">BlackoutBuddy - Portable Power Usage Calculator</h1>
@@ -680,6 +698,111 @@ const productAffiliateLinks = {
                 </div>
             `;
         }
+// Add this function right before initializeCalculator();
+function printResults() {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    
+    // Get all the current values
+    const totalWatts = document.getElementById('totalWatts').textContent;
+    const totalStarting = document.getElementById('totalStarting').textContent;
+    const totalKwh = document.getElementById('totalKwh').textContent;
+    const recommendation = document.getElementById('recommendation').innerHTML;
+    
+    // Get appliance data
+    let applianceTable = '<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">';
+    applianceTable += '<tr><th>Appliance</th><th>Running Watts</th><th>Starting Watts</th><th>Hours/Day</th><th>Daily kWh</th></tr>';
+    
+    document.querySelectorAll('.appliance-row:not(.grid-header)').forEach(row => {
+        const select = row.querySelector('.appliance-select');
+        if (select.value) {  // Only include rows where an appliance is selected
+            applianceTable += '<tr>';
+            applianceTable += `<td>${select.value}</td>`;
+            applianceTable += `<td>${row.querySelector('.running-watts').value}</td>`;
+            applianceTable += `<td>${row.querySelector('.starting-watts').value}</td>`;
+            applianceTable += `<td>${row.querySelector('.hours').value}</td>`;
+            applianceTable += `<td>${row.querySelector('.daily-kwh').textContent}</td>`;
+            applianceTable += '</tr>';
+        }
+    });
+    applianceTable += '</table>';
+
+    // Create the print content with styling
+    const printContent = `
+        <html>
+        <head>
+            <title>BlackoutBuddy Results</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    line-height: 1.6;
+                }
+                h1 {
+                    color: #4c3a5f;
+                    text-align: center;
+                }
+                .summary {
+                    margin: 20px 0;
+                    padding: 10px;
+                    background: #f8f9fa;
+                    border-radius: 5px;
+                }
+                table {
+                    margin: 20px 0;
+                }
+                th {
+                    background: #4c3a5f;
+                    color: white;
+                }
+                td, th {
+                    padding: 8px;
+                    text-align: left;
+                }
+                .recommendation {
+                    margin-top: 20px;
+                    padding: 10px;
+                    background: #f8f9fa;
+                    border-radius: 5px;
+                }
+                @media print {
+                    body {
+                        padding: 0;
+                    }
+                    button {
+                        display: none;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <h1>BlackoutBuddy - Power Usage Report</h1>
+            
+            <div class="summary">
+                <h2>Power Summary</h2>
+                <p>${totalWatts}</p>
+                <p>${totalStarting}</p>
+                <p>${totalKwh}</p>
+            </div>
+
+            <h2>Selected Appliances</h2>
+            ${applianceTable}
+
+            <div class="recommendation">
+                <h2>Recommendation</h2>
+                ${recommendation}
+            </div>
+            
+            <button onclick="window.print()" style="margin-top: 20px; padding: 10px;">Print this page</button>
+        </body>
+        </html>
+    `;
+
+    // Write the content to the new window and print
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+}
+
 
         function initializeCalculator() {
             const container = document.getElementById('applianceRows');
@@ -810,19 +933,31 @@ const productAffiliateLinks = {
     document.getElementById('recommendation').innerHTML = recommendation;
 }
 
-        document.getElementById('resetButton').addEventListener('click', function() {
-            if (confirm('Are you sure you want to reset all values?')) {
-                document.querySelectorAll('.appliance-select').forEach(select => {
-                    select.value = '';
-                });
-                document.querySelectorAll('input[type="number"]').forEach(input => {
-                    input.value = '';
-                });
-                document.querySelectorAll('.daily-kwh').forEach(div => {
-                    div.textContent = '0 kWh';
-                });
-                calculatePower();
-            }
+    document.getElementById('resetButton').addEventListener('click', function() {
+    if (confirm('Are you sure you want to reset all values?')) {
+        // Reset appliance selections
+        document.querySelectorAll('.appliance-select').forEach(select => {
+            select.value = '';
+        });
+        
+        // Reset all number inputs
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = '';
+        });
+        
+        // Reset daily kWh values
+        document.querySelectorAll('.daily-kwh').forEach(div => {
+            div.textContent = '0 kWh';
+        });
+        
+        // Reset total values
+        document.getElementById('totalWatts').textContent = 'Total Running Watts: 0 W';
+        document.getElementById('totalStarting').textContent = 'Total Starting Watts: 0 W';
+        document.getElementById('totalKwh').textContent = 'Total Daily Usage: 0 kWh';
+        
+        // Reset recommendation section
+        document.getElementById('recommendation').innerHTML = 'Select appliances to get recommendations.';
+    }
         });
 
         initializeCalculator();
