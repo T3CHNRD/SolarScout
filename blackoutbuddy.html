@@ -876,12 +876,35 @@
 
         // --- RECOMMENDATION LOGIC ---
         function updateRecommendations(running, starting, kwh) {
-            // Find all EcoFlow products that can handle the load
-            const suitable = ecoFlowProducts.filter(p =>
-                p.maxPower >= running &&
-                p.surgePower >= starting &&
-                p.baseCapacity >= kwh
-            );
+            let suitable;
+            if (running <= 600) {
+                // Prioritize RIVER and RAPID for low power
+                suitable = ecoFlowProducts
+                    .filter(p =>
+                        (p.series === "RIVER" || p.series === "RAPID") &&
+                        p.maxPower >= running &&
+                        p.surgePower >= starting &&
+                        p.baseCapacity >= kwh
+                    )
+                    .sort((a, b) => a.baseCapacity - b.baseCapacity);
+
+                // If no RIVER/RAPID matches, fall back to any product
+                if (suitable.length === 0) {
+                    suitable = ecoFlowProducts.filter(p =>
+                        p.maxPower >= running &&
+                        p.surgePower >= starting &&
+                        p.baseCapacity >= kwh
+                    );
+                }
+            } else {
+                // For higher loads, use all products as before
+                suitable = ecoFlowProducts.filter(p =>
+                    p.maxPower >= running &&
+                    p.surgePower >= starting (Surge)&&
+                    p.baseCapacity >= kwh
+                );
+            }
+
             let html = '';
             if (suitable.length === 0) {
                 html = '<li>No EcoFlow product matches your requirements. Try reducing your load or splitting into multiple units.</li>';
