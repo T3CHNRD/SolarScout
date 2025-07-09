@@ -571,16 +571,40 @@ function updateDeltaRecommendation() {
   document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
 
-// --- Reset Button Fix ---
-document.getElementById('resetButton').onclick = function() {
-  // Clear all month inputs
-  for (let i = 1; i <= 12; i++) {
-    document.getElementById(`month${i}`).value = '';
-  }
-  // Clear results and recommendations
-  document.getElementById('deltaRecommendation').innerHTML = '';
-  // Optionally, reset other calculated fields or state here
-};
+// --- Reset Button: Full Functionality Fix ---
+
+// Make sure your reset button has id="resetButton" in your HTML:
+// <button id="resetButton" type="button">Reset</button>
+
+function resetForm() {
+    // 1. Reset all month input fields to 0
+    for (let i = 1; i <= 12; i++) {
+        const input = document.getElementById(`month${i}`);
+        if (input) input.value = 0;
+    }
+
+    // 2. Clear calculated displays (adjust IDs as needed)
+    const dailyUsageDisplay = document.getElementById('dailyUsage');
+    if (dailyUsageDisplay) dailyUsageDisplay.textContent = '';
+
+    const recommendationsDisplay = document.getElementById('deltaRecommendation');
+    if (recommendationsDisplay) recommendationsDisplay.innerHTML = '';
+
+    // 3. Clear any error messages or validation
+    const errorMessage = document.getElementById('errorMessage');
+    if (errorMessage) errorMessage.textContent = '';
+
+    // 4. Reset any global variables/state (if used)
+    window.totalUsage = 0;
+    window.dailyUsage = 0;
+    window.recommendations = [];
+
+    // 5. Optionally, reset any other result fields
+    // ... add as needed ...
+}
+
+// Attach the event listener (ensure this runs after DOM is loaded)
+document.getElementById('resetButton').addEventListener('click', resetForm);
     
         // Add this utility function:
 function getDaysInMonth(monthIndex) {
