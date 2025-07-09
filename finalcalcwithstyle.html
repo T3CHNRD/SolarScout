@@ -471,43 +471,40 @@
             return peakHours / 24;
         }
     
-        // --- Battery Recommendation Logic: 3 Options Per Model, Filtered by Requirement ---
+        // --- Battery Recommendation Logic: Show 3 Options Per Model, All Models, No Early Exit ---
 const deltaProducts = [
   {
     name: "Delta Pro",
     baseCapacity: 3.6,
     step: 3.6,
-    maxExtra: 2,
     options: [
-      { label: "Delta Pro", extras: 0 },
-      { label: "Delta Pro + 1 extra battery", extras: 1 },
-      { label: "Delta Pro + 2 extra batteries", extras: 2 }
+      { label: "Delta Pro", extras: 0, total: 3.6 },
+      { label: "Delta Pro + 1 extra battery", extras: 1, total: 7.2 },
+      { label: "Delta Pro + 2 extra batteries", extras: 2, total: 10.8 }
     ],
-    link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?variant=40516140138569&sca_ref=7408943.R33f7CbNF7&sca_source=delta pro"
+    link: "https://www.ecoflow.com/us/delta-pro-portable-power-station"
   },
   {
     name: "Delta Pro 3",
     baseCapacity: 4.096,
     step: 4.096,
-    maxExtra: 2,
     options: [
-      { label: "Delta Pro 3", extras: 0 },
-      { label: "Delta Pro 3 + 1 extra battery", extras: 1 },
-      { label: "Delta Pro 3 + 2 extra batteries", extras: 2 }
+      { label: "Delta Pro 3", extras: 0, total: 4.096 },
+      { label: "Delta Pro 3 + 1 extra battery", extras: 1, total: 8.192 },
+      { label: "Delta Pro 3 + 2 extra batteries", extras: 2, total: 12.288 }
     ],
-    link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
+    link: "https://www.ecoflow.com/us/delta-pro-3-portable-power-station"
   },
   {
     name: "Delta Pro Ultra",
     baseCapacity: 6,
     step: 6,
-    maxExtra: 5,
     options: [
-      { label: "Delta Pro Ultra", extras: 0 },
-      { label: "Delta Pro Ultra + 1 extra battery", extras: 1 },
-      { label: "Delta Pro Ultra + 5 extra batteries", extras: 5 }
+      { label: "Delta Pro Ultra", extras: 0, total: 6 },
+      { label: "Delta Pro Ultra + 1 extra battery", extras: 1, total: 12 },
+      { label: "Delta Pro Ultra + 5 extra batteries", extras: 5, total: 36 }
     ],
-    link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    link: "https://www.ecoflow.com/us/delta-pro-ultra-portable-power-station"
   }
 ];
 
@@ -517,7 +514,7 @@ function getDaysInMonth(monthIndex) {
   return new Date(year, monthIndex, 0).getDate();
 }
 
-// Main recommendation function
+// --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
   // Calculate total usage and max daily usage
   let totalUsage = 0;
@@ -541,20 +538,19 @@ function updateDeltaRecommendation() {
   let anyOption = false;
 
   deltaProducts.forEach(product => {
-    // For each model, generate up to 3 options (base, +1, max expansion)
+    // For each model, generate 3 options (base, +1, max expansion)
     let validOptions = [];
     product.options.forEach(opt => {
-      const totalCap = product.baseCapacity + product.step * opt.extras;
-      if (totalCap >= requiredCapacity) {
+      if (opt.total >= requiredCapacity) {
         validOptions.push({
           label: opt.label,
-          totalCapacity: totalCap,
+          totalCapacity: opt.total,
           link: product.link
         });
       }
     });
 
-    // Always show multiple options if possible
+    // Always show up to 3 valid options if possible
     if (validOptions.length > 0) {
       anyOption = true;
       recommendationHTML += `<div style="margin-bottom:1em;"><b>${product.name} Options:</b><ul>`;
@@ -574,6 +570,41 @@ function updateDeltaRecommendation() {
   recommendationHTML += `</div>`;
   document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
+
+// --- Reset Button: Full Functionality Fix ---
+
+// Make sure your reset button has id="resetButton" in your HTML:
+// <button id="resetButton" type="button">Reset</button>
+
+function resetForm() {
+    // 1. Reset all month input fields to 0
+    for (let i = 1; i <= 12; i++) {
+        const input = document.getElementById(`month${i}`);
+        if (input) input.value = 0;
+    }
+
+    // 2. Clear calculated displays (adjust IDs as needed)
+    const dailyUsageDisplay = document.getElementById('dailyUsage');
+    if (dailyUsageDisplay) dailyUsageDisplay.textContent = '';
+
+    const recommendationsDisplay = document.getElementById('deltaRecommendation');
+    if (recommendationsDisplay) recommendationsDisplay.innerHTML = '';
+
+    // 3. Clear any error messages or validation
+    const errorMessage = document.getElementById('errorMessage');
+    if (errorMessage) errorMessage.textContent = '';
+
+    // 4. Reset any global variables/state (if used)
+    window.totalUsage = 0;
+    window.dailyUsage = 0;
+    window.recommendations = [];
+
+    // 5. Optionally, reset any other result fields
+    // ... add as needed ...
+}
+
+// Attach the event listener (ensure this runs after DOM is loaded)
+document.getElementById('resetButton').addEventListener('click', resetForm);
     
         // Add this utility function:
 function getDaysInMonth(monthIndex) {
