@@ -471,38 +471,60 @@
             return peakHours / 24;
         }
     
-        // Function to update all calculations
-        function updateCalculations() {
-            const peakRate = parseInput(document.getElementById('peakRate').value) / 100; // Convert cents to dollars
-            const offPeakRate = parseInput(document.getElementById('offPeakRate').value) / 100;
-            const peakTimeRatio = calculatePeakHours();
-    
-            // Calculate total usage
-            let totalUsage = 0;
-            for (let i = 1; i <= 12; i++) {
-                totalUsage += parseInput(document.getElementById(`month${i}`).value);
-            }
-    
-            // Calculate peak and off-peak usage
-            const peakUsage = totalUsage * peakTimeRatio;
-            const offPeakUsage = totalUsage - peakUsage;
-    
-            // Calculate costs
-            const peakCost = peakUsage * peakRate;
-            const offPeakCost = offPeakUsage * offPeakRate;
-            const totalCost = peakCost + offPeakCost;
-    
-            // Update display
-            document.getElementById('totalUsage').textContent = `Total Usage: ${totalUsage.toFixed(1)} kWh`;
-            document.getElementById('peakUsage').textContent = `Peak Usage: ${peakUsage.toFixed(1)} kWh`;
-            document.getElementById('offPeakUsage').textContent = `Off-Peak Usage: ${offPeakUsage.toFixed(1)} kWh`;
-            document.getElementById('peakCost').textContent = `Peak Cost: $${peakCost.toFixed(2)}`;
-            document.getElementById('offPeakCost').textContent = `Off-Peak Cost: $${offPeakCost.toFixed(2)}`;
-            document.getElementById('totalCost').textContent = `Total Cost: $${totalCost.toFixed(2)}`;
-    
-            // Update Delta recommendation
-            updateDeltaRecommendation(totalUsage / 12); // Average monthly usage
+        // Add this utility function:
+function getDaysInMonth(monthIndex) {
+    // monthIndex: 1 = January, 12 = December
+    const year = new Date().getFullYear();
+    return new Date(year, monthIndex, 0).getDate();
+}
+
+// Compute daily usage for each month and use the maximum (worst-case)
+function getMaxDailyUsage() {
+    let maxDaily = 0;
+    for (let i = 1; i <= 12; i++) {
+        const monthUsage = parseInput(document.getElementById(`month${i}`).value);
+        const days = getDaysInMonth(i);
+        if (days > 0) {
+            const daily = monthUsage / days;
+            if (daily > maxDaily) maxDaily = daily;
         }
+    }
+    return maxDaily;
+}
+
+// Function to update all calculations
+function updateCalculations() {
+    const peakRate = parseInput(document.getElementById('peakRate').value) / 100; // Convert cents to dollars
+    const offPeakRate = parseInput(document.getElementById('offPeakRate').value) / 100;
+    const peakTimeRatio = calculatePeakHours();
+    const maxDailyUsage = getMaxDailyUsage();
+    
+    // Calculate total usage
+    let totalUsage = 0;
+    for (let i = 1; i <= 12; i++) {
+        totalUsage += parseInput(document.getElementById(`month${i}`).value);
+    }
+    
+    // Calculate peak and off-peak usage
+    const peakUsage = totalUsage * peakTimeRatio;
+    const offPeakUsage = totalUsage - peakUsage;
+    
+    // Calculate costs
+    const peakCost = peakUsage * peakRate;
+    const offPeakCost = offPeakUsage * offPeakRate;
+    const totalCost = peakCost + offPeakCost;
+    
+    // Update display
+    document.getElementById('totalUsage').textContent = `Total Usage: ${totalUsage.toFixed(1)} kWh`;
+    document.getElementById('peakUsage').textContent = `Peak Usage: ${peakUsage.toFixed(1)} kWh`;
+    document.getElementById('offPeakUsage').textContent = `Off-Peak Usage: ${offPeakUsage.toFixed(1)} kWh`;
+    document.getElementById('peakCost').textContent = `Peak Cost: $${peakCost.toFixed(2)}`;
+    document.getElementById('offPeakCost').textContent = `Off-Peak Cost: $${offPeakCost.toFixed(2)}`;
+    document.getElementById('totalCost').textContent = `Total Cost: $${totalCost.toFixed(2)}`;
+    
+    // Update Delta recommendation
+    updateDeltaRecommendation(totalUsage / 12); // Average monthly usage
+}
     
         // Delta product definitions
         const deltaProducts = [
