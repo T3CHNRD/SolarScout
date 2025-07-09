@@ -884,7 +884,7 @@
                         (p.series === "RIVER" || p.series === "RAPID") &&
                         p.maxPower >= running &&
                         p.surgePower >= starting &&
-                        p.baseCapacity >= kwh
+                        (p.baseCapacity >= kwh || (p.expandable && p.maxCapacity && p.maxCapacity >= kwh))
                     )
                     .sort((a, b) => a.baseCapacity - b.baseCapacity);
 
@@ -893,7 +893,7 @@
                     suitable = ecoFlowProducts.filter(p =>
                         p.maxPower >= running &&
                         p.surgePower >= starting &&
-                        p.baseCapacity >= kwh
+                        (p.baseCapacity >= kwh || (p.expandable && p.maxCapacity && p.maxCapacity >= kwh))
                     );
                 }
             } else {
@@ -901,19 +901,42 @@
                 suitable = ecoFlowProducts.filter(p =>
                     p.maxPower >= running &&
                     p.surgePower >= starting &&
-                    p.baseCapacity >= kwh &&
-                    p.series !== "RIVER" && // Exclude RIVER
-                    p.series !== "RAPID"    // Exclude RAPID
+                    (p.baseCapacity >= kwh || (p.expandable && p.maxCapacity && p.maxCapacity >= kwh)) &&
+                    p.series !== "RIVER" &&
+                    p.series !== "RAPID"
                 );
             }
 
+            // If daily usage is over 2kWh, always suggest at least one higher-capacity model
+            let extraSuggestions = [];
+            if (kwh > 2) {
+                extraSuggestions = ecoFlowProducts.filter(p =>
+                    p.maxPower >= running &&
+                    p.surgePower >= starting &&
+                    ((p.expandable && p.maxCapacity && p.maxCapacity >= kwh) || p.baseCapacity >= kwh) &&
+                    p.baseCapacity >= 2 // Only show higher capacity models
+                );
+            }
+
+            // Remove duplicates
+            let allSuggestions = [...suitable];
+            extraSuggestions.forEach(p => {
+                if (!allSuggestions.includes(p)) allSuggestions.push(p);
+            });
+
+            // Build the HTML
             let html = '';
-            if (suitable.length === 0) {
+            if (allSuggestions.length === 0) {
                 html = '<li>No EcoFlow product matches your requirements. Try reducing your load or splitting into multiple units.</li>';
             } else {
-                html = suitable.slice(0, 3).map(p => {
+                html = allSuggestions.slice(0, 3).map(p => {
+                    let label = p.name;
+                    // Suggest "with extra battery" if needed
+                    if (p.expandable && p.maxCapacity && kwh > p.baseCapacity && kwh <= p.maxCapacity) {
+                        label += ' with Extra Battery';
+                    }
                     const link = productAffiliateLinks[p.name] || '#';
-                    return `<li><a href="${link}" target="_blank" class="shop-link">${p.name}</a> (${p.baseCapacity} kWh, ${p.maxPower}W, Surge: ${p.surgePower}W)</li>`;
+                    return `<li><a href="${link}" target="_blank" class="shop-link">${label}</a> (${p.expandable && p.maxCapacity && kwh > p.baseCapacity ? p.maxCapacity : p.baseCapacity} kWh, ${p.maxPower}W, Surge: ${p.surgePower}W)</li>`;
                 }).join('');
             }
             document.getElementById('recommendation').innerHTML = `<ul class="recommendation-section">${html}</ul>`;
