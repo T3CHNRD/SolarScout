@@ -19,11 +19,11 @@
             --area51-light: #2d2d2d;
         }
  
-        {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
     
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -55,7 +55,7 @@
         .title {
            text-align: center;
            margin: 1rem auto;
-           max-width: 90%;  /* Adjust percentage as needed */
+           max-width: 90%;
         }
     
         .nav-buttons {
@@ -81,14 +81,14 @@
         }
 
         .shop-link {
-           color: #FFD700; /* This is a gold color */
+           color: #FFD700;
            font-weight: bold;
-        text-decoration: underline;
+           text-decoration: underline;
         }
 
-.shop-link:hover {
-    color: #FFA500; /* This changes the color to orange when hovering */
-}
+        .shop-link:hover {
+            color: #FFA500;
+        }
     
         .calculator-card {
             background: var(--card-bg);
@@ -150,14 +150,14 @@
             margin: 1rem 0;
             text-align: center;
             padding: 1rem;
-            background: var(--your-background-color);
+            background: var(--section-bg);
             border-radius: 8px;
             line-height: 1.5;
         }
 
         .instructions ol {
-            display: inline-block;  /* This helps maintain proper list alignment while centered */
-            text-align: left;       /* This keeps the list items left-aligned for better readability */
+            display: inline-block;
+            text-align: left;
             margin: 1rem auto;
         }
 
@@ -179,7 +179,7 @@
             background: white;
             border-radius: 4px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-              }
+        }
     
         .results {
             background: linear-gradient(135deg, var(--purple-gradient-dark), var(--purple-gradient-light));
@@ -188,16 +188,17 @@
             margin-top: 2rem;
             color: var(--text-white);
         }
+
         .recommendation-section {
             list-style: none;
             padding: 0;
             margin: 0;
         }
 
-.recommendation-section li {
-          list-style: none;
-          padding: 0;
-          margin: 0;
+        .recommendation-section li {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
     
         .result-item {
@@ -229,27 +230,24 @@
         }
     
         .footer {
-            background:linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
+            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
             color: var(--text-white);
             padding: 1rem;
             text-align: center;
             margin-top: auto;
         }
-
     
         .footer-text {
             font-size: 0.9rem;
             color: var(--text-white);
             opacity: 0.9;
         }
-        
     
         @media (max-width: 1200px) {
             .calculator-card {
                 margin: -1rem 1rem 2rem;
                 padding: 1.5rem;
             }
-    
     
             .nav-buttons {
                 flex-direction: column;
@@ -260,128 +258,113 @@
                 width: 80%;
             }
         }
-/* Base styles remain unchanged */
 
-/* Responsive adjustments */
-@media screen and (max-width: 768px) {
-  /* Navigation */
-  .nav-button {
-    display: block;
-    width: 100%;
-    text-align: center;
-    margin: 5px 0;
-    padding: 10px;
-  }
+        @media screen and (max-width: 768px) {
+            .nav-button {
+                display: block;
+                width: 100%;
+                text-align: center;
+                margin: 5px 0;
+                padding: 10px;
+            }
 
-  /* Title */
-  .title {
-    font-size: 1.5rem;
-    padding: 10px;
-    text-align: center;
-  }
+            .title {
+                font-size: 1.5rem;
+                padding: 10px;
+                text-align: center;
+            }
 
-  /* Instructions */
-  .instructions {
-    padding: 15px;
-    margin: 10px;
-  }
+            .instructions {
+                padding: 15px;
+                margin: 10px;
+            }
 
-  /* Appliance grid */
-  .appliance-grid {
-    overflow-x: auto;
-    padding: 10px;
-  }
+            .appliance-grid {
+                overflow-x: auto;
+                padding: 10px;
+            }
 
-  .appliance-row {
-    display: grid;
-    grid-template-columns: minmax(120px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
-    gap: 10px;
-    padding: 8px;
-  }
+            .appliance-row {
+                display: grid;
+                grid-template-columns: minmax(120px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
+                gap: 10px;
+                padding: 8px;
+            }
 
-  .grid-header {
-    font-size: 0.9rem;
-  }
+            .grid-header {
+                font-size: 0.9rem;
+            }
 
-  /* Results section */
-  .results {
-    padding: 15px;
-    margin: 10px;
-  }
+            .results {
+                padding: 15px;
+                margin: 10px;
+            }
 
-  .total-power {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
+            .total-power {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
 
-  .recommendation-section {
-    padding: 15px;
-    margin-top: 15px;
-  }
-}
+            .recommendation-section {
+                padding: 15px;
+                margin-top: 15px;
+            }
+        }
 
-/* Small phone screens */
-@media screen and (max-width: 480px) {
-  .appliance-row {
-    font-size: 0.85rem;
-    grid-template-columns: minmax(100px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr);
-    gap: 5px;
-  }
+        @media screen and (max-width: 480px) {
+            .appliance-row {
+                font-size: 0.85rem;
+                grid-template-columns: minmax(100px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr);
+                gap: 5px;
+            }
 
-  .grid-header {
-    font-size: 0.8rem;
-  }
+            .grid-header {
+                font-size: 0.8rem;
+            }
 
-  /* Make the table horizontally scrollable on very small screens */
-  .appliance-grid {
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-  }
+            .appliance-grid {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+            }
 
-  /* Adjust spacing */
-  .instructions ol {
-    padding-left: 20px;
-    margin: 10px 0;
-  }
+            .instructions ol {
+                padding-left: 20px;
+                margin: 10px 0;
+            }
 
-  /* Make buttons more tappable */
-  button, input, select {
-    min-height: 44px; /* Standard minimum touch target size */
-  }
-}
+            button, input, select {
+                min-height: 44px;
+            }
+        }
 
-/* Medium tablets */
-@media screen and (min-width: 769px) and (max-width: 1024px) {
-  .calculator-card {
-    margin: 20px auto;
-    max-width: 90%;
-  }
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            .calculator-card {
+                margin: 20px auto;
+                max-width: 90%;
+            }
 
-  .appliance-row {
-    gap: 15px;
-  }
+            .appliance-row {
+                gap: 15px;
+            }
 
-  .nav-button {
-    padding: 8px 15px;
-    margin: 0 5px;
-  }
-}
+            .nav-button {
+                padding: 8px 15px;
+                margin: 0 5px;
+            }
+        }
 
-/* Ensure inputs and interactive elements are easily tappable */
-@media (hover: none) and (pointer: coarse) {
-  input, select, button {
-    padding: 12px;
-    margin: 5px 0;
-  }
-  
-  /* Add some space between interactive elements */
-  .appliance-row > * {
-    margin: 5px 0;
-  }
-}
-        
+        @media (hover: none) and (pointer: coarse) {
+            input, select, button {
+                padding: 12px;
+                margin: 5px 0;
+            }
+          
+            .appliance-row > * {
+                margin: 5px 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -391,7 +374,7 @@
                 <a href="about.html" class="nav-button">About Solar Scout</a>
                 <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
                 <a href="finalcalcwithstyle.html" class="nav-button">Solar Scout Whole Home Power Planner</a>
-                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
+                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button" target="_blank" rel="noopener noreferrer">Save 5% at Ecoflow.com</a>
             </div>
             <br>
             <div style="margin-top: 2em; text-align: center; padding-center: px;">
@@ -405,50 +388,51 @@
         </div>
         </div>
 
-        <div class="instructions">
-            <p>Welcome to BlackoutBuddy! This calculator helps you plan your portable power needs:</p>
-            <ol>
-                <li>Select your appliances from the list below</li>
-                <li>Enter how many hours per day you plan to run each item</li>
-                <li>The calculator will show your total power needs and recommend solutions</li>
-                <li>All pre-filled numbers are average estimates. Please adjust these numbers to match your specific product's wattage</li>
-                <li>If you select "Other" from the dropdown menu, you will need to manually enter the wattage for your appliance</li>
-                <li>For multiple days, convert to total hours (example: 2 days = 48 hours, 3 days = 72 hours)</li>
-                <li>Don't Forget you can save 5% by using the code " solarscout " at checkout on Ecoflow.com</li>
-            </ol>
-
-        <div class="appliance-grid">
-            <div class="appliance-row grid-header">
-                <div>Appliance</div>
-                <div>Running Watts</div>
-                <div>Starting Watts</div>
-                <div>Hours/Day</div>
-                <div>Daily kWh</div>
+        <div class="calculator-card">
+            <div class="instructions">
+                <p>Welcome to BlackoutBuddy! This calculator helps you plan your portable power needs:</p>
+                <ol>
+                    <li>Select your appliances from the list below</li>
+                    <li>Enter how many hours per day you plan to run each item</li>
+                    <li>The calculator will show your total power needs and recommend solutions</li>
+                    <li>All pre-filled numbers are average estimates. Please adjust these numbers to match your specific product's wattage</li>
+                    <li>If you select "Other" from the dropdown menu, you will need to manually enter the wattage for your appliance</li>
+                    <li>For multiple days, convert to total hours (example: 2 days = 48 hours, 3 days = 72 hours)</li>
+                    <li>Don't Forget you can save 5% by using the code " solarscout " at checkout on Ecoflow.com</li>
+                </ol>
             </div>
-            <div id="applianceRows"></div>
+
+            <div class="appliance-grid">
+                <div class="appliance-row grid-header">
+                    <div>Appliance</div>
+                    <div>Running Watts</div>
+                    <div>Starting Watts</div>
+                    <div>Hours/Day</div>
+                    <div>Daily kWh</div>
+                </div>
+                <div id="applianceRows"></div>
+            </div>
+
+            <div class="results">
+                <div class="total-power">
+                    <div id="totalWatts">Total Running Watts: 0 W</div>
+                    <div id="totalStarting">Total Starting Watts: 0 W</div>
+                    <div id="totalKwh">Total Daily Usage: 0 kWh</div>
+                </div>
+                <div id="recommendation" class="recommendation-section">
+                    Select appliances to get recommendations.
+                </div>
+            </div>
         </div>
-
-        <div class="results">
-            <div class="total-power">
-                <div id="totalWatts">Total Running Watts: 0 W</div>
-                <div id="totalStarting">Total Starting Watts: 0 W</div>
-                <div id="totalKwh">Total Daily Usage: 0 kWh</div>
-            </div>
-            <div id="recommendation" class="recommendation-section">
-                Select appliances to get recommendations.
-            
-            </div>
-
-            
-        </div>
-    </div>
 
     <footer class="footer">
-        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
-      </footer>
+        <div class="footer-text">
+            © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
+        </div>
+    </footer>
 
     <script>
-            const commonAppliances = [
+        const commonAppliances = [
             {
                 name: "Refrigerator",
                 runningWatts: 150,
@@ -557,16 +541,16 @@
             {
                 name: "DELTA 2 Max",
                 series: "DELTA",
-                baseCapacity: 2048,
+                baseCapacity: 2.048,
                 maxPower: 2400,
                 surgePower: 3400,
                 expandable: true,
                 maxCapacity: 6.048
             },
-             {
+            {
                 name: "DELTA 3",
                 series: "DELTA",
-                baseCapacity: 1024,
+                baseCapacity: 1.024,
                 maxPower: 1800,
                 surgePower: 3600,
                 expandable: true,
@@ -575,7 +559,7 @@
             {
                 name: "DELTA 3 Plus (2 solar inputs)",
                 series: "DELTA",
-                baseCapacity: 1024,
+                baseCapacity: 1.024,
                 maxPower: 1800,
                 surgePower: 3600,
                 expandable: true,
@@ -584,7 +568,7 @@
             {
                 name: "DELTA 3 1500",
                 series: "DELTA",
-                baseCapacity: 1536,
+                baseCapacity: 1.536,
                 maxPower: 1800,
                 surgePower: 3600,
                 expandable: true,
@@ -616,6 +600,26 @@
                 surgePower: 7200,
                 expandable: true,
                 maxCapacity: 30
+            },
+            
+            // RAPID Products (converted to kWh)
+            {
+                name: "Rapid 10K",
+                series: "RAPID",
+                baseCapacity: 0.037,
+                maxPower: 65,
+                surgePower: 0,
+                expandable: false,
+                maxCapacity: 0.037
+            },
+            {
+                name: "Rapid 5K",
+                series: "RAPID",
+                baseCapacity: 0.0185,
+                maxPower: 30,
+                surgePower: 0,
+                expandable: false,
+                maxCapacity: 0.0185
             },
             
             // RIVER Products
@@ -695,44 +699,30 @@
                 surgePower: 1200,
                 expandable: true
             }
-
-
-
-
-            
-
         ];
 
-const productAffiliateLinks = {
-    "DELTA Mini":      "https://us.ecoflow.com/products/delta-mini-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-    "DELTA 2":         "https://us.ecoflow.com/products/delta-2-portable-power-station?_pos=1&_sid=cd6c8860b&_ss=r&variant=40569176326217&sca_ref=7408943.R33f7CbNF7&sca_source=EcoFlow DELTA 2",
-    "DELTA 2 Max":     "https://us.ecoflow.com/products/delta-2-max-portable-power-station?_pos=1&_sid=cc369e7d5&_ss=r&variant=40538145095753&sca_ref=7408943.R33f7CbNF7&sca_source=delta 2 max",
-    "DELTA 3":         "https://us.ecoflow.com/products/delta-3-portable-power-station?_pos=1&_sid=f54de58a6&_ss=r&variant=42017992048713&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3"
-    "DELTA 3 Plus":    "https://us.ecoflow.com/products/delta-3-plus-portable-power-station?_pos=1&_sid=3ff778c93&_ss=r&variant=54588299575369&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 plus"
-    "DELTA 3 1500":    "https://us.ecoflow.com/products/ecoflow-delta-3-1500-solar-generator?_pos=2&_sid=8d7d9a1ce&_ss=r&variant=41836896682057&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 1500"
-    "DELTA Pro":       "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-    "DELTA 3 Pro":     "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3",
-    "DELTA Pro Ultra": "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7",
-    "RIVER Pro":       "https://us.ecoflow.com/products/river-pro-river-pro-extra-battery-bundle?sca_ref=7408943.R33f7CbNF7",
-    "RIVER 2":         "https://us.ecoflow.com/products/river-2-portable-power-station?_pos=1&_sid=0234254f1&_ss=r&variant=40589642039369&sca_ref=7408943.R33f7CbNF7&sca_source=River 2",
-    "RIVER 2 Max":     "https://us.ecoflow.com/products/river-2-max-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-    "RIVER 2 Pro":     "https://us.ecoflow.com/products/river-2-pro-portable-power-station?_pos=2&_sid=13bd458b5&_ss=r&sca_ref=7408943.R33f7CbNF7&sca_source=River 2 Pro",
-    "RIVER 3":         "https://us.ecoflow.com/products/river-3-portable-power-station?_pos=1&_sid=11ece7428&_ss=r&variant=41636504305737&sca_ref=7408943.R33f7CbNF7&sca_source=River 3",
-    "RIVER 3 Plus":    "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
-    "RIVER 3 Max":     "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
-    "RIVER 3 Max Plus": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
-    "RIVER 3 Max Plus Wreless": "https://us.ecoflow.com/products/river-3-max-plus-wireless?_pos=1&_sid=e77e636dd&_ss=r&variant=54478642905161&sca_ref=7408943.R33f7CbNF7&sca_source=RIVER 3 Max Plus Wireless"
-    "RAPID 10K":        "https://us.ecoflow.com/collections/power-bank/products/ecoflow-rapid-magnetic-power-bank-10000mah?variant=42021147443273&sca_ref=7408943.R33f7CbNF7&sca_source=Rapid 10k"
-    "RAPID 5K":         "https://us.ecoflow.com/products/rapid-magnetic-power-bank-5000mah?variant=54347781832777&sca_ref=7408943.R33f7CbNF7&sca_source=Rapid 5k"
-
-
-
-
-
-
-
-    // Add more products and their affiliate links here
-};
+        const productAffiliateLinks = {
+            "DELTA Mini": "https://us.ecoflow.com/products/delta-mini-portable-power-station?sca_ref=7408943.R33f7CbNF7",
+            "DELTA 2": "https://us.ecoflow.com/products/delta-2-portable-power-station?_pos=1&_sid=cd6c8860b&_ss=r&variant=40569176326217&sca_ref=7408943.R33f7CbNF7&sca_source=EcoFlow DELTA 2",
+            "DELTA 2 Max": "https://us.ecoflow.com/products/delta-2-max-portable-power-station?_pos=1&_sid=cc369e7d5&_ss=r&variant=40538145095753&sca_ref=7408943.R33f7CbNF7&sca_source=delta 2 max",
+            "DELTA 3": "https://us.ecoflow.com/products/delta-3-portable-power-station?_pos=1&_sid=f54de58a6&_ss=r&variant=42017992048713&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3",
+            "DELTA 3 Plus": "https://us.ecoflow.com/products/delta-3-plus-portable-power-station?_pos=1&_sid=3ff778c93&_ss=r&variant=54588299575369&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 plus",
+            "DELTA 3 1500": "https://us.ecoflow.com/products/ecoflow-delta-3-1500-solar-generator?_pos=2&_sid=8d7d9a1ce&_ss=r&variant=41836896682057&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 1500",
+            "DELTA Pro": "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7",
+            "DELTA 3 Pro": "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3",
+            "DELTA Pro Ultra": "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7",
+            "RIVER Pro": "https://us.ecoflow.com/products/river-pro-river-pro-extra-battery-bundle?sca_ref=7408943.R33f7CbNF7",
+            "RIVER 2": "https://us.ecoflow.com/products/river-2-portable-power-station?_pos=1&_sid=0234254f1&_ss=r&variant=40589642039369&sca_ref=7408943.R33f7CbNF7&sca_source=River 2",
+            "RIVER 2 Max": "https://us.ecoflow.com/products/river-2-max-portable-power-station?sca_ref=7408943.R33f7CbNF7",
+            "RIVER 2 Pro": "https://us.ecoflow.com/products/river-2-pro-portable-power-station?_pos=2&_sid=13bd458b5&_ss=r&sca_ref=7408943.R33f7CbNF7&sca_source=River 2 Pro",
+            "RIVER 3": "https://us.ecoflow.com/products/river-3-portable-power-station?_pos=1&_sid=11ece7428&_ss=r&variant=41636504305737&sca_ref=7408943.R33f7CbNF7&sca_source=River 3",
+            "RIVER 3 Plus": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
+            "RIVER 3 Max": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
+            "RIVER 3 Max Plus": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
+            "RIVER 3 Max Plus Wireless": "https://us.ecoflow.com/products/river-3-max-plus-wireless?_pos=1&_sid=e77e636dd&_ss=r&variant=54478642905161&sca_ref=7408943.R33f7CbNF7&sca_source=RIVER 3 Max Plus Wireless",
+            "RAPID 10K": "https://us.ecoflow.com/collections/power-bank/products/ecoflow-rapid-magnetic-power-bank-10000mah?variant=42021147443273&sca_ref=7408943.R33f7CbNF7&sca_source=Rapid 10k",
+            "RAPID 5K": "https://us.ecoflow.com/products/rapid-magnetic-power-bank-5000mah?variant=54347781832777&sca_ref=7408943.R33f7CbNF7&sca_source=Rapid 5k"
+        };
 
         function createApplianceRow(index) {
             return `
@@ -750,306 +740,37 @@ const productAffiliateLinks = {
                 </div>
             `;
         }
-// Add this function right before initializeCalculator();
-function printResults() {
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank');
-    
-    // Get all the current values
-    const totalWatts = document.getElementById('totalWatts').textContent;
-    const totalStarting = document.getElementById('totalStarting').textContent;
-    const totalKwh = document.getElementById('totalKwh').textContent;
-    const recommendation = document.getElementById('recommendation').innerHTML;
-    
-    // Get appliance data
-    let applianceTable = '<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">';
-    applianceTable += '<tr><th>Appliance</th><th>Running Watts</th><th>Starting Watts</th><th>Hours/Day</th><th>Daily kWh</th></tr>';
-    
-    document.querySelectorAll('.appliance-row:not(.grid-header)').forEach(row => {
-        const select = row.querySelector('.appliance-select');
-        if (select.value) {  // Only include rows where an appliance is selected
-            applianceTable += '<tr>';
-            applianceTable += `<td>${select.value}</td>`;
-            applianceTable += `<td>${row.querySelector('.running-watts').value}</td>`;
-            applianceTable += `<td>${row.querySelector('.starting-watts').value}</td>`;
-            applianceTable += `<td>${row.querySelector('.hours').value}</td>`;
-            applianceTable += `<td>${row.querySelector('.daily-kwh').textContent}</td>`;
-            applianceTable += '</tr>';
-        }
-    });
-    applianceTable += '</table>';
 
-    // Create the print content with styling
-    const printContent = `
-        <html>
-        <head>
-            <title>BlackoutBuddy Results</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    padding: 20px;
-                    line-height: 1.6;
-                }
-                h1 {
-                    color: #4c3a5f;
-                    text-align: center;
-                }
-                .summary {
-                    margin: 20px 0;
-                    padding: 10px;
-                    background: #f8f9fa;
-                    border-radius: 5px;
-                }
-                table {
-                    margin: 20px 0;
-                }
-                th {
-                    background: #4c3a5f;
-                    color: white;
-                }
-                td, th {
-                    padding: 8px;
-                    text-align: left;
-                }
-                .recommendation {
-                    margin-top: 20px;
-                    padding: 10px;
-                    background: #f8f9fa;
-                    border-radius: 5px;
-                }
-                @media print {
-                    body {
-                        padding: 0;
-                    }
-                    button {
-                        display: none;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <h1>BlackoutBuddy - Power Usage Report</h1>
+        function printResults() {
+            const printWindow = window.open('', '_blank');
             
-            <div class="summary">
-                <h2>Power Summary</h2>
-                <p>${totalWatts}</p>
-                <p>${totalStarting}</p>
-                <p>${totalKwh}</p>
-            </div>
-
-            <h2>Selected Appliances</h2>
-            ${applianceTable}
-
-            <div class="recommendation">
-                <h2>Recommendation</h2>
-                ${recommendation}
-            </div>
+            const totalWatts = document.getElementById('totalWatts').textContent;
+            const totalStarting = document.getElementById('totalStarting').textContent;
+            const totalKwh = document.getElementById('totalKwh').textContent;
+            const recommendation = document.getElementById('recommendation').innerHTML;
             
-            <button onclick="window.print()" style="margin-top: 20px; padding: 10px;">Print this page</button>
-        </body>
-        </html>
-    `;
-
-    // Write the content to the new window and print
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-}
-
-
-        function initializeCalculator() {
-            const container = document.getElementById('applianceRows');
-            for (let i = 0; i < 5; i++) {
-                container.innerHTML += createApplianceRow(i);
-            }
-        }
-
-        function updateWattage(index) {
-            const row = document.getElementById(`appliance-${index}`);
-            const select = row.querySelector('.appliance-select');
-            const selectedAppliance = commonAppliances.find(app => app.name === select.value);
+            let applianceTable = '<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">';
+            applianceTable += '<tr><th>Appliance</th><th>Running Watts</th><th>Starting Watts</th><th>Hours/Day</th><th>Daily kWh</th></tr>';
             
-            if (selectedAppliance) {
-                row.querySelector('.running-watts').value = selectedAppliance.runningWatts;
-                row.querySelector('.starting-watts').value = selectedAppliance.startingWatts;
-                calculatePower();
-            }
-        }
-
-        function calculatePower() {
-            let totalRunningWatts = 0;
-            let totalStartingWatts = 0;
-            let totalDailyKwh = 0;
-
-            document.querySelectorAll('.appliance-row').forEach(row => {
-                if (row.classList.contains('grid-header')) return;
-
-                const runningWatts = Number(row.querySelector('.running-watts').value) || 0;
-                const startingWatts = Number(row.querySelector('.starting-watts').value) || 0;
-                const hours = Number(row.querySelector('.hours').value) || 0;
-
-                const dailyKwh = (runningWatts * hours) / 1000;
-                row.querySelector('.daily-kwh').textContent = `${dailyKwh.toFixed(2)} kWh`;
-
-                totalRunningWatts += runningWatts;
-                totalStartingWatts = Math.max(totalStartingWatts, startingWatts);
-                totalDailyKwh += dailyKwh;
+            document.querySelectorAll('.appliance-row:not(.grid-header)').forEach(row => {
+                const select = row.querySelector('.appliance-select');
+                if (select.value) {
+                    applianceTable += '<tr>';
+                    applianceTable += `<td>${select.value}</td>`;
+                    applianceTable += `<td>${row.querySelector('.running-watts').value}</td>`;
+                    applianceTable += `<td>${row.querySelector('.starting-watts').value}</td>`;
+                    applianceTable += `<td>${row.querySelector('.hours').value}</td>`;
+                    applianceTable += `<td>${row.querySelector('.daily-kwh').textContent}</td>`;
+                    applianceTable += '</tr>';
+                }
             });
+            applianceTable += '</table>';
 
-            document.getElementById('totalWatts').textContent = 
-                `Total Running Watts: ${totalRunningWatts.toLocaleString()} W`;
-            document.getElementById('totalStarting').textContent = 
-                `Maximum Starting Watts: ${totalStartingWatts.toLocaleString()} W`;
-            document.getElementById('totalKwh').textContent = 
-                `Total Daily Usage: ${totalDailyKwh.toFixed(2)} kWh`;
-
-            recommendSystem(totalRunningWatts, totalStartingWatts, totalDailyKwh);
-        }
-
-        function recommendSystem(runningWatts, startingWatts, dailyKwh) {
-    let recommendation = '';
-    const defaultAffiliateLink = "";
-    
-    // First, make sure we're checking both DELTA and RIVER products
-    // We need to see the ecoFlowProducts array structure
-    console.log('Available products:', ecoFlowProducts);
-    
-    const suitableProducts = ecoFlowProducts.filter(product => {
-        const meetsRequirements = 
-            product.maxPower >= runningWatts &&
-            product.surgePower >= startingWatts &&
-            product.baseCapacity >= (dailyKwh * 0.8);
-            
-        console.log(`Checking ${product.name}:`, {
-            meetsMaxPower: product.maxPower >= runningWatts,
-            meetsSurgePower: product.surgePower >= startingWatts,
-            meetsCapacity: product.baseCapacity >= (dailyKwh * 0.8)
-        });
-        
-        return meetsRequirements;
-    });
-
-    if (suitableProducts.length === 0) {
-        const deltaProUltra = ecoFlowProducts.find(p => p.name === "DELTA Pro Ultra");
-        const affiliateLink = productAffiliateLinks[deltaProUltra.name] || defaultAffiliateLink;
-        recommendation = `
-            <h3>Recommended: DELTA Pro Ultra</h3>
-            <p>Based on your power needs:</p>
-            <ul>
-                <li>Running Power: ${runningWatts.toLocaleString()} W</li>
-                <li>Starting Power: ${startingWatts.toLocaleString()} W</li>
-                <li>Daily Usage: ${dailyKwh.toFixed(2)} kWh</li>
-            </ul>
-            <p>The DELTA Pro Ultra with expansion batteries would be most suitable.</p>
-            <p>Shop here: <a href="${affiliateLink}" target="_blank" class="shop-link">EcoFlow Store</a></p>
-        `;
-    } else {
-        // Instead of just taking the first suitable product, sort them by best fit
-        const sortedProducts = suitableProducts.sort((a, b) => {
-            // Sort by closest match to required specifications
-            const aOverhead = (a.maxPower - runningWatts) + (a.surgePower - startingWatts);
-            const bOverhead = (b.maxPower - runningWatts) + (b.surgePower - startingWatts);
-            return aOverhead - bOverhead;
-        });
-
-        const bestFit = sortedProducts[0];
-        const affiliateLink = productAffiliateLinks[bestFit.name] || defaultAffiliateLink;
-        recommendation = `
-            <h3>Recommended: ${bestFit.name}</h3>
-            <p>Based on your power needs:</p>
-            <ul>
-                <li>Running Power: ${runningWatts.toLocaleString()} W</li>
-                <li>Starting Power: ${startingWatts.toLocaleString()} W</li>
-                <li>Daily Usage: ${dailyKwh.toFixed(2)} kWh</li>
-            </ul>
-            <p>System Specifications:</p>
-            <ul>
-                <li>Series: ${bestFit.series}</li>
-                <li>Base Capacity: ${bestFit.baseCapacity} kWh</li>
-                <li>Maximum Output: ${bestFit.maxPower} W</li>
-                <li>Surge Capacity: ${bestFit.surgePower} W</li>
-            </ul>
-            ${bestFit.expandable ? `<p>Expandable up to ${bestFit.maxCapacity} kWh with extra batteries.</p>` : ''}
-            <p>Shop here: <a href="${affiliateLink}" target="_blank" class="shop-link">EcoFlow Store</a></p>
-        `;
-    }
-
-    // Add the disclaimer to the recommendation
-    recommendation += `
-        <div class="recommendation-disclaimer" style="background-color: rgba(255, 255, 255, 0.1); padding: 10px; margin-top: 15px; border-left: 4px solid #FFD700; color: #ffffff;">
-            <strong>Note:</strong> This recommendation is based on the information provided. You may need multiple units 
-            or a larger capacity battery system if you require longer run times or have additional power needs. 
-            Please consult with a professional for critical power backup solutions.
-        </div>
-    `;
-
-    document.getElementById('recommendation').innerHTML = recommendation;
-}
-
-    document.getElementById('resetButton').addEventListener('click', function() {
-    if (confirm('Are you sure you want to reset all values?')) {
-        // Reset appliance selections
-        document.querySelectorAll('.appliance-select').forEach(select => {
-            select.value = '';
-        });
-        
-        // Reset all number inputs
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.value = '';
-        });
-        
-        // Reset daily kWh values
-        document.querySelectorAll('.daily-kwh').forEach(div => {
-            div.textContent = '0 kWh';
-        });
-        
-        // Reset total values
-        document.getElementById('totalWatts').textContent = 'Total Running Watts: 0 W';
-        document.getElementById('totalStarting').textContent = 'Total Starting Watts: 0 W';
-        document.getElementById('totalKwh').textContent = 'Total Daily Usage: 0 kWh';
-        
-        // Reset recommendation section
-        document.getElementById('recommendation').innerHTML = 'Select appliances to get recommendations.';
-    }
-        });
-
-        initializeCalculator();
-
-
-
-function updateRecommendations(totalWatts, dailyKwh) {
-  const recommendationDiv = document.getElementById('recommendation');
-  let recommendationHTML = '<h3>Recommended Power Stations</h3>';
-  
-  const matchingProducts = Object.values(productRecommendations)
-    .filter(product => product.wattage >= totalWatts && product.capacity >= (dailyKwh * 1000));
-
-  if (matchingProducts.length === 0) {
-    recommendationHTML += '<p>No matching products found for your power needs.</p>';
-  } else {
-    matchingProducts.forEach(product => {
-      recommendationHTML += `
-        <div class="product-card">
-          <h4>${product.name}</h4>
-          <p>${product.description}</p>
-          <ul>
-            <li>Wattage: ${product.wattage}W</li>
-            <li>Capacity: ${product.capacity}Wh</li>
-            <li>Price: $${product.price}</li>
-          </ul>
-          <a href="${product.affiliate}" target="_blank" class="buy-button">
-            Buy Now - Save 5% with code "solarscout"
-          </a>
-        </div>
-      `;
-    });
-  }
-  
-  recommendationDiv.innerHTML = recommendationHTML;
-}
-
-// Call this function whenever the calculator updates totals
-// updateRecommendations(totalWatts, dailyKwh);
-
-    </script>
-</body>
-</html>
+            const printContent = `
+                <html>
+                <head>
+                    <title>BlackoutBuddy Results</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding
