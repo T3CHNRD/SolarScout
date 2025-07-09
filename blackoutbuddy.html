@@ -876,7 +876,7 @@
 
         // --- RECOMMENDATION LOGIC ---
         function updateRecommendations(running, starting, kwh) {
-            let suitable;
+            let suitable = [];
             if (running <= 600) {
                 // Prioritize RIVER and RAPID for low power
                 suitable = ecoFlowProducts
@@ -897,11 +897,13 @@
                     );
                 }
             } else {
-                // For higher loads, use all products as before
+                // For higher loads, use only products that can actually handle the load
                 suitable = ecoFlowProducts.filter(p =>
                     p.maxPower >= running &&
-                    p.surgePower >= starting (Surge)&&
-                    p.baseCapacity >= kwh
+                    p.surgePower >= starting &&
+                    p.baseCapacity >= kwh &&
+                    p.series !== "RIVER" && // Exclude RIVER
+                    p.series !== "RAPID"    // Exclude RAPID
                 );
             }
 
