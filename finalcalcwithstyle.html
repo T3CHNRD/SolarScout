@@ -471,6 +471,110 @@
             return peakHours / 24;
         }
     
+        // --- Battery Recommendation Logic: 3 Options Per Model, Filtered by Requirement ---
+const deltaProducts = [
+  {
+    name: "Delta Pro",
+    baseCapacity: 3.6,
+    step: 3.6,
+    maxExtra: 2,
+    options: [
+      { label: "Delta Pro", extras: 0 },
+      { label: "Delta Pro + 1 extra battery", extras: 1 },
+      { label: "Delta Pro + 2 extra batteries", extras: 2 }
+    ],
+    link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?variant=40516140138569&sca_ref=7408943.R33f7CbNF7&sca_source=delta pro"
+  },
+  {
+    name: "Delta Pro 3",
+    baseCapacity: 4.096,
+    step: 4.096,
+    maxExtra: 2,
+    options: [
+      { label: "Delta Pro 3", extras: 0 },
+      { label: "Delta Pro 3 + 1 extra battery", extras: 1 },
+      { label: "Delta Pro 3 + 2 extra batteries", extras: 2 }
+    ],
+    link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
+  },
+  {
+    name: "Delta Pro Ultra",
+    baseCapacity: 6,
+    step: 6,
+    maxExtra: 5,
+    options: [
+      { label: "Delta Pro Ultra", extras: 0 },
+      { label: "Delta Pro Ultra + 1 extra battery", extras: 1 },
+      { label: "Delta Pro Ultra + 5 extra batteries", extras: 5 }
+    ],
+    link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+  }
+];
+
+// Utility: Get days in month
+function getDaysInMonth(monthIndex) {
+  const year = new Date().getFullYear();
+  return new Date(year, monthIndex, 0).getDate();
+}
+
+// Main recommendation function
+function updateDeltaRecommendation() {
+  // Calculate total usage and max daily usage
+  let totalUsage = 0;
+  let maxDaily = 0;
+  for (let i = 1; i <= 12; i++) {
+    const monthUsage = parseFloat(document.getElementById(`month${i}`).value) || 0;
+    totalUsage += monthUsage;
+    const days = getDaysInMonth(i);
+    if (days > 0) {
+      const daily = monthUsage / days;
+      if (daily > maxDaily) maxDaily = daily;
+    }
+  }
+  const requiredCapacity = totalUsage + maxDaily;
+
+  let recommendationHTML = `<div class="recommendation-content">
+    <h3>Recommended Power Solutions</h3>
+    <p>Based on your requirements (Total Usage + Max Daily Usage = <b>${requiredCapacity.toFixed(2)} kWh</b>):</p>
+  `;
+
+  let anyOption = false;
+
+  deltaProducts.forEach(product => {
+    // For each model, generate up to 3 options (base, +1, max expansion)
+    let validOptions = [];
+    product.options.forEach(opt => {
+      const totalCap = product.baseCapacity + product.step * opt.extras;
+      if (totalCap >= requiredCapacity) {
+        validOptions.push({
+          label: opt.label,
+          totalCapacity: totalCap,
+          link: product.link
+        });
+      }
+    });
+
+    // Always show multiple options if possible
+    if (validOptions.length > 0) {
+      anyOption = true;
+      recommendationHTML += `<div style="margin-bottom:1em;"><b>${product.name} Options:</b><ul>`;
+      validOptions.forEach(opt => {
+        recommendationHTML += `<li>
+          <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.totalCapacity.toFixed(3)}kWh</b>
+        </li>`;
+      });
+      recommendationHTML += `</ul></div>`;
+    }
+  });
+
+  if (!anyOption) {
+    recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
+  }
+
+  recommendationHTML += `</div>`;
+  document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
+}
+    
         // Add this utility function:
 function getDaysInMonth(monthIndex) {
     // monthIndex: 1 = January, 12 = December
@@ -526,62 +630,8 @@ function updateCalculations() {
     updateDeltaRecommendation(totalUsage / 12); // Average monthly usage
 }
     
-        // Delta product definitions
-        const deltaProducts = [
-            {
-                name: "DELTA Mini",
-                baseCapacity: 0.882,
-                maxCapacity: 0.882,
-                output: "1400W (2100W surge)",
-                expandable: false,
-                suitableDaily: 0.7
-            },
-            {
-                name: "DELTA 2",
-                baseCapacity: 1.024,
-                maxCapacity: 2.048,
-                output: "1800W (2700W surge)",
-                expandable: true,
-                extraBatteries: 1,
-                suitableDaily: 0.8
-            },
-            {
-                name: "DELTA Max",
-                baseCapacity: 2.016,
-                maxCapacity: 6.048,
-                output: "2400W (5000W surge)",
-                expandable: true,
-                extraBatteries: 2,
-                suitableDaily: 1.6
-            },
-            {
-                name: "DELTA Pro",
-                baseCapacity: 3.6,
-                maxCapacity: 10.8,
-                output: "3600W (7200W surge)",
-                expandable: true,
-                extraBatteries: 2,
-                suitableDaily: 2.9
-            },
-            {
-                name: "DELTA Pro 3",
-                baseCapacity: 4.096,
-                maxCapacity: 12.288,
-                output: "4000W (8000W surge)",
-                expandable: true,
-                extraBatteries: 2,
-                suitableDaily: 3.3
-            },
-            {
-                name: "DELTA Pro Ultra",
-                baseCapacity: 6,
-                maxCapacity: 30,
-                output: "7200W output",
-                expandable: true,
-                extraBatteries: 5,
-                suitableDaily: 4.8
-            }
-        ];
+        // Only allow these batteries and their expandability
+
     // Function to reset calculator
 function resetCalculator() {
     // Reset rate inputs
