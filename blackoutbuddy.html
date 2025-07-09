@@ -773,4 +773,145 @@
                     <style>
                         body {
                             font-family: Arial, sans-serif;
-                            padding
+                            padding: 20px;
+                        }
+                        h1 {
+                            text-align: center;
+                            color: #333;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+                        th, td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: left;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                            font-weight: bold;
+                        }
+                        .total {
+                            font-weight: bold;
+                            background-color: #e0e0e0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>BlackoutBuddy Results</h1>
+                    <p><strong>${totalWatts}</strong></p>
+                    <p><strong>${totalStarting}</strong></p>
+                    <p><strong>${totalKwh}</strong></p>
+                    <h2>Recommendations</h2>
+                    <div>${recommendation}</div>
+                    <h2>Appliance Usage Details</h2>
+                    ${applianceTable}
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- RENDER APPLIANCE ROWS ON LOAD ---
+        let applianceCount = 5; // Default number of rows
+        function renderApplianceRows() {
+            const container = document.getElementById('applianceRows');
+            container.innerHTML = '';
+            for (let i = 0; i < applianceCount; i++) {
+                container.innerHTML += createApplianceRow(i);
+            }
+        }
+        renderApplianceRows();
+
+        // --- PREFILL WATTAGES WHEN APPLIANCE SELECTED ---
+        function updateWattage(index) {
+            const row = document.getElementById(`appliance-${index}`);
+            const select = row.querySelector('.appliance-select');
+            const runningInput = row.querySelector('.running-watts');
+            const startingInput = row.querySelector('.starting-watts');
+            const selected = commonAppliances.find(a => a.name === select.value);
+            if (selected) {
+                if (selected.name === "OTHER - insert your own values") {
+                    runningInput.value = '';
+                    startingInput.value = '';
+                    runningInput.placeholder = "Enter value";
+                    startingInput.placeholder = "Enter value";
+                } else {
+                    runningInput.value = selected.runningWatts;
+                    startingInput.value = selected.startingWatts;
+                    runningInput.placeholder = "";
+                    startingInput.placeholder = "";
+                }
+            }
+            calculatePower();
+        }
+
+        // --- CALCULATE TOTALS AND UPDATE UI ---
+        function calculatePower() {
+            let totalRunning = 0;
+            let totalStarting = 0;
+            let totalKwh = 0;
+            document.querySelectorAll('.appliance-row:not(.grid-header)').forEach(row => {
+                const running = parseFloat(row.querySelector('.running-watts').value) || 0;
+                const starting = parseFloat(row.querySelector('.starting-watts').value) || 0;
+                const hours = parseFloat(row.querySelector('.hours').value) || 0;
+                const dailyKwh = (running * hours / 1000).toFixed(2);
+                row.querySelector('.daily-kwh').textContent = isNaN(dailyKwh) ? '0 kWh' : `${dailyKwh} kWh`;
+                if (row.querySelector('.appliance-select').value) {
+                    totalRunning += running;
+                    totalStarting += starting;
+                    totalKwh += parseFloat(dailyKwh) || 0;
+                }
+            });
+            document.getElementById('totalWatts').textContent = `Total Running Watts: ${totalRunning} W`;
+            document.getElementById('totalStarting').textContent = `Total Starting Watts: ${totalStarting} W`;
+            document.getElementById('totalKwh').textContent = `Total Daily Usage: ${totalKwh.toFixed(2)} kWh`;
+            updateRecommendations(totalRunning, totalStarting, totalKwh);
+        }
+
+        // --- RECOMMENDATION LOGIC ---
+        function updateRecommendations(running, starting, kwh) {
+            // Find all EcoFlow products that can handle the load
+            const suitable = ecoFlowProducts.filter(p =>
+                p.maxPower >= running &&
+                p.surgePower >= starting &&
+                p.baseCapacity >= kwh
+            );
+            let html = '';
+            if (suitable.length === 0) {
+                html = '<li>No EcoFlow product matches your requirements. Try reducing your load or splitting into multiple units.</li>';
+            } else {
+                html = suitable.slice(0, 3).map(p => {
+                    const link = productAffiliateLinks[p.name] || '#';
+                    return `<li><a href="${link}" target="_blank" class="shop-link">${p.name}</a> (${p.baseCapacity} kWh, ${p.maxPower}W, Surge: ${p.surgePower}W)</li>`;
+                }).join('');
+            }
+            document.getElementById('recommendation').innerHTML = `<ul class="recommendation-section">${html}</ul>`;
+        }
+    
+        // --- ADD/RESET ROWS (OPTIONAL) ---
+        document.getElementById('resetButton').onclick = function() {
+            renderApplianceRows();
+            calculatePower();
+            document.getElementById('recommendation').innerHTML = 'Select appliances to get recommendations.';
+        };
+    
+        // --- INITIAL CALCULATION ---
+        setTimeout(calculatePower, 100);
+    
+        // --- EVENT DELEGATION FOR DYNAMIC ROWS ---
+        document.getElementById('applianceRows').addEventListener('input', function(e) {
+            if (e.target.classList.contains('running-watts') ||
+                e.target.classList.contains('starting-watts') ||
+                e.target.classList.contains('hours')) {
+                calculatePower();
+            }
+        });
+    </script>
+</body>
+</html>
