@@ -471,7 +471,7 @@
             return peakHours / 24;
         }
     
-        // --- Battery Model Definitions (only allowed models, 3 configs each) ---
+        // --- Battery Model Definitions (3 configs each, all models included) ---
 const deltaProducts = [
   {
     name: "Delta Pro",
@@ -522,12 +522,6 @@ function updateDeltaRecommendation() {
       if (daily > maxDaily) maxDaily = daily;
     }
   }
-  // Electricity Rate Settings (add your actual IDs here)
-  let rateFields = document.querySelectorAll('.electricity-rate, .rate-setting');
-  rateFields.forEach(field => {
-    if (field.type === "number" || field.type === "text") field.value = field.defaultValue || 0;
-    if (field.type === "checkbox" || field.type === "radio") field.checked = false;
-  });
 
   // Usage classification logic
   let usageMsg = "";
@@ -591,6 +585,7 @@ function resetForm() {
   }
 
   // 2. Reset Electricity Rate Settings to 0 (add your actual IDs/classes)
+  // Example: <input class="electricity-rate" ...>
   let rateFields = document.querySelectorAll('.electricity-rate, .rate-setting');
   rateFields.forEach(field => {
     if (field.type === "number" || field.type === "text") field.value = 0;
