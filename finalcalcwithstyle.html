@@ -471,12 +471,10 @@
             return peakHours / 24;
         }
     
-        // --- Battery Recommendation Logic: Show 3 Options Per Model, All Models, No Early Exit ---
+        // --- Battery Model Definitions (only allowed models, 3 configs each) ---
 const deltaProducts = [
   {
     name: "Delta Pro",
-    baseCapacity: 3.6,
-    step: 3.6,
     options: [
       { label: "Delta Pro", extras: 0, total: 3.6 },
       { label: "Delta Pro + 1 extra battery", extras: 1, total: 7.2 },
@@ -486,8 +484,6 @@ const deltaProducts = [
   },
   {
     name: "Delta Pro 3",
-    baseCapacity: 4.096,
-    step: 4.096,
     options: [
       { label: "Delta Pro 3", extras: 0, total: 4.096 },
       { label: "Delta Pro 3 + 1 extra battery", extras: 1, total: 8.192 },
@@ -497,8 +493,6 @@ const deltaProducts = [
   },
   {
     name: "Delta Pro Ultra",
-    baseCapacity: 6,
-    step: 6,
     options: [
       { label: "Delta Pro Ultra", extras: 0, total: 6 },
       { label: "Delta Pro Ultra + 1 extra battery", extras: 1, total: 12 },
@@ -508,7 +502,7 @@ const deltaProducts = [
   }
 ];
 
-// Utility: Get days in month
+// --- Utility: Get days in month ---
 function getDaysInMonth(monthIndex) {
   const year = new Date().getFullYear();
   return new Date(year, monthIndex, 0).getDate();
@@ -528,12 +522,29 @@ function updateDeltaRecommendation() {
       if (daily > maxDaily) maxDaily = daily;
     }
   }
+  // Electricity Rate Settings (add your actual IDs here)
+  let rateFields = document.querySelectorAll('.electricity-rate, .rate-setting');
+  rateFields.forEach(field => {
+    if (field.type === "number" || field.type === "text") field.value = field.defaultValue || 0;
+    if (field.type === "checkbox" || field.type === "radio") field.checked = false;
+  });
+
+  // Usage classification logic
+  let usageMsg = "";
+  if (maxDaily < 0.10) {
+    usageMsg = `Your daily usage of ${maxDaily.toFixed(2)} kWh is minimal.`;
+  } else if (maxDaily < 0.25) {
+    usageMsg = `Your daily usage of ${maxDaily.toFixed(2)} kWh is moderate.`;
+  } else if (maxDaily >= 0.30) {
+    usageMsg = `Your daily usage of ${maxDaily.toFixed(2)} kWh is substantial.`;
+  }
+
   const requiredCapacity = totalUsage + maxDaily;
 
-  let recommendationHTML = `<div class="recommendation-content">
-    <h3>Recommended Power Solutions</h3>
-    <p>Based on your requirements (Total Usage + Max Daily Usage = <b>${requiredCapacity.toFixed(2)} kWh</b>):</p>
-  `;
+  let recommendationHTML = `<div class="recommendation-content">`;
+  if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
+  recommendationHTML += `<h3>Recommended Power Solutions</h3>
+    <p>Based on your requirements (Total Usage + Max Daily Usage = <b>${requiredCapacity.toFixed(2)} kWh</b>):</p>`;
 
   let anyOption = false;
 
@@ -572,35 +583,38 @@ function updateDeltaRecommendation() {
 }
 
 // --- Reset Button: Full Functionality Fix ---
-
-// Make sure your reset button has id="resetButton" in your HTML:
-// <button id="resetButton" type="button">Reset</button>
-
 function resetForm() {
-    // 1. Reset all month input fields to 0
-    for (let i = 1; i <= 12; i++) {
-        const input = document.getElementById(`month${i}`);
-        if (input) input.value = 0;
-    }
+  // 1. Reset all month input fields to 0
+  for (let i = 1; i <= 12; i++) {
+    const input = document.getElementById(`month${i}`);
+    if (input) input.value = 0;
+  }
 
-    // 2. Clear calculated displays (adjust IDs as needed)
-    const dailyUsageDisplay = document.getElementById('dailyUsage');
-    if (dailyUsageDisplay) dailyUsageDisplay.textContent = '';
+  // 2. Reset Electricity Rate Settings to 0 (add your actual IDs/classes)
+  let rateFields = document.querySelectorAll('.electricity-rate, .rate-setting');
+  rateFields.forEach(field => {
+    if (field.type === "number" || field.type === "text") field.value = 0;
+    if (field.type === "checkbox" || field.type === "radio") field.checked = false;
+  });
 
-    const recommendationsDisplay = document.getElementById('deltaRecommendation');
-    if (recommendationsDisplay) recommendationsDisplay.innerHTML = '';
+  // 3. Clear calculated displays (adjust IDs as needed)
+  const dailyUsageDisplay = document.getElementById('dailyUsage');
+  if (dailyUsageDisplay) dailyUsageDisplay.textContent = '';
 
-    // 3. Clear any error messages or validation
-    const errorMessage = document.getElementById('errorMessage');
-    if (errorMessage) errorMessage.textContent = '';
+  const recommendationsDisplay = document.getElementById('deltaRecommendation');
+  if (recommendationsDisplay) recommendationsDisplay.innerHTML = '';
 
-    // 4. Reset any global variables/state (if used)
-    window.totalUsage = 0;
-    window.dailyUsage = 0;
-    window.recommendations = [];
+  // 4. Clear any error messages or validation
+  const errorMessage = document.getElementById('errorMessage');
+  if (errorMessage) errorMessage.textContent = '';
 
-    // 5. Optionally, reset any other result fields
-    // ... add as needed ...
+  // 5. Reset any global variables/state (if used)
+  window.totalUsage = 0;
+  window.dailyUsage = 0;
+  window.recommendations = [];
+
+  // 6. Optionally, reset any other result fields
+  // ... add as needed ...
 }
 
 // Attach the event listener (ensure this runs after DOM is loaded)
