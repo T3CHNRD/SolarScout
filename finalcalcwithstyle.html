@@ -529,8 +529,9 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // 3. Calculate required capacity for total usage with 15% headroom
-  const requiredCapacity = totalUsage * 1.15;
+  // 3. Calculate required capacities
+  const requiredCapacity = totalUsage; // No buffer
+  const extendedCapacity = dailyUsage * 7; // For 7 days backup
 
   // 4. Battery configs (total capacity per config)
   const configs = [
@@ -548,34 +549,35 @@ function updateDeltaRecommendation() {
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 5 extra batteries", capacity: 36, extras: 5, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
   ];
 
-  // 5. Find all configs that meet or exceed requiredCapacity
+  // 5. Find configs that meet or exceed requiredCapacity
   const validConfigs = configs.filter(cfg => cfg.capacity >= requiredCapacity);
 
   // 6. Suggest 3 options:
-  // a) Smallest that meets/exceeds
   let recs = [];
   if (validConfigs.length > 0) {
-    recs.push(validConfigs[0]);
+    // a) Smallest that meets/exceeds
+    const baseRec = validConfigs[0];
+    recs.push(baseRec);
 
     // b) Same model with +1 or +2 batteries (if expandable and available)
     let plusExtra = null;
-    for (let i = configs.indexOf(validConfigs[0]) + 1; i < configs.length; i++) {
+    for (let i = configs.indexOf(baseRec) + 1; i < configs.length; i++) {
       if (
-        configs[i].model === validConfigs[0].model &&
-        configs[i].extras > validConfigs[0].extras &&
+        configs[i].model === baseRec.model &&
+        configs[i].extras > baseRec.extras &&
         configs[i].capacity >= requiredCapacity
       ) {
         plusExtra = configs[i];
         break;
       }
-      if (configs[i].model !== validConfigs[0].model) break;
+      if (configs[i].model !== baseRec.model) break;
     }
     if (plusExtra) recs.push(plusExtra);
 
     // c) Next higher tier or expanded combo
     let nextTier = null;
-    let currentTier = validConfigs[0].tier;
-    for (let i = configs.indexOf(validConfigs[0]) + 1; i < configs.length; i++) {
+    let currentTier = baseRec.tier;
+    for (let i = configs.indexOf(baseRec) + 1; i < configs.length; i++) {
       if (
         configs[i].tier > currentTier &&
         configs[i].capacity >= requiredCapacity
@@ -587,11 +589,23 @@ function updateDeltaRecommendation() {
     if (nextTier) recs.push(nextTier);
   }
 
-  // Only 3 options, remove duplicates by label
+  // 7. Extended backup (7 days): find config for extendedCapacity
+  let extendedRec = null;
+  if (extendedCapacity > 0) {
+    extendedRec = configs.find(cfg => cfg.capacity >= extendedCapacity);
+  }
+
+  // Remove duplicates by label, keep order, and add extendedRec as 4th if unique
   const uniqueRecs = [];
   for (let rec of recs) {
     if (rec && !uniqueRecs.some(r => r.label === rec.label)) uniqueRecs.push(rec);
     if (uniqueRecs.length === 3) break;
+  }
+  if (
+    extendedRec &&
+    !uniqueRecs.some(r => r && r.label === extendedRec.label)
+  ) {
+    uniqueRecs.push(extendedRec);
   }
 
   // --- Build HTML ---
@@ -603,9 +617,12 @@ function updateDeltaRecommendation() {
   } else {
     recommendationHTML += `<h3>Recommended Power Solutions</h3>
       <ul class="product-links">`;
-    uniqueRecs.forEach(opt => {
+    uniqueRecs.forEach((opt, idx) => {
+      if (!opt) return;
+      let extraNote = "";
+      if (idx === 3) extraNote = " <span style='color:#7fb0d0;'>(7 days backup)</span>";
       recommendationHTML += `<li>
-        <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>
+        <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${extraNote}
       </li>`;
     });
     recommendationHTML += `</ul>`;
