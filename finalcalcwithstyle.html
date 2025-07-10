@@ -504,15 +504,15 @@ function getDaysInMonth(monthIndex) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
-  // 1. Calculate total annual usage and daily usage (over 365 days)
+  // 1. Calculate total usage and daily usage (dailyUsage = totalUsage / 30)
   let totalUsage = 0;
   for (let i = 1; i <= 12; i++) {
     totalUsage += parseInput(document.getElementById(`month${i}`).value);
   }
-  const daysInYear = 365;
-  const dailyUsage = totalUsage / daysInYear;
+  // Use 30 for monthly average, not 365
+  const dailyUsage = totalUsage / 30;
 
-  // 2. Tiered feedback (verbiage as specified)
+  // 2. Usage feedback (still based on daily usage)
   let usageMsg = "";
   if (dailyUsage < 0.10) {
     usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is minimal.`;
@@ -524,14 +524,15 @@ function updateDeltaRecommendation() {
 
   // If usage is extremely low, only show the usage message and exit
   if (dailyUsage < 0.01) {
-    document.getElementById('deltaRecommendation').innerHTML = `<div class="recommendation-content"><b>${usageMsg}</b></div>`;
+    document.getElementById('deltaRecommendation').innerHTML =
+      `<div class="recommendation-content"><b>${usageMsg}</b></div>`;
     return;
   }
 
-  // 3. Calculate required capacity for 1.5 days (not 3 days)
-  const requiredCapacity = dailyUsage * 1.5;
+  // 3. Calculate required capacity for total usage with 15% headroom
+  const requiredCapacity = totalUsage * 1.15;
 
-  // 4. Battery configs (ordered by capacity, with model/tier/extras for logic)
+  // 4. Battery configs (total capacity per config)
   const configs = [
     { model: "Delta Pro", tier: 1, label: "Delta Pro", capacity: 3.6, extras: 0, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro", tier: 1, label: "Delta Pro + 1 extra battery", capacity: 7.2, extras: 1, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
@@ -547,37 +548,44 @@ function updateDeltaRecommendation() {
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 5 extra batteries", capacity: 36, extras: 5, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
   ];
 
-  // 5. Find the best fit (just over requirement)
-  let idx = configs.findIndex(cfg => cfg.capacity >= requiredCapacity);
-  if (idx === -1) idx = configs.length - 1; // fallback to largest if none match
+  // 5. Find all configs that meet or exceed requiredCapacity
+  const validConfigs = configs.filter(cfg => cfg.capacity >= requiredCapacity);
 
-  // a) Best fit (just over requirement)
-  const recs = [configs[idx]];
+  // 6. Suggest 3 options:
+  // a) Smallest that meets/exceeds
+  let recs = [];
+  if (validConfigs.length > 0) {
+    recs.push(validConfigs[0]);
 
-  // b) Same model with +1 battery (if expandable and not already maxed)
-  let plusOne = null;
-  for (let i = idx + 1; i < configs.length; i++) {
-    if (
-      configs[i].model === configs[idx].model &&
-      configs[i].extras === configs[idx].extras + 1
-    ) {
-      plusOne = configs[i];
-      break;
+    // b) Same model with +1 or +2 batteries (if expandable and available)
+    let plusExtra = null;
+    for (let i = configs.indexOf(validConfigs[0]) + 1; i < configs.length; i++) {
+      if (
+        configs[i].model === validConfigs[0].model &&
+        configs[i].extras > validConfigs[0].extras &&
+        configs[i].capacity >= requiredCapacity
+      ) {
+        plusExtra = configs[i];
+        break;
+      }
+      if (configs[i].model !== validConfigs[0].model) break;
     }
-    if (configs[i].model !== configs[idx].model) break;
-  }
-  if (plusOne) recs.push(plusOne);
+    if (plusExtra) recs.push(plusExtra);
 
-  // c) Next tier up (next model, base config or next config above need)
-  let nextTier = null;
-  let currentTier = configs[idx].tier;
-  for (let i = idx + 1; i < configs.length; i++) {
-    if (configs[i].tier > currentTier) {
-      nextTier = configs[i];
-      break;
+    // c) Next higher tier or expanded combo
+    let nextTier = null;
+    let currentTier = validConfigs[0].tier;
+    for (let i = configs.indexOf(validConfigs[0]) + 1; i < configs.length; i++) {
+      if (
+        configs[i].tier > currentTier &&
+        configs[i].capacity >= requiredCapacity
+      ) {
+        nextTier = configs[i];
+        break;
+      }
     }
+    if (nextTier) recs.push(nextTier);
   }
-  if (nextTier) recs.push(nextTier);
 
   // Only 3 options, remove duplicates by label
   const uniqueRecs = [];
