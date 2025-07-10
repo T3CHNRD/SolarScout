@@ -504,15 +504,14 @@ function getDaysInMonth(monthIndex) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
-  // 1. Calculate total usage and daily usage (dailyUsage = totalUsage / 365)
+  // 1. Calculate total usage (sum of months)
   let totalUsage = 0;
   for (let i = 1; i <= 12; i++) {
     totalUsage += parseInput(document.getElementById(`month${i}`).value);
   }
-  // Use 365 for yearly average, not 30
-  const dailyUsage = totalUsage / 365;
 
-  // 2. Usage feedback (still based on daily usage)
+  // 2. Calculate daily usage for UI feedback only (over 365 days)
+  const dailyUsage = totalUsage / 365;
   let usageMsg = "";
   if (dailyUsage < 0.10) {
     usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is minimal.`;
@@ -529,11 +528,11 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // 3. Calculate required capacities
-  const requiredCapacity = totalUsage; // No buffer
-  const extendedCapacity = dailyUsage * 7; // For 7 days backup
+  // 3. Main recommendation logic
+  const requiredCapacity = totalUsage;
+  const extendedCapacity = totalUsage * 3.5;
 
-  // 4. Battery configs (total capacity per config)
+  // 4. Battery configs (sorted by capacity ascending)
   const configs = [
     { model: "Delta Pro", tier: 1, label: "Delta Pro", capacity: 3.6, extras: 0, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro", tier: 1, label: "Delta Pro + 1 extra battery", capacity: 7.2, extras: 1, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
@@ -549,64 +548,60 @@ function updateDeltaRecommendation() {
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 5 extra batteries", capacity: 36, extras: 5, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
   ];
 
-  // 5. Find configs that meet or exceed requiredCapacity
+  // Filter configs that meet or exceed requiredCapacity
   const validConfigs = configs.filter(cfg => cfg.capacity >= requiredCapacity);
 
-  // 6. Suggest 3 options:
-  let recs = [];
-  if (validConfigs.length > 0) {
-    // a) Smallest that meets/exceeds
-    const baseRec = validConfigs[0];
-    recs.push(baseRec);
+  // 1. Good: Smallest that meets/exceeds requiredCapacity
+  let good = validConfigs[0] || null;
 
-    // b) Same model with +1 or +2 batteries (if expandable and available)
-    let plusExtra = null;
-    for (let i = configs.indexOf(baseRec) + 1; i < configs.length; i++) {
+  // 2. Better: Same model as 'good' with +1 or +2 batteries (if expandable and available)
+  let better = null;
+  if (good) {
+    for (let i = configs.indexOf(good) + 1; i < configs.length; i++) {
       if (
-        configs[i].model === baseRec.model &&
-        configs[i].extras > baseRec.extras &&
+        configs[i].model === good.model &&
+        configs[i].extras > good.extras &&
         configs[i].capacity >= requiredCapacity
       ) {
-        plusExtra = configs[i];
+        better = configs[i];
         break;
       }
-      if (configs[i].model !== baseRec.model) break;
+      if (configs[i].model !== good.model) break;
     }
-    if (plusExtra) recs.push(plusExtra);
+  }
 
-    // c) Next higher tier or expanded combo
-    let nextTier = null;
-    let currentTier = baseRec.tier;
-    for (let i = configs.indexOf(baseRec) + 1; i < configs.length; i++) {
+  // 3. Best: Next higher tier or larger combo that exceeds requiredCapacity by more than 'good' and 'better'
+  let best = null;
+  if (good) {
+    let minBestCapacity = Math.max(
+      good.capacity + 0.01,
+      better ? better.capacity + 0.01 : good.capacity + 0.01
+    );
+    for (let i = 0; i < configs.length; i++) {
       if (
-        configs[i].tier > currentTier &&
+        configs[i].capacity >= minBestCapacity &&
         configs[i].capacity >= requiredCapacity
       ) {
-        nextTier = configs[i];
-        break;
+        best = configs[i];
+        // Only pick if not already chosen as good/better
+        if (
+          (!good || configs[i].label !== good.label) &&
+          (!better || configs[i].label !== better.label)
+        ) {
+          break;
+        }
       }
     }
-    if (nextTier) recs.push(nextTier);
   }
 
-  // 7. Extended backup (7 days): find config for extendedCapacity
-  let extendedRec = null;
-  if (extendedCapacity > 0) {
-    extendedRec = configs.find(cfg => cfg.capacity >= extendedCapacity);
-  }
+  // 4. Extended Backup: meets or exceeds extendedCapacity (totalUsage × 3.5)
+  let extended = configs.find(cfg => cfg.capacity >= extendedCapacity) || null;
 
-  // Remove duplicates by label, keep order, and add extendedRec as 4th if unique
+  // Remove duplicates and keep order
   const uniqueRecs = [];
-  for (let rec of recs) {
+  [good, better, best, extended].forEach(rec => {
     if (rec && !uniqueRecs.some(r => r.label === rec.label)) uniqueRecs.push(rec);
-    if (uniqueRecs.length === 3) break;
-  }
-  if (
-    extendedRec &&
-    !uniqueRecs.some(r => r && r.label === extendedRec.label)
-  ) {
-    uniqueRecs.push(extendedRec);
-  }
+  });
 
   // --- Build HTML ---
   let recommendationHTML = `<div class="recommendation-content">`;
@@ -620,7 +615,7 @@ function updateDeltaRecommendation() {
     uniqueRecs.forEach((opt, idx) => {
       if (!opt) return;
       let extraNote = "";
-      if (idx === 3) extraNote = " <span style='color:#7fb0d0;'>(7 days backup)</span>";
+      if (idx === 3) extraNote = " <span style='color:#7fb0d0;'>(Extended Backup)</span>";
       recommendationHTML += `<li>
         <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${extraNote}
       </li>`;
