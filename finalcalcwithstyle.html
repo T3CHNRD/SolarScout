@@ -504,12 +504,10 @@ function getDaysInMonth(monthIndex) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
-  // Calculate total usage and max daily usage
-  let totalUsage = 0;
+  // Calculate max daily usage
   let maxDaily = 0;
   for (let i = 1; i <= 12; i++) {
     const monthUsage = parseFloat(document.getElementById(`month${i}`).value) || 0;
-    totalUsage += monthUsage;
     const days = getDaysInMonth(i);
     if (days > 0) {
       const daily = monthUsage / days;
@@ -533,49 +531,67 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // Required capacity is max daily usage (for 1 day backup)
-  const requiredCapacity = maxDaily;
+  // --- Find the smallest system that covers the need ---
+  let recommendations = [];
+  let found = false;
 
-  let recommendationHTML = `<div class="recommendation-content">`;
-  if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
-  recommendationHTML += `<h3>Recommended Power Solutions</h3>
-    <p>Based on your maximum daily usage (<b>${maxDaily.toFixed(2)} kWh</b>), consider these options:</p>`;
-
-  let anyOption = false;
-
-  deltaProducts.forEach(product => {
-    let options = [];
-    // Always show base, +1, and max expansion
-    for (let extras of [0, 1, product.maxExtras]) {
+  // 1. Find the smallest config that meets the need
+  for (let i = 0; i < deltaProducts.length && !found; i++) {
+    const product = deltaProducts[i];
+    for (let extras = 0; extras <= product.maxExtras; extras++) {
       const totalCap = product.base + product.step * extras;
-      if (totalCap >= requiredCapacity) {
-        let label = product.name;
-        if (extras === 1) label += " + 1 extra battery";
-        else if (extras > 1) label += ` + ${extras} extra batteries`;
-        options.push({
-          label,
+      if (totalCap >= maxDaily) {
+        // a) Smallest system
+        recommendations.push({
+          label: extras === 0 ? product.name : `${product.name} + ${extras} extra battery${extras > 1 ? "ies" : "y"}`,
           totalCapacity: totalCap,
           link: product.link
         });
+        // b) Same system with +1 extra battery (if possible)
+        if (extras + 1 <= product.maxExtras) {
+          const nextCap = product.base + product.step * (extras + 1);
+          recommendations.push({
+            label: `${product.name} + ${extras + 1} extra battery${extras + 1 > 1 ? "ies" : "y"}`,
+            totalCapacity: nextCap,
+            link: product.link
+          });
+        }
+        // c) Next tier up (next model, base config)
+        if (i + 1 < deltaProducts.length) {
+          const nextProduct = deltaProducts[i + 1];
+          recommendations.push({
+            label: nextProduct.name,
+            totalCapacity: nextProduct.base,
+            link: nextProduct.link
+          });
+        }
+        found = true;
+        break;
       }
     }
-    // Only show if at least one config meets requirement
-    if (options.length > 0) {
-      anyOption = true;
-      recommendationHTML += `<div style="margin-bottom:1em;"><b>${product.name} Options:</b><ul>`;
-      options.forEach(opt => {
-        recommendationHTML += `<li>
-          <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.totalCapacity.toFixed(3)}kWh</b>
-        </li>`;
-      });
-      recommendationHTML += `</ul></div>`;
-    }
-  });
-
-  if (!anyOption) {
-    recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
   }
 
+  // Remove duplicates (by label)
+  recommendations = recommendations.filter(
+    (rec, idx, arr) => arr.findIndex(r => r.label === rec.label) === idx
+  );
+
+  // --- Build HTML ---
+  let recommendationHTML = `<div class="recommendation-content">`;
+  if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
+
+  if (recommendations.length === 0) {
+    recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
+  } else {
+    recommendationHTML += `<h3>Recommended Power Solutions</h3>
+      <ul class="product-links">`;
+    recommendations.forEach(opt => {
+      recommendationHTML += `<li>
+        <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.totalCapacity.toFixed(3)}kWh</b>
+      </li>`;
+    });
+    recommendationHTML += `</ul>`;
+  }
   recommendationHTML += `</div>`;
   document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
