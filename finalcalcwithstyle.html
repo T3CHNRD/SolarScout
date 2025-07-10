@@ -507,16 +507,16 @@ function updateDeltaRecommendation() {
   // 1. Calculate total annual usage and daily usage (over 365 days)
   let totalUsage = 0;
   for (let i = 1; i <= 12; i++) {
-    totalUsage += parseFloat(document.getElementById(`month${i}`).value) || 0;
+    totalUsage += parseInput(document.getElementById(`month${i}`).value);
   }
   const daysInYear = 365;
   const dailyUsage = totalUsage / daysInYear;
 
-  // 2. Tiered feedback
+  // 2. Tiered feedback (verbiage as specified)
   let usageMsg = "";
   if (dailyUsage < 0.10) {
     usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is minimal.`;
-  } else if (dailyUsage < 0.25) {
+  } else if (dailyUsage >= 0.10 && dailyUsage < 0.25) {
     usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is moderate.`;
   } else if (dailyUsage >= 0.30) {
     usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial.`;
@@ -528,8 +528,8 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // 3. Calculate required capacity for 3 days (with headroom: 10% extra)
-  const requiredCapacity = dailyUsage * 3 * 1.1;
+  // 3. Calculate required capacity for 3 days (no extra headroom, as per prompt)
+  const requiredCapacity = dailyUsage * 3;
 
   // 4. Battery configs (ordered by capacity, with model/tier/extras for logic)
   const configs = [
@@ -623,7 +623,7 @@ function resetCalculator() {
     document.getElementById(`month${i}`).value = 0;
   }
 
-  // Reset all results displays
+ 
   document.getElementById('totalUsage').textContent = 'Total Usage: 0 kWh';
   document.getElementById('peakUsage').textContent = 'Peak Usage: 0 kWh';
   document.getElementById('offPeakUsage').textContent = 'Off-Peak Usage: 0 kWh';
