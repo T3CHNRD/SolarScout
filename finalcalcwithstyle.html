@@ -521,7 +521,6 @@ function updateDeltaRecommendation() {
     usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial.`;
   }
 
-  // If usage is extremely low, only show the usage message and exit
   if (dailyUsage < 0.01) {
     document.getElementById('deltaRecommendation').innerHTML =
       `<div class="recommendation-content"><b>${usageMsg}</b></div>`;
@@ -530,7 +529,7 @@ function updateDeltaRecommendation() {
 
   // 3. Main recommendation logic
   const requiredCapacity = totalUsage;
-  const extendedCapacity = totalUsage * 3.5;
+  const extendedBackupCapacity = dailyUsage * 3.5;
 
   // 4. Battery configs (sorted by capacity ascending)
   const configs = [
@@ -548,76 +547,67 @@ function updateDeltaRecommendation() {
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 5 extra batteries", capacity: 36, extras: 5, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
   ];
 
-  // Filter configs that meet or exceed requiredCapacity
-  const validConfigs = configs.filter(cfg => cfg.capacity >= requiredCapacity);
+  // --- 1. Good: Smallest that meets/exceeds requiredCapacity ---
+  const good = configs.find(cfg => cfg.capacity >= requiredCapacity) || null;
 
-  // 1. Good: Smallest that meets/exceeds requiredCapacity
-  let good = validConfigs[0] || null;
-
-  // 2. Better: Same model as 'good' with +1 or +2 batteries (if expandable and available)
+  // --- 2. Better: Same model as Good, with +1 or +2 batteries (if expandable and available) ---
   let better = null;
-  if (good) {
-    for (let i = configs.indexOf(good) + 1; i < configs.length; i++) {
-      if (
-        configs[i].model === good.model &&
-        configs[i].extras > good.extras &&
-        configs[i].capacity >= requiredCapacity
-      ) {
-        better = configs[i];
-        break;
-      }
-      if (configs[i].model !== good.model) break;
-    }
+  if (good && good.expandable) {
+    // Find next config with same model, more extras, and meets requiredCapacity
+    better = configs.find(cfg =>
+      cfg.model === good.model &&
+      cfg.extras > good.extras &&
+      cfg.capacity >= requiredCapacity
+    ) || null;
   }
 
-  // 3. Best: Next higher tier or larger combo that exceeds requiredCapacity by more than 'good' and 'better'
+  // --- 3. Best: Next higher-tier model or larger combo that exceeds Better ---
   let best = null;
-  if (good) {
-    let minBestCapacity = Math.max(
-      good.capacity + 0.01,
-      better ? better.capacity + 0.01 : good.capacity + 0.01
-    );
-    for (let i = 0; i < configs.length; i++) {
-      if (
-        configs[i].capacity >= minBestCapacity &&
-        configs[i].capacity >= requiredCapacity
-      ) {
-        best = configs[i];
-        // Only pick if not already chosen as good/better
-        if (
-          (!good || configs[i].label !== good.label) &&
-          (!better || configs[i].label !== better.label)
-        ) {
-          break;
-        }
-      }
-    }
+  let minBestCapacity = better ? better.capacity + 0.01 : (good ? good.capacity + 0.01 : 0);
+  if (minBestCapacity > 0) {
+    best = configs.find(cfg =>
+      cfg.capacity >= minBestCapacity &&
+      cfg.capacity >= requiredCapacity &&
+      (
+        !good || cfg.label !== good.label
+      ) &&
+      (
+        !better || cfg.label !== better.label
+      )
+    ) || null;
   }
 
-  // 4. Extended Backup: meets or exceeds extendedCapacity (totalUsage × 3.5)
-  let extended = configs.find(cfg => cfg.capacity >= extendedCapacity) || null;
+  // --- 4. Extended Backup: meets or exceeds extendedBackupCapacity ---
+  let extended = configs.find(cfg =>
+    cfg.capacity >= extendedBackupCapacity &&
+    (!good || cfg.label !== good.label) &&
+    (!better || cfg.label !== better.label) &&
+    (!best || cfg.label !== best.label)
+  ) || null;
 
-  // Remove duplicates and keep order
-  const uniqueRecs = [];
-  [good, better, best, extended].forEach(rec => {
-    if (rec && !uniqueRecs.some(r => r.label === rec.label)) uniqueRecs.push(rec);
-  });
+  // --- Build ordered array ---
+  const recs = [good, better, best, extended];
 
   // --- Build HTML ---
   let recommendationHTML = `<div class="recommendation-content">`;
   if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
 
-  if (uniqueRecs.length === 0) {
+  // Only show if at least one rec is available
+  if (recs.filter(Boolean).length === 0) {
     recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
   } else {
     recommendationHTML += `<h3>Recommended Power Solutions</h3>
       <ul class="product-links">`;
-    uniqueRecs.forEach((opt, idx) => {
+    recs.forEach((opt, idx) => {
       if (!opt) return;
-      let extraNote = "";
-      if (idx === 3) extraNote = " <span style='color:#7fb0d0;'>(Extended Backup)</span>";
+      let label = "";
+      if (idx === 0) label = "<b>Good:</b> ";
+      if (idx === 1) label = "<b>Better:</b> ";
+      if (idx === 2) label = "<b>Best:</b> ";
+      if (idx === 3) label = "<b>Extended Backup:</b> ";
+      let extraNote = idx === 3 ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : "";
       recommendationHTML += `<li>
-        <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${extraNote}
+        ${label}<a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${extraNote}
       </li>`;
     });
     recommendationHTML += `</ul>`;
