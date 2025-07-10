@@ -531,63 +531,122 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // --- Find the smallest system that covers the need ---
-  let recommendations = [];
-  let found = false;
+  // 1. Calculate required capacity for 3 days
+  const requiredCapacity = maxDaily * 3;
 
-  // 1. Find the smallest config that meets the need
-  for (let i = 0; i < deltaProducts.length && !found; i++) {
-    const product = deltaProducts[i];
-    for (let extras = 0; extras <= product.maxExtras; extras++) {
-      const totalCap = product.base + product.step * extras;
-      if (totalCap >= maxDaily) {
-        // a) Smallest system
-        recommendations.push({
-          label: extras === 0 ? product.name : `${product.name} + ${extras} extra battery${extras > 1 ? "ies" : "y"}`,
-          totalCapacity: totalCap,
-          link: product.link
-        });
-        // b) Same system with +1 extra battery (if possible)
-        if (extras + 1 <= product.maxExtras) {
-          const nextCap = product.base + product.step * (extras + 1);
-          recommendations.push({
-            label: `${product.name} + ${extras + 1} extra battery${extras + 1 > 1 ? "ies" : "y"}`,
-            totalCapacity: nextCap,
-            link: product.link
-          });
-        }
-        // c) Next tier up (next model, base config)
-        if (i + 1 < deltaProducts.length) {
-          const nextProduct = deltaProducts[i + 1];
-          recommendations.push({
-            label: nextProduct.name,
-            totalCapacity: nextProduct.base,
-            link: nextProduct.link
-          });
-        }
-        found = true;
-        break;
-      }
+  // 2. Build all possible configs in order of increasing capacity
+  const configs = [
+    {
+      label: "Delta Pro",
+      capacity: 3.6,
+      link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro + 1 extra battery",
+      capacity: 7.2,
+      link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro + 2 extra batteries",
+      capacity: 10.8,
+      link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro 3",
+      capacity: 4.096,
+      link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
+    },
+    {
+      label: "Delta Pro 3 + 1 extra battery",
+      capacity: 8.192,
+      link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
+    },
+    {
+      label: "Delta Pro 3 + 2 extra batteries",
+      capacity: 12.288,
+      link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
+    },
+    {
+      label: "Delta Pro Ultra",
+      capacity: 6,
+      link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro Ultra + 1 extra battery",
+      capacity: 12,
+      link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro Ultra + 2 extra batteries",
+      capacity: 18,
+      link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro Ultra + 3 extra batteries",
+      capacity: 24,
+      link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro Ultra + 4 extra batteries",
+      capacity: 30,
+      link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+      label: "Delta Pro Ultra + 5 extra batteries",
+      capacity: 36,
+      link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     }
-  }
+  ];
 
-  // Remove duplicates (by label)
-  recommendations = recommendations.filter(
-    (rec, idx, arr) => arr.findIndex(r => r.label === rec.label) === idx
+  // 3. Find the smallest config that meets/exceeds the need
+  let idx = configs.findIndex(cfg => cfg.capacity >= requiredCapacity);
+  if (idx === -1) idx = configs.length - 1; // fallback to largest if none match
+
+  // 4. Build the 3 recommendations:
+  // a) Smallest that meets/exceeds
+  // b) Same system with +1 battery (if available and not already maxed)
+  // c) Next tier up (next model, base config)
+  const recs = [];
+  recs.push(configs[idx]);
+
+  // b) Same system with +1 battery (if possible)
+  // Find next config with same base model but +1 battery
+  const baseLabel = configs[idx].label.split(" +")[0];
+  const plusOne = configs.find(
+    (cfg, i) =>
+      i > idx &&
+      cfg.label.startsWith(baseLabel) &&
+      cfg.capacity > configs[idx].capacity
+  );
+  if (plusOne) recs.push(plusOne);
+
+  // c) Next tier up (next model, base config)
+  // Find next config with a different base model and no "+", and higher capacity
+  const nextTier = configs.find(
+    (cfg, i) =>
+      i > idx &&
+      !cfg.label.includes("+") &&
+      cfg.capacity > configs[idx].capacity
+  );
+  if (nextTier) recs.push(nextTier);
+
+  // Remove duplicates by label
+  const uniqueRecs = recs.filter(
+    (rec, i, arr) => arr.findIndex(r => r.label === rec.label) === i
   );
 
   // --- Build HTML ---
   let recommendationHTML = `<div class="recommendation-content">`;
   if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
 
-  if (recommendations.length === 0) {
+  if (uniqueRecs.length === 0) {
     recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
   } else {
     recommendationHTML += `<h3>Recommended Power Solutions</h3>
       <ul class="product-links">`;
-    recommendations.forEach(opt => {
+    uniqueRecs.forEach(opt => {
       recommendationHTML += `<li>
-        <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.totalCapacity.toFixed(3)}kWh</b>
+        <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>
       </li>`;
     });
     recommendationHTML += `</ul>`;
