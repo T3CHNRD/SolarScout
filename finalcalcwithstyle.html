@@ -528,8 +528,8 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // 3. Calculate required capacity for 3 days (no extra headroom, as per prompt)
-  const requiredCapacity = dailyUsage * 3;
+  // 3. Calculate required capacity for 1.5 days (not 3 days)
+  const requiredCapacity = dailyUsage * 1.5;
 
   // 4. Battery configs (ordered by capacity, with model/tier/extras for logic)
   const configs = [
