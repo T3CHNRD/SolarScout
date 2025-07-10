@@ -534,66 +534,90 @@ function updateDeltaRecommendation() {
   // 1. Calculate required capacity for 3 days
   const requiredCapacity = maxDaily * 3;
 
-  // 2. Build all possible configs in order of increasing capacity
+  // 2. List all battery configs in order
   const configs = [
     {
+      model: "Delta Pro",
       label: "Delta Pro",
       capacity: 3.6,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro",
       label: "Delta Pro + 1 extra battery",
       capacity: 7.2,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro",
       label: "Delta Pro + 2 extra batteries",
       capacity: 10.8,
+      expandable: false,
       link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro 3",
       label: "Delta Pro 3",
       capacity: 4.096,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
     },
     {
+      model: "Delta Pro 3",
       label: "Delta Pro 3 + 1 extra battery",
       capacity: 8.192,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
     },
     {
+      model: "Delta Pro 3",
       label: "Delta Pro 3 + 2 extra batteries",
       capacity: 12.288,
+      expandable: false,
       link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
     },
     {
+      model: "Delta Pro Ultra",
       label: "Delta Pro Ultra",
       capacity: 6,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro Ultra",
       label: "Delta Pro Ultra + 1 extra battery",
       capacity: 12,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro Ultra",
       label: "Delta Pro Ultra + 2 extra batteries",
       capacity: 18,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro Ultra",
       label: "Delta Pro Ultra + 3 extra batteries",
       capacity: 24,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro Ultra",
       label: "Delta Pro Ultra + 4 extra batteries",
       capacity: 30,
+      expandable: true,
       link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     },
     {
+      model: "Delta Pro Ultra",
       label: "Delta Pro Ultra + 5 extra batteries",
       capacity: 36,
+      expandable: false,
       link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     }
   ];
@@ -602,38 +626,41 @@ function updateDeltaRecommendation() {
   let idx = configs.findIndex(cfg => cfg.capacity >= requiredCapacity);
   if (idx === -1) idx = configs.length - 1; // fallback to largest if none match
 
-  // 4. Build the 3 recommendations:
   // a) Smallest that meets/exceeds
-  // b) Same system with +1 battery (if available and not already maxed)
-  // c) Next tier up (next model, base config)
-  const recs = [];
-  recs.push(configs[idx]);
+  const recs = [configs[idx]];
 
-  // b) Same system with +1 battery (if possible)
-  // Find next config with same base model but +1 battery
-  const baseLabel = configs[idx].label.split(" +")[0];
-  const plusOne = configs.find(
-    (cfg, i) =>
-      i > idx &&
-      cfg.label.startsWith(baseLabel) &&
-      cfg.capacity > configs[idx].capacity
-  );
+  // b) Same model with +1 battery (if expandable and not already maxed)
+  let plusOne = null;
+  for (let i = idx + 1; i < configs.length; i++) {
+    if (
+      configs[i].model === configs[idx].model &&
+      configs[i].capacity > configs[idx].capacity
+    ) {
+      plusOne = configs[i];
+      break;
+    }
+    // Stop if we reach a different model
+    if (configs[i].model !== configs[idx].model) break;
+  }
   if (plusOne) recs.push(plusOne);
 
-  // c) Next tier up (next model, base config)
-  // Find next config with a different base model and no "+", and higher capacity
-  const nextTier = configs.find(
-    (cfg, i) =>
-      i > idx &&
-      !cfg.label.includes("+") &&
-      cfg.capacity > configs[idx].capacity
-  );
+  // c) Next tier up (different model, next available config)
+  let nextTier = null;
+  let currentModel = configs[idx].model;
+  for (let i = idx + 1; i < configs.length; i++) {
+    if (configs[i].model !== currentModel) {
+      nextTier = configs[i];
+      break;
+    }
+  }
   if (nextTier) recs.push(nextTier);
 
-  // Remove duplicates by label
-  const uniqueRecs = recs.filter(
-    (rec, i, arr) => arr.findIndex(r => r.label === rec.label) === i
-  );
+  // Only 3 options, remove duplicates by label
+  const uniqueRecs = [];
+  for (let rec of recs) {
+    if (rec && !uniqueRecs.some(r => r.label === rec.label)) uniqueRecs.push(rec);
+    if (uniqueRecs.length === 3) break;
+  }
 
   // --- Build HTML ---
   let recommendationHTML = `<div class="recommendation-content">`;
