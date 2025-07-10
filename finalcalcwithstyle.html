@@ -504,13 +504,13 @@ function getDaysInMonth(monthIndex) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
-  // 1. Calculate total usage and daily usage (dailyUsage = totalUsage / 30)
+  // 1. Calculate total usage and daily usage (dailyUsage = totalUsage / 365)
   let totalUsage = 0;
   for (let i = 1; i <= 12; i++) {
     totalUsage += parseInput(document.getElementById(`month${i}`).value);
   }
-  // Use 30 for monthly average, not 365
-  const dailyUsage = totalUsage / 30;
+  // Use 365 for yearly average, not 30
+  const dailyUsage = totalUsage / 365;
 
   // 2. Usage feedback (still based on daily usage)
   let usageMsg = "";
