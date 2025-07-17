@@ -524,7 +524,7 @@ function updateDeltaRecommendation() {
   const requiredCapacity = totalUsage;
   const extendedBackupCapacity = dailyUsage * 3.5;
 
-  // Product hierarchy: base → modern → extreme
+  // Product hierarchy and expansion logic
   const products = [
     {
       model: "Delta Pro",
@@ -574,54 +574,74 @@ function updateDeltaRecommendation() {
   const recs = [];
   const usedLabels = new Set();
 
-  // Good: Smallest base tier config that meets requiredCapacity
+  // Good: Delta Pro, minimal expansion to meet/slightly exceed requiredCapacity
   let good = getConfig(products[0], requiredCapacity);
-  if (!good) good = getConfig(products[1], requiredCapacity); // fallback to next tier if needed
-  if (!good) good = getConfig(products[2], requiredCapacity); // fallback to Ultra only if necessary
+  // Avoid Ultra for "Good" unless absolutely necessary
+  if (!good) good = getConfig(products[1], requiredCapacity);
+  if (!good) good = getConfig(products[2], requiredCapacity);
   if (good) {
     recs.push(good);
     usedLabels.add(good.label);
   }
 
-  // Better: Same product, more batteries (if expandable)
+  // Better: Delta Pro, more batteries if needed
   let better = null;
-  if (good && good.extras < products[good.tier - 1].maxExtras) {
-    better = getConfig(products[good.tier - 1], good.capacity + products[good.tier - 1].step);
-    if (better && better.capacity >= requiredCapacity && !usedLabels.has(better.label)) {
+  if (good && good.model === "Delta Pro" && good.extras < products[0].maxExtras) {
+    better = getConfig(products[0], good.capacity + products[0].step);
+    if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
+      recs.push(better);
+      usedLabels.add(better.label);
+    }
+  } else if (good && good.model === "Delta Pro 3") {
+    // If Good is Delta Pro 3, Better is Delta Pro 3 + more batteries
+    better = getConfig(products[1], good.capacity + products[1].step);
+    if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
+      recs.push(better);
+      usedLabels.add(better.label);
+    }
+  } else if (good && good.model === "Delta Pro Ultra") {
+    // If Good is Ultra, Better is Ultra + more batteries
+    better = getConfig(products[2], good.capacity + products[2].step);
+    if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
       recs.push(better);
       usedLabels.add(better.label);
     }
   }
 
-  // Best: Next tier product, minimum config that meets requiredCapacity
-  let bestTier = Math.min(good ? good.tier + 1 : 2, products.length); // always higher tier than Good/Better
+  // Best: Delta Pro 3 + batteries, must exceed previous tiers
   let best = null;
-  for (let t = bestTier - 1; t < products.length; t++) {
-    best = getConfig(products[t], requiredCapacity);
-    if (best && !usedLabels.has(best.label)) break;
+  if (good && good.model === "Delta Pro") {
+    best = getConfig(products[1], requiredCapacity);
+    // If needed, add batteries to exceed Better
+    if (best && better && best.capacity <= better.capacity) {
+      best = getConfig(products[1], better.capacity + products[1].step);
+    }
+  } else if (good && good.model === "Delta Pro 3") {
+    best = getConfig(products[2], requiredCapacity);
+    if (best && better && best.capacity <= better.capacity) {
+      best = getConfig(products[2], better.capacity + products[2].step);
+    }
+  } else {
+    // If Good is Ultra, Best is Ultra + more batteries
+    best = getConfig(products[2], better ? better.capacity + products[2].step : requiredCapacity);
   }
-  if (best) {
+  if (best && !usedLabels.has(best.label)) {
     recs.push(best);
     usedLabels.add(best.label);
   }
 
-  // Extended Backup: Prefer modern or extreme tier, fallback to base only if needed
-  let extended = null;
-  for (let t = 1; t < products.length; t++) { // start at Delta Pro 3
-    extended = getConfig(products[t], extendedBackupCapacity);
-    if (extended && !usedLabels.has(extended.label)) break;
-  }
-  if (!extended) {
-    extended = getConfig(products[0], extendedBackupCapacity); // fallback to Delta Pro only if necessary
-  }
+  // Extended Backup: Prefer Delta Pro 3 or Ultra, fallback to Delta Pro only if nothing else qualifies
+  let extended = getConfig(products[1], extendedBackupCapacity);
+  if (!extended) extended = getConfig(products[2], extendedBackupCapacity);
+  if (!extended) extended = getConfig(products[0], extendedBackupCapacity);
   if (extended && !usedLabels.has(extended.label)) {
     recs.push(extended);
     usedLabels.add(extended.label);
   }
 
-  // Ensure at least 3 recommendations, ideally 4
+  // Ensure 4 recommendations, fill with next best configs if needed
   let idx = 0;
-  while (recs.length < 3 && idx < products.length) {
+  while (recs.length < 4 && idx < products.length) {
     let fallback = getConfig(products[idx], requiredCapacity);
     if (fallback && !usedLabels.has(fallback.label)) {
       recs.push(fallback);
