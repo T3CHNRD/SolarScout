@@ -541,18 +541,18 @@ function updateDeltaRecommendation() {
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 5 extra batteries", capacity: 36, extras: 5, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
   ];
 
-  // --- Always fill all 4 slots with unique configs in order ---
+  // --- Dynamic selection logic ---
   const recs = [];
   const usedLabels = new Set();
 
-  // Good
+  // Good: Smallest config that meets requiredCapacity
   const good = configs.find(cfg => cfg.capacity >= requiredCapacity);
   if (good) {
     recs.push(good);
     usedLabels.add(good.label);
   }
 
-  // Better
+  // Better: Same model, more extras, meets requiredCapacity
   let better = null;
   if (good && good.expandable) {
     better = configs.find(cfg =>
@@ -567,10 +567,9 @@ function updateDeltaRecommendation() {
     }
   }
 
-  // Best
-  let best = null;
-  let minBestCapacity = recs.length > 1 ? recs[1].capacity + 0.01 : (good ? good.capacity + 0.01 : 0);
-  best = configs.find(cfg =>
+  // Best: Next higher-tier or larger combo, more capacity than Better or Good
+  let minBestCapacity = better ? better.capacity + 0.01 : (good ? good.capacity + 0.01 : 0);
+  let best = configs.find(cfg =>
     cfg.capacity >= minBestCapacity &&
     cfg.capacity >= requiredCapacity &&
     !usedLabels.has(cfg.label)
@@ -580,8 +579,8 @@ function updateDeltaRecommendation() {
     usedLabels.add(best.label);
   }
 
-  // Extended Backup
-  const extended = configs.find(cfg =>
+  // Extended Backup: Meets/exceeds extendedBackupCapacity
+  let extended = configs.find(cfg =>
     cfg.capacity >= extendedBackupCapacity &&
     !usedLabels.has(cfg.label)
   );
@@ -590,7 +589,7 @@ function updateDeltaRecommendation() {
     usedLabels.add(extended.label);
   }
 
-  // Fill remaining slots with next unique configs
+  // Fill up to 4 slots with next unique configs if needed
   let idx = 0;
   while (recs.length < 4 && idx < configs.length) {
     if (!usedLabels.has(configs[idx].label)) {
