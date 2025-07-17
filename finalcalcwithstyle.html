@@ -396,116 +396,185 @@
 
     // --- Main Recommendation Function ---
     function updateDeltaRecommendation() {
-        // Calculate total usage (sum of months)
-        let totalUsage = 0;
-        for (let i = 1; i <= 12; i++) {
-            totalUsage += parseInput(document.getElementById(`month${i}`).value);
-        }
+  // Calculate total usage (sum of months)
+  let totalUsage = 0;
+  for (let i = 1; i <= 12; i++) {
+    totalUsage += parseInput(document.getElementById(`month${i}`).value);
+  }
 
-        const dailyUsage = totalUsage / 365;
-        let usageMsg = "";
-        if (dailyUsage < 0.10) {
-            usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is minimal.`;
-        } else if (dailyUsage >= 0.10 && dailyUsage < 0.25) {
-            usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is moderate.`;
-        } else if (dailyUsage >= 0.30) {
-            usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial.`;
-        }
+  const dailyUsage = totalUsage / 365;
+  let usageMsg = "";
+  if (dailyUsage < 0.10) {
+    usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is minimal.`;
+  } else if (dailyUsage >= 0.10 && dailyUsage < 0.25) {
+    usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is moderate.`;
+  } else if (dailyUsage >= 0.25) {
+    usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial.`;
+  }
 
-        if (dailyUsage < 0.01) {
-            document.getElementById('deltaRecommendation').innerHTML =
-                `<div class="recommendation-content"><b>${usageMsg}</b></div>`;
-            return;
-        }
+  if (dailyUsage < 0.01) {
+    document.getElementById('deltaRecommendation').innerHTML =
+      `<div class="recommendation-content"><b>${usageMsg}</b></div>`;
+    return;
+  }
 
-        const requiredCapacity = dailyUsage;
-        const extendedBackupCapacity = dailyUsage * 3.5;
+  const requiredCapacity = dailyUsage;
+  const extendedBackupCapacity = dailyUsage * 3.5;
 
-        // --- Dynamic Recommendation Logic ---
-        const recs = [];
-        const usedLabels = new Set();
+  // --- Dynamic Recommendation Logic ---
+  const recs = [];
+  const usedLabels = new Set();
 
-        // Good: Smallest config ≥ dailyUsage (never Ultra unless usage ≥ 0.35)
-        let good = getConfig(products[0], requiredCapacity);
-        if (!good) good = getConfig(products[1], requiredCapacity);
-        if (!good && dailyUsage >= 0.35) good = getConfig(products[2], requiredCapacity);
-        if (!good) good = getConfig(products[2], requiredCapacity); // fallback only if nothing else qualifies
-        if (good) {
-            recs.push(good);
-            usedLabels.add(good.label);
-        }
+  // Good: Smallest config ≥ dailyUsage (strictly avoid Ultra unless necessary)
+  let good = getConfig(products[0], requiredCapacity); // Try Delta Pro first
+  if (!good) good = getConfig(products[1], requiredCapacity); // Then Delta Pro 3
+  if (!good && dailyUsage >= 0.35) good = getConfig(products[2], requiredCapacity); // Only use Ultra if usage is high
+  if (!good) good = getConfig(products[2], requiredCapacity); // Fallback to Ultra if nothing else works
+  
+  if (good) {
+    recs.push(good);
+    usedLabels.add(good.label);
+  }
 
-        // Better: Same model, more batteries if expandable
-        let better = null;
-        if (good && good.extras < products[good.tier - 1].maxExtras) {
-            better = getConfig(products[good.tier - 1], good.capacity + products[good.tier - 1].step);
-            if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
-                recs.push(better);
-                usedLabels.add(better.label);
-            }
-        }
-
-        // Best: Next-tier product > Better
-        let bestTier = Math.min((good ? good.tier + 1 : 2), products.length);
-        let best = null;
-        for (let t = bestTier - 1; t < products.length; t++) {
-            best = getConfig(products[t], requiredCapacity);
-            if (best && (!better || best.capacity > better.capacity) && !usedLabels.has(best.label)) break;
-        }
-        if (best) {
-            recs.push(best);
-            usedLabels.add(best.label);
-        }
-
-        // Extended Backup: Only if dailyUsage ≤ 0.80, must meet dailyUsage × 3.5
-        if (dailyUsage <= 0.80) {
-            let extended = getConfig(products[1], extendedBackupCapacity);
-            if (!extended) extended = getConfig(products[2], extendedBackupCapacity);
-            if (!extended) extended = getConfig(products[0], extendedBackupCapacity); // fallback only if nothing else qualifies
-            if (extended && !usedLabels.has(extended.label)) {
-                recs.push(extended);
-                usedLabels.add(extended.label);
-            }
-        }
-
-        // Ensure at least 3 recommendations
-        let idx = 0;
-        while (recs.length < 3 && idx < products.length) {
-            let fallback = getConfig(products[idx], requiredCapacity);
-            if (fallback && !usedLabels.has(fallback.label)) {
-                recs.push(fallback);
-                usedLabels.add(fallback.label);
-            }
-            idx++;
-        }
-
-        // --- Build HTML ---
-        let recommendationHTML = `<div class="recommendation-content">`;
-        if (usageMsg) {
-            recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
-        }
-
-        if (recs.length === 0) {
-            recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
-        } else {
-            recommendationHTML += `<h3>Recommended Power Solutions</h3>
-                <ul class="product-links">`;
-            recs.forEach((opt, idx) => {
-                let label = "";
-                if (idx === 0) label = "<b>Good:</b> ";
-                if (idx === 1) label = "<b>Better:</b> ";
-                if (idx === 2) label = "<b>Best:</b> ";
-                if (idx === 3 && dailyUsage <= 0.80) label = "<b>Extended Backup:</b> ";
-                let extraNote = (idx === 3 && dailyUsage <= 0.80) ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : "";
-                recommendationHTML += `<li>
-                    ${label}<a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${extraNote}
-                </li>`;
-            });
-            recommendationHTML += `</ul>`;
-        }
-        recommendationHTML += `</div>`;
-        document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
+  // Better: Same model with more batteries (if expandable)
+  let better = null;
+  if (good && good.extras < products[good.tier - 1].maxExtras) {
+    // Try to add one more battery to the same model
+    better = getConfig(products[good.tier - 1], good.capacity + products[good.tier - 1].step);
+    if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
+      recs.push(better);
+      usedLabels.add(better.label);
     }
+  }
+
+  // Best: Next-tier product > Better
+  let best = null;
+  
+  // If Good is Delta Pro, Best should try Delta Pro 3
+  if (good && good.model === "Delta Pro") {
+    best = getConfig(products[1], requiredCapacity); // Try Delta Pro 3
+    
+    // Make sure Best has more capacity than Better (if Better exists)
+    if (best && better && best.capacity <= better.capacity) {
+      // Add batteries to Delta Pro 3 if needed
+      for (let extras = 1; extras <= products[1].maxExtras; extras++) {
+        const upgradedBest = getConfig(products[1], better.capacity + 0.1);
+        if (upgradedBest) {
+          best = upgradedBest;
+          break;
+        }
+      }
+    }
+  } 
+  // If Good/Better is Delta Pro 3, Best should try Ultra
+  else if (good && good.model === "Delta Pro 3") {
+    best = getConfig(products[2], requiredCapacity); // Try Ultra
+    
+    // Make sure Best has more capacity than Better (if Better exists)
+    if (best && better && best.capacity <= better.capacity) {
+      // Add batteries to Ultra if needed
+      for (let extras = 1; extras <= products[2].maxExtras; extras++) {
+        const upgradedBest = getConfig(products[2], better.capacity + 0.1);
+        if (upgradedBest) {
+          best = upgradedBest;
+          break;
+        }
+      }
+    }
+  }
+  // If Good is already Ultra, Best should be Ultra with more batteries
+  else if (good && good.model === "Delta Pro Ultra" && good.extras < products[2].maxExtras) {
+    best = getConfig(products[2], good.capacity + products[2].step);
+  }
+  
+  if (best && !usedLabels.has(best.label)) {
+    recs.push(best);
+    usedLabels.add(best.label);
+  }
+
+  // Extended Backup: Only if dailyUsage ≤ 0.80, must meet dailyUsage × 3.5
+  if (dailyUsage <= 0.80) {
+    // Try Delta Pro 3 first
+    let extended = getConfig(products[1], extendedBackupCapacity);
+    
+    // Then try Delta Pro Ultra if Pro 3 can't handle it
+    if (!extended) extended = getConfig(products[2], extendedBackupCapacity);
+    
+    // Only use Delta Pro as a last resort
+    if (!extended) extended = getConfig(products[0], extendedBackupCapacity);
+    
+    if (extended && !usedLabels.has(extended.label)) {
+      recs.push(extended);
+      usedLabels.add(extended.label);
+    }
+  }
+
+  // Ensure at least 3 recommendations
+  if (recs.length < 3) {
+    // First try higher tier products
+    for (let t = products.length - 1; t >= 0; t--) {
+      for (let extras = 0; extras <= products[t].maxExtras && recs.length < 3; extras++) {
+        const potential = {
+          model: products[t].model,
+          tier: products[t].tier,
+          label: extras === 0 ? products[t].model : `${products[t].model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+          capacity: products[t].base + products[t].step * extras,
+          extras,
+          link: products[t].link
+        };
+        
+        if (!usedLabels.has(potential.label)) {
+          recs.push(potential);
+          usedLabels.add(potential.label);
+        }
+      }
+    }
+  }
+
+  // Sort recommendations by tier and capacity
+  recs.sort((a, b) => {
+    if (a.tier !== b.tier) return a.tier - b.tier;
+    return a.capacity - b.capacity;
+  });
+
+  // --- Build HTML ---
+  let recommendationHTML = `<div class="recommendation-content">`;
+  if (usageMsg) {
+    recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
+  }
+
+  if (recs.length === 0) {
+    recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
+  } else {
+    recommendationHTML += `<h3>Recommended Power Solutions</h3>
+      <ul class="product-links">`;
+    
+    // First 3 recommendations are Good, Better, Best
+    for (let idx = 0; idx < Math.min(3, recs.length); idx++) {
+      const opt = recs[idx];
+      let label = "";
+      if (idx === 0) label = "<b>Good:</b> ";
+      if (idx === 1) label = "<b>Better:</b> ";
+      if (idx === 2) label = "<b>Best:</b> ";
+      
+      recommendationHTML += `<li>
+        ${label}<a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>
+      </li>`;
+    }
+    
+    // Extended Backup is always last (if present)
+    if (recs.length > 3 && dailyUsage <= 0.80) {
+      const opt = recs[3];
+      recommendationHTML += `<li>
+        <b>Extended Backup:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b> <span style='color:#7fb0d0;'>(Outage Backup)</span>
+      </li>`;
+    }
+    
+    recommendationHTML += `</ul>`;
+  }
+  recommendationHTML += `</div>`;
+  document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
+}
 
     // --- Event Listeners ---
     document.getElementById('resetButton').addEventListener('click', () => {
