@@ -499,13 +499,12 @@ function getDaysInMonth(monthIndex) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
-  // 1. Calculate total usage (sum of months)
+  // Calculate total usage (sum of months)
   let totalUsage = 0;
   for (let i = 1; i <= 12; i++) {
     totalUsage += parseInput(document.getElementById(`month${i}`).value);
   }
 
-  // 2. Calculate daily usage for UI feedback only (over 365 days)
   const dailyUsage = totalUsage / 365;
   let usageMsg = "";
   if (dailyUsage < 0.10) {
@@ -525,14 +524,17 @@ function updateDeltaRecommendation() {
   const requiredCapacity = totalUsage;
   const extendedBackupCapacity = dailyUsage * 3.5;
 
-  // Battery configs (sorted by capacity ascending)
+  // Product lineup, ordered by tier
   const configs = [
+    // Delta Pro (legacy)
     { model: "Delta Pro", tier: 1, label: "Delta Pro", capacity: 3.6, extras: 0, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro", tier: 1, label: "Delta Pro + 1 extra battery", capacity: 7.2, extras: 1, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro", tier: 1, label: "Delta Pro + 2 extra batteries", capacity: 10.8, extras: 2, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
+    // Delta Pro 3 (updated)
     { model: "Delta Pro 3", tier: 2, label: "Delta Pro 3", capacity: 4.096, extras: 0, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3" },
     { model: "Delta Pro 3", tier: 2, label: "Delta Pro 3 + 1 extra battery", capacity: 8.192, extras: 1, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3" },
     { model: "Delta Pro 3", tier: 2, label: "Delta Pro 3 + 2 extra batteries", capacity: 12.288, extras: 2, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3" },
+    // Delta Pro Ultra (extreme)
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra", capacity: 6, extras: 0, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 1 extra battery", capacity: 12, extras: 1, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 2 extra batteries", capacity: 18, extras: 2, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" },
@@ -545,32 +547,28 @@ function updateDeltaRecommendation() {
   const recs = [];
   const usedLabels = new Set();
 
-  // Good: Smallest config that meets requiredCapacity
-  const good = configs.find(cfg => cfg.capacity >= requiredCapacity);
+  // Good: Delta Pro + expansion battery(s)
+  let good = configs.find(cfg => cfg.model === "Delta Pro" && cfg.capacity >= requiredCapacity);
   if (good) {
     recs.push(good);
     usedLabels.add(good.label);
   }
 
-  // Better: Same model, more extras, meets requiredCapacity
-  let better = null;
-  if (good && good.expandable) {
-    better = configs.find(cfg =>
-      cfg.model === good.model &&
-      cfg.extras > good.extras &&
-      cfg.capacity >= requiredCapacity &&
-      !usedLabels.has(cfg.label)
-    );
-    if (better) {
-      recs.push(better);
-      usedLabels.add(better.label);
-    }
+  // Better: Delta Pro + more expansion batteries
+  let better = configs.find(cfg =>
+    cfg.model === "Delta Pro" &&
+    cfg.extras > (good ? good.extras : -1) &&
+    cfg.capacity >= requiredCapacity &&
+    !usedLabels.has(cfg.label)
+  );
+  if (better) {
+    recs.push(better);
+    usedLabels.add(better.label);
   }
 
-  // Best: Next higher-tier or larger combo, more capacity than Better or Good
-  let minBestCapacity = better ? better.capacity + 0.01 : (good ? good.capacity + 0.01 : 0);
+  // Best: Delta Pro 3 + batteries
   let best = configs.find(cfg =>
-    cfg.capacity >= minBestCapacity &&
+    cfg.model === "Delta Pro 3" &&
     cfg.capacity >= requiredCapacity &&
     !usedLabels.has(cfg.label)
   );
@@ -579,11 +577,19 @@ function updateDeltaRecommendation() {
     usedLabels.add(best.label);
   }
 
-  // Extended Backup: Meets/exceeds extendedBackupCapacity
+  // Extended Backup: Delta Pro 3 or Ultra (whichever meets 3.5× dailyUsage)
   let extended = configs.find(cfg =>
+    (cfg.model === "Delta Pro 3" || cfg.model === "Delta Pro Ultra") &&
     cfg.capacity >= extendedBackupCapacity &&
     !usedLabels.has(cfg.label)
   );
+  if (!extended) {
+    // If not found, fallback to any config that meets extendedBackupCapacity
+    extended = configs.find(cfg =>
+      cfg.capacity >= extendedBackupCapacity &&
+      !usedLabels.has(cfg.label)
+    );
+  }
   if (extended) {
     recs.push(extended);
     usedLabels.add(extended.label);
