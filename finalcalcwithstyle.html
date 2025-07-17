@@ -521,10 +521,10 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  const requiredCapacity = totalUsage;
+  const requiredCapacity = dailyUsage;
   const extendedBackupCapacity = dailyUsage * 3.5;
 
-  // Product hierarchy and expansion logic
+  // Product hierarchy
   const products = [
     {
       model: "Delta Pro",
@@ -574,74 +574,52 @@ function updateDeltaRecommendation() {
   const recs = [];
   const usedLabels = new Set();
 
-  // Good: Delta Pro, minimal expansion to meet/slightly exceed requiredCapacity
+  // Good: Smallest config ≥ dailyUsage (never Ultra unless usage is high)
   let good = getConfig(products[0], requiredCapacity);
-  // Avoid Ultra for "Good" unless absolutely necessary
   if (!good) good = getConfig(products[1], requiredCapacity);
-  if (!good) good = getConfig(products[2], requiredCapacity);
+  if (!good && dailyUsage >= 0.35) good = getConfig(products[2], requiredCapacity);
+  if (!good) good = getConfig(products[2], requiredCapacity); // fallback only if nothing else qualifies
   if (good) {
     recs.push(good);
     usedLabels.add(good.label);
   }
 
-  // Better: Delta Pro, more batteries if needed
+  // Better: Same model, more batteries if expandable
   let better = null;
-  if (good && good.model === "Delta Pro" && good.extras < products[0].maxExtras) {
-    better = getConfig(products[0], good.capacity + products[0].step);
-    if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
-      recs.push(better);
-      usedLabels.add(better.label);
-    }
-  } else if (good && good.model === "Delta Pro 3") {
-    // If Good is Delta Pro 3, Better is Delta Pro 3 + more batteries
-    better = getConfig(products[1], good.capacity + products[1].step);
-    if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
-      recs.push(better);
-      usedLabels.add(better.label);
-    }
-  } else if (good && good.model === "Delta Pro Ultra") {
-    // If Good is Ultra, Better is Ultra + more batteries
-    better = getConfig(products[2], good.capacity + products[2].step);
+  if (good && good.extras < products[good.tier - 1].maxExtras) {
+    better = getConfig(products[good.tier - 1], good.capacity + products[good.tier - 1].step);
     if (better && better.capacity > good.capacity && !usedLabels.has(better.label)) {
       recs.push(better);
       usedLabels.add(better.label);
     }
   }
 
-  // Best: Delta Pro 3 + batteries, must exceed previous tiers
+  // Best: Next-tier product > Better
+  let bestTier = Math.min((good ? good.tier + 1 : 2), products.length);
   let best = null;
-  if (good && good.model === "Delta Pro") {
-    best = getConfig(products[1], requiredCapacity);
-    // If needed, add batteries to exceed Better
-    if (best && better && best.capacity <= better.capacity) {
-      best = getConfig(products[1], better.capacity + products[1].step);
-    }
-  } else if (good && good.model === "Delta Pro 3") {
-    best = getConfig(products[2], requiredCapacity);
-    if (best && better && best.capacity <= better.capacity) {
-      best = getConfig(products[2], better.capacity + products[2].step);
-    }
-  } else {
-    // If Good is Ultra, Best is Ultra + more batteries
-    best = getConfig(products[2], better ? better.capacity + products[2].step : requiredCapacity);
+  for (let t = bestTier - 1; t < products.length; t++) {
+    best = getConfig(products[t], requiredCapacity);
+    if (best && (!better || best.capacity > better.capacity) && !usedLabels.has(best.label)) break;
   }
-  if (best && !usedLabels.has(best.label)) {
+  if (best) {
     recs.push(best);
     usedLabels.add(best.label);
   }
 
-  // Extended Backup: Prefer Delta Pro 3 or Ultra, fallback to Delta Pro only if nothing else qualifies
-  let extended = getConfig(products[1], extendedBackupCapacity);
-  if (!extended) extended = getConfig(products[2], extendedBackupCapacity);
-  if (!extended) extended = getConfig(products[0], extendedBackupCapacity);
-  if (extended && !usedLabels.has(extended.label)) {
-    recs.push(extended);
-    usedLabels.add(extended.label);
+  // Extended Backup: Only if dailyUsage ≤ 0.80, must meet dailyUsage × 3.5
+  if (dailyUsage <= 0.80) {
+    let extended = getConfig(products[1], extendedBackupCapacity);
+    if (!extended) extended = getConfig(products[2], extendedBackupCapacity);
+    if (!extended) extended = getConfig(products[0], extendedBackupCapacity); // fallback only if nothing else qualifies
+    if (extended && !usedLabels.has(extended.label)) {
+      recs.push(extended);
+      usedLabels.add(extended.label);
+    }
   }
 
-  // Ensure 4 recommendations, fill with next best configs if needed
+  // Ensure at least 3 recommendations
   let idx = 0;
-  while (recs.length < 4 && idx < products.length) {
+  while (recs.length < 3 && idx < products.length) {
     let fallback = getConfig(products[idx], requiredCapacity);
     if (fallback && !usedLabels.has(fallback.label)) {
       recs.push(fallback);
@@ -652,7 +630,9 @@ function updateDeltaRecommendation() {
 
   // --- Build HTML ---
   let recommendationHTML = `<div class="recommendation-content">`;
-  if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
+  if (usageMsg) {
+    recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
+  }
 
   if (recs.length === 0) {
     recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
@@ -664,8 +644,8 @@ function updateDeltaRecommendation() {
       if (idx === 0) label = "<b>Good:</b> ";
       if (idx === 1) label = "<b>Better:</b> ";
       if (idx === 2) label = "<b>Best:</b> ";
-      if (idx === 3) label = "<b>Extended Backup:</b> ";
-      let extraNote = idx === 3 ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : "";
+      if (idx === 3 && dailyUsage <= 0.80) label = "<b>Extended Backup:</b> ";
+      let extraNote = (idx === 3 && dailyUsage <= 0.80) ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : "";
       recommendationHTML += `<li>
         ${label}<a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${extraNote}
       </li>`;
@@ -674,78 +654,26 @@ function updateDeltaRecommendation() {
   }
   recommendationHTML += `</div>`;
   document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
-}
+} // <-- Add this closing bracket to properly end the function
 
-// --- Reset Button: Full Functionality Fix ---
-function resetCalculator() {
-  document.getElementById('peakRate').value = 0;
-  document.getElementById('offPeakRate').value = 0;
-  document.getElementById('peakStart').value = '1';
-  document.getElementById('peakStartAMPM').value = 'AM';
-  document.getElementById('peakEnd').value = '1';
-  document.getElementById('peakEndAMPM').value = 'AM';
-  for (let i = 1; i <= 12; i++) {
-    document.getElementById(`month${i}`).value = 0;
-  }
-  document.getElementById('totalUsage').textContent = 'Total Usage: 0 kWh';
-  document.getElementById('peakUsage').textContent = 'Peak Usage: 0 kWh';
-  document.getElementById('offPeakUsage').textContent = 'Off-Peak Usage: 0 kWh';
-  document.getElementById('peakCost').textContent = 'Peak Cost: $0.00';
-  document.getElementById('offPeakCost').textContent = 'Off-Peak Cost: $0.00';
-  document.getElementById('totalCost').textContent = 'Total Cost: $0.00';
-  document.getElementById('deltaRecommendation').innerHTML = '';
-  window.totalUsage = 0;
-  window.dailyUsage = 0;
-  window.recommendations = [];
-  updateCalculations(); // Ensure UI updates after reset
-}
-
-// --- Event Listeners ---
-document.getElementById('resetButton').addEventListener('click', resetCalculator);
-
-function updateCalculations() {
-  const peakRate = parseInput(document.getElementById('peakRate').value) / 100;
-  const offPeakRate = parseInput(document.getElementById('offPeakRate').value) / 100;
-  const peakTimeRatio = calculatePeakHours();
-
-  let totalUsage = 0;
-  for (let i = 1; i <= 12; i++) {
-    totalUsage += parseInput(document.getElementById(`month${i}`).value);
-  }
-
-  const peakUsage = totalUsage * peakTimeRatio;
-  const offPeakUsage = totalUsage - peakUsage;
-  const peakCost = peakUsage * peakRate;
-  const offPeakCost = offPeakUsage * offPeakRate;
-  const totalCost = peakCost + offPeakCost;
-
-  document.getElementById('totalUsage').textContent = `Total Usage: ${totalUsage.toFixed(1)} kWh`;
-  document.getElementById('peakUsage').textContent = `Peak Usage: ${peakUsage.toFixed(1)} kWh`;
-  document.getElementById('offPeakUsage').textContent = `Off-Peak Usage: ${offPeakUsage.toFixed(1)} kWh`;
-  document.getElementById('peakCost').textContent = `Peak Cost: $${peakCost.toFixed(2)}`;
-  document.getElementById('offPeakCost').textContent = `Off-Peak Cost: $${offPeakCost.toFixed(2)}`;
-  document.getElementById('totalCost').textContent = `Total Cost: $${totalCost.toFixed(2)}`;
-
-  updateDeltaRecommendation();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('peakRate').addEventListener('input', updateCalculations);
-  document.getElementById('offPeakRate').addEventListener('input', updateCalculations);
-  document.getElementById('peakStart').addEventListener('change', updateCalculations);
-  document.getElementById('peakStartAMPM').addEventListener('change', updateCalculations);
-  document.getElementById('peakEnd').addEventListener('change', updateCalculations);
-  document.getElementById('peakEndAMPM').addEventListener('change', updateCalculations);
-  for (let i = 1; i <= 12; i++) {
-    document.getElementById(`month${i}`).addEventListener('input', updateCalculations);
-  }
-});
+        // --- Event Listeners ---
+        document.getElementById('resetButton').addEventListener('click', () => {
+            // Reset all input fields
+            const inputs = document.querySelectorAll('.input-group input, .months-grid input');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            document.getElementById('deltaRecommendation').innerHTML = '';
+            document.getElementById('totalUsage').innerText = 'Total Usage: 0 kWh';
+            document.getElementById('peakUsage').innerText = 'Peak Usage: 0 kWh';
+            document.getElementById('offPeakUsage').innerText = 'Off-Peak Usage: 0 kWh';
+            document.getElementById('peakCost').innerText = 'Peak Cost: $0.00';
+            document.getElementById('offPeakCost').innerText = 'Off-Peak Cost: $0.00';
+            document.getElementById('totalCost').innerText = 'Total Cost: $0.00';
+        });
+    
+        // --- Initial Calculation (if needed) ---
+        // updateDeltaRecommendation();
     </script>
-    </body>
-    </html>
-
-    <footer class="footer">
-        <div class="footer-text">
-            © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
-        </div>
-    </footer>
+</body>
+</html>
