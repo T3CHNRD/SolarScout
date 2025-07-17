@@ -151,11 +151,6 @@
             gap: 0.5rem;
         }
     
-        .month-input label {
-            font-size: 0.9rem;
-            color: var(--text-dark);
-        }
-    
         .results {
             background: linear-gradient(135deg, var(--purple-gradient-dark), var(--purple-gradient-light));
             padding: 1.5rem;
@@ -527,11 +522,10 @@ function updateDeltaRecommendation() {
     return;
   }
 
-  // 3. Main recommendation logic
   const requiredCapacity = totalUsage;
   const extendedBackupCapacity = dailyUsage * 3.5;
 
-  // 4. Battery configs (sorted by capacity ascending)
+  // Battery configs (sorted by capacity ascending)
   const configs = [
     { model: "Delta Pro", tier: 1, label: "Delta Pro", capacity: 3.6, extras: 0, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
     { model: "Delta Pro", tier: 1, label: "Delta Pro + 1 extra battery", capacity: 7.2, extras: 1, expandable: true, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
@@ -547,59 +541,75 @@ function updateDeltaRecommendation() {
     { model: "Delta Pro Ultra", tier: 3, label: "Delta Pro Ultra + 5 extra batteries", capacity: 36, extras: 5, expandable: false, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
   ];
 
-  // --- 1. Good: Smallest that meets/exceeds requiredCapacity ---
-  const good = configs.find(cfg => cfg.capacity >= requiredCapacity) || null;
+  // --- Always fill all 4 slots with unique configs in order ---
+  const recs = [];
+  const usedLabels = new Set();
 
-  // --- 2. Better: Same model as Good, with +1 or +2 batteries (if expandable and available) ---
+  // Good
+  const good = configs.find(cfg => cfg.capacity >= requiredCapacity);
+  if (good) {
+    recs.push(good);
+    usedLabels.add(good.label);
+  }
+
+  // Better
   let better = null;
   if (good && good.expandable) {
-    // Find next config with same model, more extras, and meets requiredCapacity
     better = configs.find(cfg =>
       cfg.model === good.model &&
       cfg.extras > good.extras &&
-      cfg.capacity >= requiredCapacity
-    ) || null;
-  }
-
-  // --- 3. Best: Next higher-tier model or larger combo that exceeds Better ---
-  let best = null;
-  let minBestCapacity = better ? better.capacity + 0.01 : (good ? good.capacity + 0.01 : 0);
-  if (minBestCapacity > 0) {
-    best = configs.find(cfg =>
-      cfg.capacity >= minBestCapacity &&
       cfg.capacity >= requiredCapacity &&
-      (
-        !good || cfg.label !== good.label
-      ) &&
-      (
-        !better || cfg.label !== better.label
-      )
-    ) || null;
+      !usedLabels.has(cfg.label)
+    );
+    if (better) {
+      recs.push(better);
+      usedLabels.add(better.label);
+    }
   }
 
-  // --- 4. Extended Backup: meets or exceeds extendedBackupCapacity ---
-  let extended = configs.find(cfg =>
-    cfg.capacity >= extendedBackupCapacity &&
-    (!good || cfg.label !== good.label) &&
-    (!better || cfg.label !== better.label) &&
-    (!best || cfg.label !== best.label)
-  ) || null;
+  // Best
+  let best = null;
+  let minBestCapacity = recs.length > 1 ? recs[1].capacity + 0.01 : (good ? good.capacity + 0.01 : 0);
+  best = configs.find(cfg =>
+    cfg.capacity >= minBestCapacity &&
+    cfg.capacity >= requiredCapacity &&
+    !usedLabels.has(cfg.label)
+  );
+  if (best) {
+    recs.push(best);
+    usedLabels.add(best.label);
+  }
 
-  // --- Build ordered array ---
-  const recs = [good, better, best, extended];
+  // Extended Backup
+  const extended = configs.find(cfg =>
+    cfg.capacity >= extendedBackupCapacity &&
+    !usedLabels.has(cfg.label)
+  );
+  if (extended) {
+    recs.push(extended);
+    usedLabels.add(extended.label);
+  }
+
+  // Fill remaining slots with next unique configs
+  let idx = 0;
+  while (recs.length < 4 && idx < configs.length) {
+    if (!usedLabels.has(configs[idx].label)) {
+      recs.push(configs[idx]);
+      usedLabels.add(configs[idx].label);
+    }
+    idx++;
+  }
 
   // --- Build HTML ---
   let recommendationHTML = `<div class="recommendation-content">`;
   if (usageMsg) recommendationHTML += `<div style="margin-bottom:1em;"><b>${usageMsg}</b></div>`;
 
-  // Only show if at least one rec is available
-  if (recs.filter(Boolean).length === 0) {
+  if (recs.length === 0) {
     recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
   } else {
     recommendationHTML += `<h3>Recommended Power Solutions</h3>
       <ul class="product-links">`;
     recs.forEach((opt, idx) => {
-      if (!opt) return;
       let label = "";
       if (idx === 0) label = "<b>Good:</b> ";
       if (idx === 1) label = "<b>Better:</b> ";
@@ -618,65 +628,47 @@ function updateDeltaRecommendation() {
 
 // --- Reset Button: Full Functionality Fix ---
 function resetCalculator() {
-  // Reset Electricity Rate Settings to 0
   document.getElementById('peakRate').value = 0;
   document.getElementById('offPeakRate').value = 0;
-
-  // Reset time-of-use selects to defaults
   document.getElementById('peakStart').value = '1';
   document.getElementById('peakStartAMPM').value = 'AM';
   document.getElementById('peakEnd').value = '1';
   document.getElementById('peakEndAMPM').value = 'AM';
-
-  // Reset all monthly inputs to 0
   for (let i = 1; i <= 12; i++) {
     document.getElementById(`month${i}`).value = 0;
   }
-
- 
   document.getElementById('totalUsage').textContent = 'Total Usage: 0 kWh';
   document.getElementById('peakUsage').textContent = 'Peak Usage: 0 kWh';
   document.getElementById('offPeakUsage').textContent = 'Off-Peak Usage: 0 kWh';
   document.getElementById('peakCost').textContent = 'Peak Cost: $0.00';
   document.getElementById('offPeakCost').textContent = 'Off-Peak Cost: $0.00';
   document.getElementById('totalCost').textContent = 'Total Cost: $0.00';
-
-  // Clear recommendations
   document.getElementById('deltaRecommendation').innerHTML = '';
-
-  // Optionally reset any global state
   window.totalUsage = 0;
   window.dailyUsage = 0;
   window.recommendations = [];
-
-  // Optionally, scroll to top or give visual feedback
+  updateCalculations(); // Ensure UI updates after reset
 }
 
 // --- Event Listeners ---
 document.getElementById('resetButton').addEventListener('click', resetCalculator);
 
-// Update calculations and recommendations on input change
 function updateCalculations() {
-  const peakRate = parseInput(document.getElementById('peakRate').value) / 100; // cents to dollars
+  const peakRate = parseInput(document.getElementById('peakRate').value) / 100;
   const offPeakRate = parseInput(document.getElementById('offPeakRate').value) / 100;
   const peakTimeRatio = calculatePeakHours();
 
-  // Calculate total usage
   let totalUsage = 0;
   for (let i = 1; i <= 12; i++) {
     totalUsage += parseInput(document.getElementById(`month${i}`).value);
   }
 
-  // Calculate peak and off-peak usage
   const peakUsage = totalUsage * peakTimeRatio;
   const offPeakUsage = totalUsage - peakUsage;
-
-  // Calculate costs
   const peakCost = peakUsage * peakRate;
   const offPeakCost = offPeakUsage * offPeakRate;
   const totalCost = peakCost + offPeakCost;
 
-  // Update display
   document.getElementById('totalUsage').textContent = `Total Usage: ${totalUsage.toFixed(1)} kWh`;
   document.getElementById('peakUsage').textContent = `Peak Usage: ${peakUsage.toFixed(1)} kWh`;
   document.getElementById('offPeakUsage').textContent = `Off-Peak Usage: ${offPeakUsage.toFixed(1)} kWh`;
@@ -684,23 +676,16 @@ function updateCalculations() {
   document.getElementById('offPeakCost').textContent = `Off-Peak Cost: $${offPeakCost.toFixed(2)}`;
   document.getElementById('totalCost').textContent = `Total Cost: $${totalCost.toFixed(2)}`;
 
-  // Update Delta recommendation
   updateDeltaRecommendation();
 }
 
-// Attach listeners to all inputs
 document.addEventListener('DOMContentLoaded', function() {
-  // Rate inputs
   document.getElementById('peakRate').addEventListener('input', updateCalculations);
   document.getElementById('offPeakRate').addEventListener('input', updateCalculations);
-
-  // Time-of-use selects
   document.getElementById('peakStart').addEventListener('change', updateCalculations);
   document.getElementById('peakStartAMPM').addEventListener('change', updateCalculations);
   document.getElementById('peakEnd').addEventListener('change', updateCalculations);
   document.getElementById('peakEndAMPM').addEventListener('change', updateCalculations);
-
-  // Month inputs
   for (let i = 1; i <= 12; i++) {
     document.getElementById(`month${i}`).addEventListener('input', updateCalculations);
   }
