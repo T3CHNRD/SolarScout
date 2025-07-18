@@ -559,16 +559,52 @@ function getRecommendations(dailyUsage) {
     let all = [];
     ecoflowProducts.forEach(p => all = all.concat(allConfigs(p)));
 
+    // Helper: Multi-unit configs for high usage
+    function multiUnitConfigs(minCapacity) {
+        const arr = [];
+        ecoflowProducts.forEach(p => {
+            for (let extras = 0; extras <= p.maxExtras; extras++) {
+                const singleCap = p.base + p.step * extras;
+                if (singleCap === 0) continue;
+                const units = Math.ceil(minCapacity / singleCap);
+                const totalCap = units * singleCap;
+                if (units > 1 && totalCap >= minCapacity) {
+                    arr.push({
+                        model: `${units}x ${p.model}${extras > 0 ? ` + ${extras} battery${extras > 1 ? 'ies' : ''} each` : ''}`,
+                        tier: p.tier,
+                        label: `${units}x ${p.model}${extras > 0 ? ` + ${extras} battery${extras > 1 ? 'ies' : ''} each` : ''}`,
+                        capacity: totalCap,
+                        extras,
+                        link: p.link
+                    });
+                }
+            }
+        });
+        return arr;
+    }
+
     // --- Good ---
     let good;
-    // Find lowest viable config (prioritize unit + extras)
-    good = all.filter(c =>
+    let goodCandidates = all.filter(c =>
         c.capacity >= dailyUsage &&
-        (c.extras > 0 || c.capacity === c.model.base || c.extras === 0)
-    ).sort((a, b) => a.capacity - b.capacity)[0];
+        (
+            // Favor single unit + extras
+            (c.extras > 0 || c.capacity === c.model.base || c.extras === 0)
+        )
+    );
+    // For 2kWh+ usage, allow multi-unit configs
+    if (dailyUsage >= 2) {
+        goodCandidates = goodCandidates.concat(multiUnitConfigs(dailyUsage));
+    }
+    // Never suggest Ultra/top-tier units prematurely
+    goodCandidates = goodCandidates.filter(c =>
+        !(c.model.includes("Ultra") && dailyUsage < ecoflowProducts[2].base)
+    );
+    good = goodCandidates.sort((a, b) => a.capacity - b.capacity)[0];
     if (!good) {
         // Fallback: lowest config that meets requirement
-        good = all.filter(c => c.capacity >= dailyUsage)
+        good = all.concat(multiUnitConfigs(dailyUsage))
+            .filter(c => c.capacity >= dailyUsage)
             .sort((a, b) => a.capacity - b.capacity)[0];
     }
     if (good && !usedLabels.has(good.label)) {
@@ -578,23 +614,31 @@ function getRecommendations(dailyUsage) {
 
     // --- Better ---
     let better;
-    if (good) {
-        // Favor same unit + extras if viable, else next higher-tier unit
-        better = all.filter(c =>
-            c.capacity > good.capacity &&
-            c.capacity >= dailyUsage &&
-            (
-                (c.model === good.model && c.extras > good.extras) ||
-                (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
-            ) &&
-            !usedLabels.has(c.label)
-        ).sort((a, b) => {
-            // Favor same unit + extras first
-            if (a.model === good.model && b.model !== good.model) return -1;
-            if (a.model !== good.model && b.model === good.model) return 1;
-            return a.capacity - b.capacity;
-        })[0];
+    let betterCandidates = all.filter(c =>
+        c.capacity > good.capacity &&
+        c.capacity >= dailyUsage &&
+        (
+            // Favor same unit + extras if viable
+            (c.model === good.model && c.extras > good.extras) ||
+            (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
+        )
+    );
+    if (dailyUsage >= 2) {
+        betterCandidates = betterCandidates.concat(
+            multiUnitConfigs(Math.max(good.capacity + 0.01, dailyUsage))
+                .filter(c => c.capacity > good.capacity)
+        );
     }
+    // Never suggest Ultra/top-tier units prematurely
+    betterCandidates = betterCandidates.filter(c =>
+        !(c.model.includes("Ultra") && good.model !== "Delta Pro Ultra" && good.capacity < ecoflowProducts[2].base)
+    );
+    better = betterCandidates.sort((a, b) => {
+        // Favor same unit + extras first
+        if (a.model === good.model && b.model !== good.model) return -1;
+        if (a.model !== good.model && b.model === good.model) return 1;
+        return a.capacity - b.capacity;
+    })[0];
     if (better && !usedLabels.has(better.label)) {
         configs.push({ ...better, tierLabel: "Better" });
         usedLabels.add(better.label);
@@ -602,24 +646,29 @@ function getRecommendations(dailyUsage) {
 
     // --- Best ---
     let best;
-    if (better) {
-        // Favor highest same-unit config first, else next higher-tier unit
-        best = all.filter(c =>
-            c.capacity > better.capacity &&
-            (
-                (c.model === better.model && c.extras > better.extras) ||
-                (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === better.model))
-            ) &&
-            c.capacity > good.capacity &&
-            c.capacity > better.capacity &&
-            !usedLabels.has(c.label)
-        ).sort((a, b) => {
-            // Favor same unit + extras first
-            if (a.model === better.model && b.model !== better.model) return -1;
-            if (a.model !== better.model && b.model === better.model) return 1;
-            return a.capacity - b.capacity;
-        })[0];
+    let bestCandidates = all.filter(c =>
+        c.capacity > better.capacity &&
+        (
+            (c.model === better.model && c.extras > better.extras) ||
+            (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === better.model))
+        )
+    );
+    if (dailyUsage >= 2) {
+        bestCandidates = bestCandidates.concat(
+            multiUnitConfigs(Math.max(better.capacity + 0.01, dailyUsage))
+                .filter(c => c.capacity > better.capacity)
+        );
     }
+    // Never suggest Ultra/top-tier units prematurely
+    bestCandidates = bestCandidates.filter(c =>
+        !(c.model.includes("Ultra") && better.model !== "Delta Pro Ultra" && better.capacity < ecoflowProducts[2].base)
+    );
+    best = bestCandidates.sort((a, b) => {
+        // Favor same unit + extras first
+        if (a.model === better.model && b.model !== better.model) return -1;
+        if (a.model !== better.model && b.model === better.model) return 1;
+        return a.capacity - b.capacity;
+    })[0];
     if (best && !usedLabels.has(best.label)) {
         configs.push({ ...best, tierLabel: "Best" });
         usedLabels.add(best.label);
@@ -629,18 +678,25 @@ function getRecommendations(dailyUsage) {
     let extended;
     if (dailyUsage <= 0.80) {
         const extMin = dailyUsage * 3.5;
-        // Use highest feasible config (unit + extras or higher unit)
-        extended = all.filter(c =>
-            c.capacity >= extMin &&
-            !usedLabels.has(c.label)
-        ).sort((a, b) => b.capacity - a.capacity)[0];
+        let extCandidates = all.filter(c =>
+            c.capacity >= extMin
+        );
+        if (dailyUsage >= 2) {
+            extCandidates = extCandidates.concat(multiUnitConfigs(extMin));
+        }
+        // Never suggest Ultra/top-tier units prematurely
+        extCandidates = extCandidates.filter(c =>
+            !(c.model.includes("Ultra") && extMin < ecoflowProducts[2].base)
+        );
         // Must exceed all previous tiers
         const maxPrev = Math.max(
             good ? good.capacity : 0,
             better ? better.capacity : 0,
             best ? best.capacity : 0
         );
-        if (extended && extended.capacity > maxPrev && !usedLabels.has(extended.label)) {
+        extended = extCandidates.filter(c => c.capacity > maxPrev)
+            .sort((a, b) => a.capacity - b.capacity)[0];
+        if (extended && !usedLabels.has(extended.label)) {
             configs.push({ ...extended, tierLabel: "Extended Backup" });
             usedLabels.add(extended.label);
         }
