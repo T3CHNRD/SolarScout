@@ -427,8 +427,6 @@
         </div>
     </div>
 
-    <!-- Remove the usageDisplay block at the end of the body -->
-
     <!-- This is the only footer that should remain in the document -->
     <div class="footer">
     <div class="footer-text">
@@ -538,70 +536,112 @@ function getNextConfig(currentConfig) {
 // This version strictly follows your rules for Good, Better, Best, Extended Backup
 
 function getRecommendations(dailyUsage) {
-    const recs = [];
+    const configs = [];
+
+    // Helper to build all configs for a model
+    function allConfigs(modelObj) {
+        const arr = [];
+        for (let extras = 0; extras <= modelObj.maxExtras; extras++) {
+            arr.push({
+                model: modelObj.model,
+                tier: modelObj.tier,
+                label: extras === 0 ? modelObj.model : `${modelObj.model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+                capacity: modelObj.base + modelObj.step * extras,
+                extras,
+                link: modelObj.link
+            });
+        }
+        return arr;
+    }
+
+    // Build all configs, filter by rules
+    let all = [];
+    ecoflowProducts.forEach(p => all = all.concat(allConfigs(p)));
 
     // --- Good ---
-    // Smallest config ≥ dailyUsage
-    const good = getBestConfig(dailyUsage);
-    if (good) recs.push({ ...good, tierLabel: "Good" });
+    let good;
+    if (dailyUsage < 0.35) {
+        // Only Pro or Pro 3
+        good = all.filter(c =>
+            (c.model === "Delta Pro" || c.model === "Delta Pro 3") &&
+            c.capacity >= dailyUsage
+        ).sort((a, b) => a.capacity - b.capacity)[0];
+    } else {
+        good = all.filter(c =>
+            c.capacity >= dailyUsage
+        ).sort((a, b) => a.capacity - b.capacity)[0];
+    }
+    if (good) configs.push({ ...good, tierLabel: "Good" });
 
     // --- Better ---
-    // Next config up from Good (higher model or more extras), must be > Good and ≥ dailyUsage
-    let better = null;
+    let better;
     if (good) {
-        let minBetterCapacity = good.capacity + 0.001;
-        better = getBestConfig(minBetterCapacity);
-        if (better && better.capacity < dailyUsage) {
-            // If next config doesn't meet dailyUsage, find next that does
-            better = getBestConfig(dailyUsage);
-            if (better && better.capacity <= good.capacity) {
-                // If still same as Good, go next up
-                better = getBestConfig(good.capacity + 0.001);
-            }
-        }
+        // Same model + more extras, or next model
+        better = all.filter(c =>
+            c.capacity > good.capacity &&
+            c.capacity >= dailyUsage &&
+            (
+                (c.model === good.model && c.extras > good.extras) ||
+                (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
+            )
+        ).sort((a, b) => a.capacity - b.capacity)[0];
     }
-    if (better) recs.push({ ...better, tierLabel: "Better" });
+    if (better) configs.push({ ...better, tierLabel: "Better" });
 
     // --- Best ---
-    // Next config up from Better (higher model or more extras), must be > Better and ≥ dailyUsage*2
-    let best = null;
+    let best;
     if (better) {
-        let minBestCapacity = Math.max(better.capacity + 0.001, dailyUsage * 2);
-        best = getBestConfig(minBestCapacity);
+        best = all.filter(c =>
+            c.capacity > better.capacity &&
+            (
+                (c.model === better.model && c.extras > better.extras) ||
+                (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === better.model))
+            )
+        ).sort((a, b) => a.capacity - b.capacity)[0];
     }
-    if (best) recs.push({ ...best, tierLabel: "Best" });
+    if (best) configs.push({ ...best, tierLabel: "Best" });
 
     // --- Extended Backup ---
-    // Only if dailyUsage ≤ 0.80, must be highest config ≥ dailyUsage*3.5 and higher than Best
     if (dailyUsage <= 0.80) {
-        let extended = null;
-        let minExtendedCapacity = Math.max(dailyUsage * 3.5, best ? best.capacity + 0.001 : 0);
-        // <0.60: Pro 3 or Pro 3 + extras
+        let extended;
+        const minExtended = Math.max(dailyUsage * 3.5, best ? best.capacity + 0.001 : 0);
+
         if (dailyUsage < 0.60) {
-            extended = getConfig(ecoflowProducts[1], minExtendedCapacity);
-        }
-        // 0.60–2.00: Ultra or Ultra + extras
-        else if (dailyUsage <= 2.00) {
-            extended = getConfig(ecoflowProducts[2], minExtendedCapacity);
-        }
-        // >2.00: Multiple Ultra units
-        else {
+            // Pro 3 or Pro 3 + extras
+            extended = all.filter(c =>
+                c.model === "Delta Pro 3" &&
+                c.capacity >= minExtended
+            ).sort((a, b) => a.capacity - b.capacity)[0];
+        } else if (dailyUsage <= 2.00) {
+            // Ultra or Ultra + extras
+            extended = all.filter(c =>
+                c.model === "Delta Pro Ultra" &&
+                c.capacity >= minExtended
+            ).sort((a, b) => a.capacity - b.capacity)[0];
+        } else {
+            // 2x Ultra w/ extras
             const ultra = ecoflowProducts[2];
-            const unitCapacity = ultra.base + ultra.step * ultra.maxExtras;
-            const units = Math.ceil(minExtendedCapacity / unitCapacity);
+            const maxUltra = ultra.base + ultra.step * ultra.maxExtras;
+            const units = Math.ceil(minExtended / maxUltra);
             extended = {
                 model: `${units}x ${ultra.model}`,
                 tier: ultra.tier,
                 label: `${units}x ${ultra.model} (max batteries per unit)`,
-                capacity: units * unitCapacity,
+                capacity: units * maxUltra,
                 extras: ultra.maxExtras,
                 link: ultra.link
             };
         }
-        if (extended) recs.push({ ...extended, tierLabel: "Extended Backup" });
+        if (extended) configs.push({ ...extended, tierLabel: "Extended Backup" });
     }
 
-    return recs;
+    // Remove duplicates by label
+    const seen = new Set();
+    return configs.filter(c => {
+        if (seen.has(c.label)) return false;
+        seen.add(c.label);
+        return true;
+    });
 }
 
 // --- Main Recommendation Function ---
@@ -677,13 +717,5 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
-
-// ...existing code...
 </script>
 
-<!-- This is the only footer that should remain in the document -->
-<div class="footer">
-    <div class="footer-text">
-        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
-    </div>
-</div>
