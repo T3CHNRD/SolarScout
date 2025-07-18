@@ -535,61 +535,60 @@ function getNextConfig(currentConfig) {
 }
 
 // --- Recommendation Logic ---
+// This version strictly follows your rules for Good, Better, Best, Extended Backup
+
 function getRecommendations(dailyUsage) {
     const recs = [];
 
     // --- Good ---
-    // For very small usage, start with Delta Pro
-    if (dailyUsage < 0.35) {
-        const deltaPro = getConfig(ecoflowProducts[0], dailyUsage);
-        if (deltaPro) {
-            recs.push({ ...deltaPro, tierLabel: "Good" });
-        }
-    } else {
-        // For higher usage, get the best config
-        const good = getBestConfig(dailyUsage);
-        if (good) recs.push({ ...good, tierLabel: "Good" });
-    }
-    
+    // Smallest config ≥ dailyUsage
+    const good = getBestConfig(dailyUsage);
+    if (good) recs.push({ ...good, tierLabel: "Good" });
+
     // --- Better ---
-    let better;
-    if (recs.length > 0) {
-        const good = recs[0];
-        // Try next config up from Good
-        better = getNextConfig(good);
-        if (better) recs.push({ ...better, tierLabel: "Better" });
-    }
-    
-    // --- Best ---
-    if (better) {
-        // Try next config up from Better, but ensure it meets 2x daily usage
-        let best = getNextConfig(better);
-        while (best && best.capacity < dailyUsage * 2) {
-            const nextBest = getNextConfig(best);
-            if (!nextBest) break;
-            best = nextBest;
+    // Next config up from Good (higher model or more extras), must be > Good and ≥ dailyUsage
+    let better = null;
+    if (good) {
+        let minBetterCapacity = good.capacity + 0.001;
+        better = getBestConfig(minBetterCapacity);
+        if (better && better.capacity < dailyUsage) {
+            // If next config doesn't meet dailyUsage, find next that does
+            better = getBestConfig(dailyUsage);
+            if (better && better.capacity <= good.capacity) {
+                // If still same as Good, go next up
+                better = getBestConfig(good.capacity + 0.001);
+            }
         }
-        if (best) recs.push({ ...best, tierLabel: "Best" });
     }
-    
+    if (better) recs.push({ ...better, tierLabel: "Better" });
+
+    // --- Best ---
+    // Next config up from Better (higher model or more extras), must be > Better and ≥ dailyUsage*2
+    let best = null;
+    if (better) {
+        let minBestCapacity = Math.max(better.capacity + 0.001, dailyUsage * 2);
+        best = getBestConfig(minBestCapacity);
+    }
+    if (best) recs.push({ ...best, tierLabel: "Best" });
+
     // --- Extended Backup ---
+    // Only if dailyUsage ≤ 0.80, must be highest config ≥ dailyUsage*3.5 and higher than Best
     if (dailyUsage <= 0.80) {
-        const extendedCapacity = dailyUsage * 3.5;
         let extended = null;
-        
+        let minExtendedCapacity = Math.max(dailyUsage * 3.5, best ? best.capacity + 0.001 : 0);
         // <0.60: Pro 3 or Pro 3 + extras
         if (dailyUsage < 0.60) {
-            extended = getConfig(ecoflowProducts[1], extendedCapacity);
-        } 
+            extended = getConfig(ecoflowProducts[1], minExtendedCapacity);
+        }
         // 0.60–2.00: Ultra or Ultra + extras
         else if (dailyUsage <= 2.00) {
-            extended = getConfig(ecoflowProducts[2], extendedCapacity);
+            extended = getConfig(ecoflowProducts[2], minExtendedCapacity);
         }
         // >2.00: Multiple Ultra units
         else {
             const ultra = ecoflowProducts[2];
             const unitCapacity = ultra.base + ultra.step * ultra.maxExtras;
-            const units = Math.ceil(extendedCapacity / unitCapacity);
+            const units = Math.ceil(minExtendedCapacity / unitCapacity);
             extended = {
                 model: `${units}x ${ultra.model}`,
                 tier: ultra.tier,
@@ -599,7 +598,6 @@ function getRecommendations(dailyUsage) {
                 link: ultra.link
             };
         }
-        
         if (extended) recs.push({ ...extended, tierLabel: "Extended Backup" });
     }
 
@@ -631,12 +629,9 @@ function updateDeltaRecommendation() {
 
     // Recommendation logic
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
-    
-    if (dailyUsage >= 0.01) {
-        // --- Build Recommendations ---
-        const recs = getRecommendations(dailyUsage);
+    const recs = dailyUsage >= 0.01 ? getRecommendations(dailyUsage) : [];
 
-        // --- Build HTML ---
+    if (recs.length > 0) {
         recommendationHTML += `<ul class="product-links">`;
         recs.forEach(opt => {
             recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
@@ -646,27 +641,44 @@ function updateDeltaRecommendation() {
         recommendationHTML += `<p>Enter your monthly usage data to see personalized recommendations.</p>`;
     }
 
-    // Always show the discount message
-    recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
-        You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
-    </div>`;
+    // Always show the discount message, static and persistent
+    document.getElementById('discountMessage').style.display = "block";
 
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
 
-// Make sure the discount message shows on page load
-document.addEventListener('DOMContentLoaded', function() {
+// --- Persistent Discount Message (outside recommendation card) ---
+window.addEventListener('DOMContentLoaded', function() {
+    // Add persistent discount message if not present
+    if (!document.getElementById('discountMessage')) {
+        const msgDiv = document.createElement('div');
+        msgDiv.id = "discountMessage";
+        msgDiv.style = "margin:2rem auto 0 auto;max-width:800px;padding:1em;border-radius:8px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;";
+        msgDiv.innerHTML = `You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout`;
+        document.body.insertBefore(msgDiv, document.querySelector('.footer'));
+    }
+
     for (let i = 1; i <= 12; i++) {
         const inputElement = document.getElementById(`month${i}`);
         if (inputElement) {
             inputElement.addEventListener('input', updateDeltaRecommendation);
         }
     }
-    
-    // Initialize recommendations on page load
     updateDeltaRecommendation();
 });
+
+// --- Remove duplicate footer if present ---
+window.addEventListener('DOMContentLoaded', function() {
+    const footers = document.querySelectorAll('.footer-text');
+    if (footers.length > 1) {
+        for (let i = 1; i < footers.length; i++) {
+            footers[i].parentElement.remove();
+        }
+    }
+});
+
+// ...existing code...
 </script>
 
 <!-- This is the only footer that should remain in the document -->
