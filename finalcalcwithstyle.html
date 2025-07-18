@@ -637,23 +637,15 @@ function updateDeltaRecommendation() {
     // --- Build HTML ---
     let recommendationHTML = `<div class="recommendation-content"><h3>Recommended Power Solutions:</h3><ul class="product-links">`;
     recs.forEach(opt => {
-        recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}`;
-        // Show discount message directly under Extended Backup
-        if (opt.tierLabel === "Extended Backup") {
-            recommendationHTML += `<div style="margin-top:0.5em;padding:0.75em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
-                You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
-            </div>`;
-        }
-        recommendationHTML += `</li>`;
+        recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
     });
     recommendationHTML += `</ul>`;
 
-    // If no Extended Backup was recommended, show the message at the end
-    if (!recs.some(opt => opt.tierLabel === "Extended Backup")) {
-        recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
-            You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
-        </div>`;
-    }
+    // Always show the discount message, not just for Extended Backup
+    recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
+        You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
+    </div>`;
+
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
