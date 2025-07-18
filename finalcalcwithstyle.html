@@ -559,7 +559,7 @@ function getRecommendations(dailyUsage) {
     let all = [];
     ecoflowProducts.forEach(p => all = all.concat(allConfigs(p)));
 
-    // Helper: Multi-unit configs for high usage
+    // Helper: Multi-unit configs for high usage (≥2kWh)
     function multiUnitConfigs(minCapacity) {
         const arr = [];
         ecoflowProducts.forEach(p => {
@@ -596,10 +596,16 @@ function getRecommendations(dailyUsage) {
     if (dailyUsage >= 2) {
         goodCandidates = goodCandidates.concat(multiUnitConfigs(dailyUsage));
     }
-    // Never suggest Ultra/top-tier units prematurely
+    // Never suggest Ultra/top-tier units prematurely for Good
     goodCandidates = goodCandidates.filter(c =>
         !(c.model.includes("Ultra") && dailyUsage < ecoflowProducts[2].base)
     );
+    // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
+    const dp3 = all.find(c => c.model === "Delta Pro 3" && c.capacity >= dailyUsage);
+    const dp2max = all.find(c => c.model === "Delta Pro" && c.extras === 2);
+    if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity >= dailyUsage) {
+        goodCandidates = goodCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
+    }
     good = goodCandidates.sort((a, b) => a.capacity - b.capacity)[0];
     if (!good) {
         // Fallback: lowest config that meets requirement
@@ -618,7 +624,7 @@ function getRecommendations(dailyUsage) {
         c.capacity > good.capacity &&
         c.capacity >= dailyUsage &&
         (
-            // Favor same unit + extras if viable
+            // Favor same unit + extras if viable, else next tier
             (c.model === good.model && c.extras > good.extras) ||
             (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
         )
@@ -629,16 +635,15 @@ function getRecommendations(dailyUsage) {
                 .filter(c => c.capacity > good.capacity)
         );
     }
-    // Never suggest Ultra/top-tier units prematurely
+    // Never suggest Ultra/top-tier units prematurely for Better
     betterCandidates = betterCandidates.filter(c =>
         !(c.model.includes("Ultra") && good.model !== "Delta Pro Ultra" && good.capacity < ecoflowProducts[2].base)
     );
-    better = betterCandidates.sort((a, b) => {
-        // Favor same unit + extras first
-        if (a.model === good.model && b.model !== good.model) return -1;
-        if (a.model !== good.model && b.model === good.model) return 1;
-        return a.capacity - b.capacity;
-    })[0];
+    // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
+    if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity > good.capacity) {
+        betterCandidates = betterCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
+    }
+    better = betterCandidates.sort((a, b) => a.capacity - b.capacity)[0];
     if (better && !usedLabels.has(better.label)) {
         configs.push({ ...better, tierLabel: "Better" });
         usedLabels.add(better.label);
@@ -659,16 +664,15 @@ function getRecommendations(dailyUsage) {
                 .filter(c => c.capacity > better.capacity)
         );
     }
-    // Never suggest Ultra/top-tier units prematurely
+    // Never suggest Ultra/top-tier units prematurely for Best
     bestCandidates = bestCandidates.filter(c =>
         !(c.model.includes("Ultra") && better.model !== "Delta Pro Ultra" && better.capacity < ecoflowProducts[2].base)
     );
-    best = bestCandidates.sort((a, b) => {
-        // Favor same unit + extras first
-        if (a.model === better.model && b.model !== better.model) return -1;
-        if (a.model !== better.model && b.model === better.model) return 1;
-        return a.capacity - b.capacity;
-    })[0];
+    // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
+    if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity > better.capacity) {
+        bestCandidates = bestCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
+    }
+    best = bestCandidates.sort((a, b) => a.capacity - b.capacity)[0];
     if (best && !usedLabels.has(best.label)) {
         configs.push({ ...best, tierLabel: "Best" });
         usedLabels.add(best.label);
@@ -684,10 +688,14 @@ function getRecommendations(dailyUsage) {
         if (dailyUsage >= 2) {
             extCandidates = extCandidates.concat(multiUnitConfigs(extMin));
         }
-        // Never suggest Ultra/top-tier units prematurely
+        // Never suggest Ultra/top-tier units prematurely for Extended Backup
         extCandidates = extCandidates.filter(c =>
             !(c.model.includes("Ultra") && extMin < ecoflowProducts[2].base)
         );
+        // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
+        if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity >= extMin) {
+            extCandidates = extCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
+        }
         // Must exceed all previous tiers
         const maxPrev = Math.max(
             good ? good.capacity : 0,
