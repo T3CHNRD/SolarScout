@@ -537,8 +537,9 @@ function getNextConfig(currentConfig) {
 
 function getRecommendations(dailyUsage) {
     const configs = [];
+    let usedLabels = new Set();
 
-    // Helper to build all configs for a model
+    // Helper: all configs for a model
     function allConfigs(modelObj) {
         const arr = [];
         for (let extras = 0; extras <= modelObj.maxExtras; extras++) {
@@ -554,39 +555,45 @@ function getRecommendations(dailyUsage) {
         return arr;
     }
 
-    // Build all configs, filter by rules
+    // Build all configs
     let all = [];
     ecoflowProducts.forEach(p => all = all.concat(allConfigs(p)));
 
     // --- Good ---
     let good;
     if (dailyUsage < 0.35) {
-        // Only Pro or Pro 3
         good = all.filter(c =>
             (c.model === "Delta Pro" || c.model === "Delta Pro 3") &&
             c.capacity >= dailyUsage
         ).sort((a, b) => a.capacity - b.capacity)[0];
     } else {
         good = all.filter(c =>
-            c.capacity >= dailyUsage
+            c.capacity >= dailyUsage &&
+            (dailyUsage < 0.35 ? c.model !== "Delta Pro Ultra" : true)
         ).sort((a, b) => a.capacity - b.capacity)[0];
     }
-    if (good) configs.push({ ...good, tierLabel: "Good" });
+    if (good && !usedLabels.has(good.label)) {
+        configs.push({ ...good, tierLabel: "Good" });
+        usedLabels.add(good.label);
+    }
 
     // --- Better ---
     let better;
     if (good) {
-        // Same model + more extras, or next model
         better = all.filter(c =>
             c.capacity > good.capacity &&
             c.capacity >= dailyUsage &&
             (
                 (c.model === good.model && c.extras > good.extras) ||
                 (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
-            )
+            ) &&
+            !usedLabels.has(c.label)
         ).sort((a, b) => a.capacity - b.capacity)[0];
     }
-    if (better) configs.push({ ...better, tierLabel: "Better" });
+    if (better && !usedLabels.has(better.label)) {
+        configs.push({ ...better, tierLabel: "Better" });
+        usedLabels.add(better.label);
+    }
 
     // --- Best ---
     let best;
@@ -596,52 +603,75 @@ function getRecommendations(dailyUsage) {
             (
                 (c.model === better.model && c.extras > better.extras) ||
                 (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === better.model))
-            )
+            ) &&
+            c.capacity > good.capacity &&
+            c.capacity > better.capacity &&
+            !usedLabels.has(c.label)
         ).sort((a, b) => a.capacity - b.capacity)[0];
     }
-    if (best) configs.push({ ...best, tierLabel: "Best" });
-
-    // --- Extended Backup ---
-    if (dailyUsage <= 0.80) {
-        let extended;
-        const minExtended = Math.max(dailyUsage * 3.5, best ? best.capacity + 0.001 : 0);
-
-        if (dailyUsage < 0.60) {
-            // Pro 3 or Pro 3 + extras
-            extended = all.filter(c =>
-                c.model === "Delta Pro 3" &&
-                c.capacity >= minExtended
-            ).sort((a, b) => a.capacity - b.capacity)[0];
-        } else if (dailyUsage <= 2.00) {
-            // Ultra or Ultra + extras
-            extended = all.filter(c =>
-                c.model === "Delta Pro Ultra" &&
-                c.capacity >= minExtended
-            ).sort((a, b) => a.capacity - b.capacity)[0];
-        } else {
-            // 2x Ultra w/ extras
-            const ultra = ecoflowProducts[2];
-            const maxUltra = ultra.base + ultra.step * ultra.maxExtras;
-            const units = Math.ceil(minExtended / maxUltra);
-            extended = {
-                model: `${units}x ${ultra.model}`,
-                tier: ultra.tier,
-                label: `${units}x ${ultra.model} (max batteries per unit)`,
-                capacity: units * maxUltra,
-                extras: ultra.maxExtras,
-                link: ultra.link
-            };
-        }
-        if (extended) configs.push({ ...extended, tierLabel: "Extended Backup" });
+    if (best && !usedLabels.has(best.label)) {
+        configs.push({ ...best, tierLabel: "Best" });
+        usedLabels.add(best.label);
     }
 
-    // Remove duplicates by label
-    const seen = new Set();
-    return configs.filter(c => {
-        if (seen.has(c.label)) return false;
-        seen.add(c.label);
-        return true;
-    });
+    // --- Extended Backup ---
+    let extended;
+    const extMin = dailyUsage * 3.5;
+    let extConfig = null;
+
+    if (extMin < 0.60) {
+        // Use Pro 3 or Pro 3 + extras
+        extConfig = all.filter(c =>
+            c.model === "Delta Pro 3" &&
+            c.capacity >= extMin &&
+            !usedLabels.has(c.label)
+        ).sort((a, b) => a.capacity - b.capacity)[0];
+    } else if (extMin >= 0.60 && extMin <= 2.00) {
+        // Use Ultra or Ultra + extras, with sub-ranges
+        let ultraExtras = 0;
+        if (extMin >= 1.00 && extMin <= 1.25) ultraExtras = 0;
+        else if (extMin >= 1.26 && extMin <= 1.50) ultraExtras = 1;
+        else if (extMin >= 1.51 && extMin <= 1.60) ultraExtras = 2;
+        else if (extMin >= 1.61 && extMin <= 1.75) ultraExtras = 3;
+        else if (extMin >= 1.76 && extMin <= 1.90) ultraExtras = 4;
+        else if (extMin > 1.91) ultraExtras = 5;
+
+        extConfig = all.filter(c =>
+            c.model === "Delta Pro Ultra" &&
+            c.extras === ultraExtras &&
+            c.capacity >= extMin &&
+            !usedLabels.has(c.label)
+        ).sort((a, b) => a.capacity - b.capacity)[0];
+
+        // If not found, fallback to next available Ultra config ≥ extMin
+        if (!extConfig) {
+            extConfig = all.filter(c =>
+                c.model === "Delta Pro Ultra" &&
+                c.capacity >= extMin &&
+                !usedLabels.has(c.label)
+            ).sort((a, b) => a.capacity - b.capacity)[0];
+        }
+    } else if (extMin > 2.00) {
+        // Use Ultra + 5 extras (max) or multiple units
+        const ultra = ecoflowProducts[2];
+        const maxUltra = ultra.base + ultra.step * ultra.maxExtras;
+        const units = Math.ceil(extMin / maxUltra);
+        extConfig = {
+            model: `${units}x ${ultra.model}`,
+            tier: ultra.tier,
+            label: `${units}x ${ultra.model} (max batteries per unit)`,
+            capacity: units * maxUltra,
+            extras: ultra.maxExtras,
+            link: ultra.link
+        };
+    }
+
+    if (extConfig && !usedLabels.has(extConfig.label)) {
+        configs.push({ ...extConfig, tierLabel: "Extended Backup" });
+        usedLabels.add(extConfig.label);
+    }
+
+    return configs;
 }
 
 // --- Main Recommendation Function ---
