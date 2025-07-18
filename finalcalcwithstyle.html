@@ -429,6 +429,7 @@
 
     <!-- Remove the usageDisplay block at the end of the body -->
 
+    <!-- This is the only footer that should remain in the document -->
     <div class="footer">
     <div class="footer-text">
         © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
@@ -505,84 +506,86 @@ function getBestConfig(minCapacity) {
     return best;
 }
 
+function getNextConfig(currentConfig) {
+    // Returns the next higher config (more extras, or next model)
+    const idx = ecoflowProducts.findIndex(p => p.model === currentConfig.model);
+    // Try more extras
+    if (currentConfig.extras < ecoflowProducts[idx].maxExtras) {
+        return {
+            model: currentConfig.model,
+            tier: currentConfig.tier,
+            label: `${currentConfig.model} + ${currentConfig.extras + 1} extra battery${currentConfig.extras + 1 > 1 ? 'ies' : ''}`,
+            capacity: currentConfig.capacity + ecoflowProducts[idx].step,
+            extras: currentConfig.extras + 1,
+            link: currentConfig.link
+        };
+    }
+    // Try next model
+    if (idx + 1 < ecoflowProducts.length) {
+        return {
+            model: ecoflowProducts[idx + 1].model,
+            tier: ecoflowProducts[idx + 1].tier,
+            label: ecoflowProducts[idx + 1].model,
+            capacity: ecoflowProducts[idx + 1].base,
+            extras: 0,
+            link: ecoflowProducts[idx + 1].link
+        };
+    }
+    return null;
+}
+
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
     const recs = [];
 
-    // Good: smallest config ≥ dailyUsage
-    const good = getBestConfig(dailyUsage);
-    if (good) recs.push({ ...good, tierLabel: "Good" });
-
-    // Better: config ≥ dailyUsage × 1 (same as Good, but next config up if possible)
-    let better = getBestConfig(dailyUsage * 1);
-    // If same as Good, try next larger config
-    if (better && good && better.capacity === good.capacity) {
-        // Try next config up
-        let nextBetter = null;
-        ecoflowProducts.forEach(product => {
-            for (let extras = 0; extras <= product.maxExtras; extras++) {
-                const cap = product.base + product.step * extras;
-                if (cap > good.capacity && cap >= dailyUsage) {
-                    if (!nextBetter || cap < nextBetter.capacity) {
-                        nextBetter = {
-                            model: product.model,
-                            tier: product.tier,
-                            label: extras === 0 ? product.model : `${product.model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
-                            capacity: cap,
-                            extras,
-                            link: product.link
-                        };
-                    }
-                }
-            }
-        });
-        if (nextBetter) better = nextBetter;
+    // --- Good ---
+    // For very small usage, start with Delta Pro
+    if (dailyUsage < 0.35) {
+        const deltaPro = getConfig(ecoflowProducts[0], dailyUsage);
+        if (deltaPro) {
+            recs.push({ ...deltaPro, tierLabel: "Good" });
+        }
+    } else {
+        // For higher usage, get the best config
+        const good = getBestConfig(dailyUsage);
+        if (good) recs.push({ ...good, tierLabel: "Good" });
     }
-    if (better) recs.push({ ...better, tierLabel: "Better" });
-
-    // Best: config ≥ dailyUsage × 2
-    const best = getBestConfig(dailyUsage * 2);
-    if (best) recs.push({ ...best, tierLabel: "Best" });
-
-    // Extended Backup: config ≥ dailyUsage × 3.5 (only if dailyUsage ≤ 0.80)
+    
+    // --- Better ---
+    let better;
+    if (recs.length > 0) {
+        const good = recs[0];
+        // Try next config up from Good
+        better = getNextConfig(good);
+        if (better) recs.push({ ...better, tierLabel: "Better" });
+    }
+    
+    // --- Best ---
+    if (better) {
+        // Try next config up from Better, but ensure it meets 2x daily usage
+        let best = getNextConfig(better);
+        while (best && best.capacity < dailyUsage * 2) {
+            const nextBest = getNextConfig(best);
+            if (!nextBest) break;
+            best = nextBest;
+        }
+        if (best) recs.push({ ...best, tierLabel: "Best" });
+    }
+    
+    // --- Extended Backup ---
     if (dailyUsage <= 0.80) {
-        let extended = null;
         const extendedCapacity = dailyUsage * 3.5;
+        let extended = null;
+        
         // <0.60: Pro 3 or Pro 3 + extras
         if (dailyUsage < 0.60) {
-            for (let extras = 0; extras <= ecoflowProducts[1].maxExtras; extras++) {
-                const cap = ecoflowProducts[1].base + ecoflowProducts[1].step * extras;
-                if (cap >= extendedCapacity) {
-                    extended = {
-                        model: ecoflowProducts[1].model,
-                        tier: ecoflowProducts[1].tier,
-                        label: extras === 0 ? ecoflowProducts[1].model : `${ecoflowProducts[1].model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
-                        capacity: cap,
-                        extras,
-                        link: ecoflowProducts[1].link
-                    };
-                    break;
-                }
-            }
-        }
+            extended = getConfig(ecoflowProducts[1], extendedCapacity);
+        } 
         // 0.60–2.00: Ultra or Ultra + extras
         else if (dailyUsage <= 2.00) {
-            for (let extras = 0; extras <= ecoflowProducts[2].maxExtras; extras++) {
-                const cap = ecoflowProducts[2].base + ecoflowProducts[2].step * extras;
-                if (cap >= extendedCapacity) {
-                    extended = {
-                        model: ecoflowProducts[2].model,
-                        tier: ecoflowProducts[2].tier,
-                        label: extras === 0 ? ecoflowProducts[2].model : `${ecoflowProducts[2].model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
-                        capacity: cap,
-                        extras,
-                        link: ecoflowProducts[2].link
-                    };
-                    break;
-                }
-            }
+            extended = getConfig(ecoflowProducts[2], extendedCapacity);
         }
-        // >2.00: 2x Ultra w/ extras
+        // >2.00: Multiple Ultra units
         else {
             const ultra = ecoflowProducts[2];
             const unitCapacity = ultra.base + ultra.step * ultra.maxExtras;
@@ -596,6 +599,7 @@ function getRecommendations(dailyUsage) {
                 link: ultra.link
             };
         }
+        
         if (extended) recs.push({ ...extended, tierLabel: "Extended Backup" });
     }
 
@@ -626,22 +630,23 @@ function updateDeltaRecommendation() {
     document.getElementById('usageMessage').textContent = usageMsg;
 
     // Recommendation logic
-    if (dailyUsage < 0.01) {
-        document.getElementById('deltaRecommendation').innerHTML = '';
-        return;
+    let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
+    
+    if (dailyUsage >= 0.01) {
+        // --- Build Recommendations ---
+        const recs = getRecommendations(dailyUsage);
+
+        // --- Build HTML ---
+        recommendationHTML += `<ul class="product-links">`;
+        recs.forEach(opt => {
+            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
+        });
+        recommendationHTML += `</ul>`;
+    } else {
+        recommendationHTML += `<p>Enter your monthly usage data to see personalized recommendations.</p>`;
     }
 
-    // --- Build Recommendations ---
-    const recs = getRecommendations(dailyUsage);
-
-    // --- Build HTML ---
-    let recommendationHTML = `<div class="recommendation-content"><h3>Recommended Power Solutions:</h3><ul class="product-links">`;
-    recs.forEach(opt => {
-        recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
-    });
-    recommendationHTML += `</ul>`;
-
-    // Always show the discount message, not just for Extended Backup
+    // Always show the discount message
     recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
         You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
     </div>`;
@@ -650,16 +655,7 @@ function updateDeltaRecommendation() {
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
 
-// --- Event Listeners ---
-document.getElementById('resetButton').addEventListener('click', () => {
-    const inputs = document.querySelectorAll('.months-grid input');
-    inputs.forEach(input => { input.value = ''; });
-    document.getElementById('deltaRecommendation').innerHTML = '';
-    document.getElementById('totalUsageValue').textContent = '0 kWh/year';
-    document.getElementById('dailyUsageValue').textContent = '0 kWh/day';
-    document.getElementById('usageMessage').textContent = 'Enter your monthly usage data to see recommendations';
-});
-
+// Make sure the discount message shows on page load
 document.addEventListener('DOMContentLoaded', function() {
     for (let i = 1; i <= 12; i++) {
         const inputElement = document.getElementById(`month${i}`);
@@ -667,14 +663,15 @@ document.addEventListener('DOMContentLoaded', function() {
             inputElement.addEventListener('input', updateDeltaRecommendation);
         }
     }
+    
+    // Initialize recommendations on page load
     updateDeltaRecommendation();
 });
 </script>
 
-<!-- Persistent purple gradient footer -->
+<!-- This is the only footer that should remain in the document -->
 <div class="footer">
     <div class="footer-text">
         © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
     </div>
 </div>
-<!--
