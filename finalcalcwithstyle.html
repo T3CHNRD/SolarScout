@@ -539,6 +539,13 @@ function getRecommendations(dailyUsage) {
     const configs = [];
     const usedLabels = new Set();
 
+    // Helper: runtime estimate
+    function runtimeEstimate(capacity, dailyUsage) {
+        if (dailyUsage <= 0) return "N/A";
+        const days = capacity / dailyUsage;
+        return `${days.toFixed(1)} days`;
+    }
+
     // Helper: all configs for a model
     function allConfigs(modelObj) {
         const arr = [];
@@ -559,122 +566,54 @@ function getRecommendations(dailyUsage) {
     let all = [];
     ecoflowProducts.forEach(p => all = all.concat(allConfigs(p)));
 
-    // Helper: Multi-unit configs for high usage (≥2kWh)
-    function multiUnitConfigs(minCapacity) {
-        const arr = [];
-        ecoflowProducts.forEach(p => {
-            for (let extras = 0; extras <= p.maxExtras; extras++) {
-                const singleCap = p.base + p.step * extras;
-                if (singleCap === 0) continue;
-                const units = Math.ceil(minCapacity / singleCap);
-                const totalCap = units * singleCap;
-                if (units > 1 && totalCap >= minCapacity) {
-                    arr.push({
-                        model: `${units}x ${p.model}${extras > 0 ? ` + ${extras} battery${extras > 1 ? 'ies' : ''} each` : ''}`,
-                        tier: p.tier,
-                        label: `${units}x ${p.model}${extras > 0 ? ` + ${extras} battery${extras > 1 ? 'ies' : ''} each` : ''}`,
-                        capacity: totalCap,
-                        extras,
-                        link: p.link
-                    });
-                }
-            }
-        });
-        return arr;
-    }
-
     // --- Good ---
-    let good;
     let goodCandidates = all.filter(c =>
         c.capacity >= dailyUsage &&
-        (
-            // Favor single unit + extras
-            (c.extras > 0 || c.capacity === c.model.base || c.extras === 0)
-        )
+        !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
     );
-    // For 2kWh+ usage, allow multi-unit configs
-    if (dailyUsage >= 2) {
-        goodCandidates = goodCandidates.concat(multiUnitConfigs(dailyUsage));
-    }
-    // Never suggest Ultra/top-tier units prematurely for Good
-    goodCandidates = goodCandidates.filter(c =>
-        !(c.model.includes("Ultra") && dailyUsage < ecoflowProducts[2].base)
-    );
-    // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
-    const dp3 = all.find(c => c.model === "Delta Pro 3" && c.capacity >= dailyUsage);
-    const dp2max = all.find(c => c.model === "Delta Pro" && c.extras === 2);
-    if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity >= dailyUsage) {
-        goodCandidates = goodCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
-    }
-    good = goodCandidates.sort((a, b) => a.capacity - b.capacity)[0];
-    if (!good) {
-        // Fallback: lowest config that meets requirement
-        good = all.concat(multiUnitConfigs(dailyUsage))
-            .filter(c => c.capacity >= dailyUsage)
-            .sort((a, b) => a.capacity - b.capacity)[0];
-    }
+    // Prefer 1 unit + extras over multi-unit configs or early jumps
+    goodCandidates = goodCandidates.sort((a, b) => a.capacity - b.capacity);
+    let good = goodCandidates[0];
     if (good && !usedLabels.has(good.label)) {
-        configs.push({ ...good, tierLabel: "Good" });
+        configs.push({ ...good, tierLabel: "Good", runtime: runtimeEstimate(good.capacity, dailyUsage) });
         usedLabels.add(good.label);
     }
 
     // --- Better ---
-    let better;
     let betterCandidates = all.filter(c =>
         c.capacity > good.capacity &&
-        c.capacity >= dailyUsage &&
+        c.capacity >= dailyUsage * 2 &&
         (
-            // Favor same unit + extras if viable, else next tier
             (c.model === good.model && c.extras > good.extras) ||
             (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
         )
     );
-    if (dailyUsage >= 2) {
-        betterCandidates = betterCandidates.concat(
-            multiUnitConfigs(Math.max(good.capacity + 0.01, dailyUsage))
-                .filter(c => c.capacity > good.capacity)
-        );
-    }
-    // Never suggest Ultra/top-tier units prematurely for Better
-    betterCandidates = betterCandidates.filter(c =>
-        !(c.model.includes("Ultra") && good.model !== "Delta Pro Ultra" && good.capacity < ecoflowProducts[2].base)
-    );
-    // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
-    if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity > good.capacity) {
-        betterCandidates = betterCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
-    }
-    better = betterCandidates.sort((a, b) => a.capacity - b.capacity)[0];
+    betterCandidates = betterCandidates.sort((a, b) => a.capacity - b.capacity);
+    let better = betterCandidates[0];
     if (better && !usedLabels.has(better.label)) {
-        configs.push({ ...better, tierLabel: "Better" });
+        configs.push({ ...better, tierLabel: "Better", runtime: runtimeEstimate(better.capacity, dailyUsage) });
         usedLabels.add(better.label);
     }
 
     // --- Best ---
-    let best;
     let bestCandidates = all.filter(c =>
         c.capacity > better.capacity &&
+        c.capacity >= dailyUsage * 2 &&
         (
             (c.model === better.model && c.extras > better.extras) ||
             (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === better.model))
         )
     );
-    if (dailyUsage >= 2) {
-        bestCandidates = bestCandidates.concat(
-            multiUnitConfigs(Math.max(better.capacity + 0.01, dailyUsage))
-                .filter(c => c.capacity > better.capacity)
-        );
-    }
-    // Never suggest Ultra/top-tier units prematurely for Best
-    bestCandidates = bestCandidates.filter(c =>
-        !(c.model.includes("Ultra") && better.model !== "Delta Pro Ultra" && better.capacity < ecoflowProducts[2].base)
-    );
-    // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
-    if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity > better.capacity) {
+    // Prefer Delta Pro 3 if it outperforms Delta Pro + 2 extras
+    const dp3 = all.find(c => c.model === "Delta Pro 3" && c.capacity > better.capacity);
+    const dp2max = all.find(c => c.model === "Delta Pro" && c.extras === 2 && c.capacity > better.capacity);
+    if (dp3 && dp2max && dp3.capacity > dp2max.capacity) {
         bestCandidates = bestCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
     }
-    best = bestCandidates.sort((a, b) => a.capacity - b.capacity)[0];
+    bestCandidates = bestCandidates.sort((a, b) => a.capacity - b.capacity);
+    let best = bestCandidates[0];
     if (best && !usedLabels.has(best.label)) {
-        configs.push({ ...best, tierLabel: "Best" });
+        configs.push({ ...best, tierLabel: "Best", runtime: runtimeEstimate(best.capacity, dailyUsage) });
         usedLabels.add(best.label);
     }
 
@@ -683,29 +622,27 @@ function getRecommendations(dailyUsage) {
     if (dailyUsage <= 0.80) {
         const extMin = dailyUsage * 3.5;
         let extCandidates = all.filter(c =>
+            c.capacity > best.capacity &&
             c.capacity >= extMin
         );
-        if (dailyUsage >= 2) {
-            extCandidates = extCandidates.concat(multiUnitConfigs(extMin));
+        // Ultra logic for extended backup
+        if (dailyUsage >= 1.00 && dailyUsage <= 1.25) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 0);
+        } else if (dailyUsage > 1.25 && dailyUsage <= 1.50) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 1);
+        } else if (dailyUsage > 1.50 && dailyUsage <= 1.60) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 2);
+        } else if (dailyUsage > 1.60 && dailyUsage <= 1.75) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 3);
+        } else if (dailyUsage > 1.75 && dailyUsage <= 1.90) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 4);
+        } else if (dailyUsage > 1.90) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 5);
         }
-        // Never suggest Ultra/top-tier units prematurely for Extended Backup
-        extCandidates = extCandidates.filter(c =>
-            !(c.model.includes("Ultra") && extMin < ecoflowProducts[2].base)
-        );
-        // Prefer Delta Pro 3 over Delta Pro + 2 extras if it outperforms
-        if (dp3 && dp2max && dp3.capacity > dp2max.capacity && dp3.capacity >= extMin) {
-            extCandidates = extCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
-        }
-        // Must exceed all previous tiers
-        const maxPrev = Math.max(
-            good ? good.capacity : 0,
-            better ? better.capacity : 0,
-            best ? best.capacity : 0
-        );
-        extended = extCandidates.filter(c => c.capacity > maxPrev)
-            .sort((a, b) => a.capacity - b.capacity)[0];
+        extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity);
+        extended = extCandidates[0];
         if (extended && !usedLabels.has(extended.label)) {
-            configs.push({ ...extended, tierLabel: "Extended Backup" });
+            configs.push({ ...extended, tierLabel: "Extended Backup", runtime: runtimeEstimate(extended.capacity, dailyUsage) });
             usedLabels.add(extended.label);
         }
     }
@@ -715,14 +652,18 @@ function getRecommendations(dailyUsage) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
-    let totalUsage = 0;
+    let monthlyTotal = 0;
+    let filledMonths = 0;
     for (let i = 1; i <= 12; i++) {
-        totalUsage += parseFloat(document.getElementById(`month${i}`).value) || 0;
+        const val = parseFloat(document.getElementById(`month${i}`).value) || 0;
+        monthlyTotal += val;
+        if (val > 0) filledMonths++;
     }
-    const dailyUsage = totalUsage / 365;
+    const avgMonthly = monthlyTotal / 12;
+    const dailyUsage = avgMonthly / 30;
 
     // Update UI summary
-    document.getElementById('totalUsageValue').textContent = `${totalUsage.toFixed(2)} kWh/year`;
+    document.getElementById('totalUsageValue').textContent = `${monthlyTotal.toFixed(2)} kWh/year`;
     document.getElementById('dailyUsageValue').textContent = `${dailyUsage.toFixed(2)} kWh/day`;
 
     // Usage message logic
@@ -738,16 +679,19 @@ function updateDeltaRecommendation() {
 
     // Recommendation logic
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
-    const recs = dailyUsage >= 0.01 ? getRecommendations(dailyUsage) : [];
+    let recs = [];
+    if (filledMonths === 12 && dailyUsage > 0) {
+        recs = getRecommendations(dailyUsage);
+    }
 
     if (recs.length > 0) {
         recommendationHTML += `<ul class="product-links">`;
         recs.forEach(opt => {
-            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
+            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b> <span style="color:#7fb0d0;">Estimated Runtime (guesstimate): ${opt.runtime}</span>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
         });
         recommendationHTML += `</ul>`;
     } else {
-        recommendationHTML += `<p>Enter your monthly usage data to see personalized recommendations.</p>`;
+        recommendationHTML += `<p>Enter all 12 months to see final recommendations.</p>`;
     }
 
     // Always show the discount message, static and persistent
