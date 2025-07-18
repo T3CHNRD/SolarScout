@@ -482,64 +482,108 @@ function getConfig(product, minCapacity) {
     return null;
 }
 
+function getBestConfig(minCapacity) {
+    // Try all configs, return the smallest that meets minCapacity
+    let best = null;
+    ecoflowProducts.forEach(product => {
+        for (let extras = 0; extras <= product.maxExtras; extras++) {
+            const cap = product.base + product.step * extras;
+            if (cap >= minCapacity) {
+                if (!best || cap < best.capacity) {
+                    best = {
+                        model: product.model,
+                        tier: product.tier,
+                        label: extras === 0 ? product.model : `${product.model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+                        capacity: cap,
+                        extras,
+                        link: product.link
+                    };
+                }
+            }
+        }
+    });
+    return best;
+}
+
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
     const recs = [];
-    // --- Good ---
-    // Smallest config ≥ dailyUsage, never Ultra unless usage ≥ 0.35
-    let good = null;
-    if (dailyUsage < 0.35) {
-        good = getConfig(ecoflowProducts[0], dailyUsage); // Delta Pro
-        if (!good) good = getConfig(ecoflowProducts[1], dailyUsage); // Delta Pro 3
-    } else {
-        good = getConfig(ecoflowProducts[1], dailyUsage); // Delta Pro 3
-        if (!good) good = getConfig(ecoflowProducts[2], dailyUsage); // Ultra only if needed
-    }
+
+    // Good: smallest config ≥ dailyUsage
+    const good = getBestConfig(dailyUsage);
     if (good) recs.push({ ...good, tierLabel: "Good" });
 
-    // --- Better ---
-    // Same model as Good, with extra battery (if expandable), OR higher tier to cover dailyUsage * 1.0
-    let better = null;
-    if (good) {
-        const prodIdx = ecoflowProducts.findIndex(p => p.model === good.model);
-        // If expandable, add one extra battery
-        if (good.extras < ecoflowProducts[prodIdx].maxExtras) {
-            better = getConfig(ecoflowProducts[prodIdx], dailyUsage + ecoflowProducts[prodIdx].step);
-        }
-        // If not, try next tier
-        if (!better && prodIdx + 1 < ecoflowProducts.length) {
-            better = getConfig(ecoflowProducts[prodIdx + 1], dailyUsage);
-        }
+    // Better: config ≥ dailyUsage × 1 (same as Good, but next config up if possible)
+    let better = getBestConfig(dailyUsage * 1);
+    // If same as Good, try next larger config
+    if (better && good && better.capacity === good.capacity) {
+        // Try next config up
+        let nextBetter = null;
+        ecoflowProducts.forEach(product => {
+            for (let extras = 0; extras <= product.maxExtras; extras++) {
+                const cap = product.base + product.step * extras;
+                if (cap > good.capacity && cap >= dailyUsage) {
+                    if (!nextBetter || cap < nextBetter.capacity) {
+                        nextBetter = {
+                            model: product.model,
+                            tier: product.tier,
+                            label: extras === 0 ? product.model : `${product.model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+                            capacity: cap,
+                            extras,
+                            link: product.link
+                        };
+                    }
+                }
+            }
+        });
+        if (nextBetter) better = nextBetter;
     }
     if (better) recs.push({ ...better, tierLabel: "Better" });
 
-    // --- Best ---
-    // Higher tier model or same w/ more extras to cover dailyUsage * 2.0
-    let best = null;
-    // Try same model with max extras for 2x dailyUsage
-    if (good) {
-        const prodIdx = ecoflowProducts.findIndex(p => p.model === good.model);
-        best = getConfig(ecoflowProducts[prodIdx], dailyUsage * 2.0);
-        // If not enough, try next tier
-        if (!best && prodIdx + 1 < ecoflowProducts.length) {
-            best = getConfig(ecoflowProducts[prodIdx + 1], dailyUsage * 2.0);
-        }
-    }
+    // Best: config ≥ dailyUsage × 2
+    const best = getBestConfig(dailyUsage * 2);
     if (best) recs.push({ ...best, tierLabel: "Best" });
 
-    // --- Extended Backup ---
-    // Only if dailyUsage ≤ 0.80
+    // Extended Backup: config ≥ dailyUsage × 3.5 (only if dailyUsage ≤ 0.80)
     if (dailyUsage <= 0.80) {
         let extended = null;
         const extendedCapacity = dailyUsage * 3.5;
+        // <0.60: Pro 3 or Pro 3 + extras
         if (dailyUsage < 0.60) {
-            // Use Pro 3 or Pro 3 + extras
-            extended = getConfig(ecoflowProducts[1], extendedCapacity);
-        } else if (dailyUsage <= 2.00) {
-            // Use Ultra or Ultra + extras
-            extended = getConfig(ecoflowProducts[2], extendedCapacity);
-        } else {
-            // Suggest 2x Ultra w/ extras
+            for (let extras = 0; extras <= ecoflowProducts[1].maxExtras; extras++) {
+                const cap = ecoflowProducts[1].base + ecoflowProducts[1].step * extras;
+                if (cap >= extendedCapacity) {
+                    extended = {
+                        model: ecoflowProducts[1].model,
+                        tier: ecoflowProducts[1].tier,
+                        label: extras === 0 ? ecoflowProducts[1].model : `${ecoflowProducts[1].model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+                        capacity: cap,
+                        extras,
+                        link: ecoflowProducts[1].link
+                    };
+                    break;
+                }
+            }
+        }
+        // 0.60–2.00: Ultra or Ultra + extras
+        else if (dailyUsage <= 2.00) {
+            for (let extras = 0; extras <= ecoflowProducts[2].maxExtras; extras++) {
+                const cap = ecoflowProducts[2].base + ecoflowProducts[2].step * extras;
+                if (cap >= extendedCapacity) {
+                    extended = {
+                        model: ecoflowProducts[2].model,
+                        tier: ecoflowProducts[2].tier,
+                        label: extras === 0 ? ecoflowProducts[2].model : `${ecoflowProducts[2].model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+                        capacity: cap,
+                        extras,
+                        link: ecoflowProducts[2].link
+                    };
+                    break;
+                }
+            }
+        }
+        // >2.00: 2x Ultra w/ extras
+        else {
             const ultra = ecoflowProducts[2];
             const unitCapacity = ultra.base + ultra.step * ultra.maxExtras;
             const units = Math.ceil(extendedCapacity / unitCapacity);
