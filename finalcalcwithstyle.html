@@ -452,7 +452,7 @@ const ecoflowProducts = [
         model: "Delta Pro Ultra",
         tier: 3,
         base: 6,
-        step: 6,
+        step: 3, // Each Ultra battery is 3.0 kWh
         maxExtras: 5,
         link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
     }
@@ -462,7 +462,7 @@ const ecoflowProducts = [
 function getConfig(product, minCapacity) {
     for (let extras = 0; extras <= product.maxExtras; extras++) {
         const cap = product.base + product.step * extras;
-        if (cap > minCapacity) {
+        if (cap >= minCapacity) {
             return {
                 model: product.model,
                 tier: product.tier,
@@ -476,49 +476,60 @@ function getConfig(product, minCapacity) {
     return null;
 }
 
-// Helper: Find next product tier up from a given model
-function getNextTierProduct(currentTier) {
-    return ecoflowProducts.find(p => p.tier === currentTier + 1);
-}
+// --- Recommendation Logic ---
+function getRecommendations(dailyUsage) {
+    const recs = [];
 
-// Helper: Find smallest config across all products
-function getSmallestConfig(minCapacity, startTier = 0, ultraAllowed = true) {
-    for (let t = startTier; t < ecoflowProducts.length; t++) {
-        if (!ultraAllowed && ecoflowProducts[t].model.includes("Ultra")) continue;
-        const config = getConfig(ecoflowProducts[t], minCapacity);
-        if (config) return config;
-    }
-    return null;
-}
+    // Good: supply dailyUsage, lowest tier (Delta Pro 3)
+    let good = getConfig(ecoflowProducts[1], dailyUsage);
+    if (good) recs.push({ ...good, tierLabel: "Good" });
 
-// Helper: Extended backup config logic
-function getExtendedBackupConfig(dailyUsage) {
+    // Better: supply dailyUsage + 1 day buffer, mid-tier (Delta Pro 3 + extra battery)
+    let better = getConfig(ecoflowProducts[1], dailyUsage * 2);
+    if (better) recs.push({ ...better, tierLabel: "Better" });
+
+    // Best: supply dailyUsage + 2 days buffer, high-end (Delta Pro Ultra + battery)
+    let best = getConfig(ecoflowProducts[2], dailyUsage * 3);
+    if (best) recs.push({ ...best, tierLabel: "Best" });
+
+    // Extended Backup: supply dailyUsage * 3.5 days
+    let extended = null;
     const extendedCapacity = dailyUsage * 3.5;
-    if (extendedCapacity < 0.30) {
-        return getConfig(ecoflowProducts[1], extendedCapacity);
-    } else if (extendedCapacity >= 0.60 && extendedCapacity < 2.00) {
-        return getConfig(ecoflowProducts[2], extendedCapacity);
-    } else if (extendedCapacity >= 2.00) {
-        // Try maxed out Ultra first
+    if (dailyUsage <= 0.30) {
+        // Delta Pro 3 + 2 batteries
+        extended = getConfig(ecoflowProducts[1], ecoflowProducts[1].base + ecoflowProducts[1].step * 2);
+        if (extended) extended.label = `${ecoflowProducts[1].model} + 2 extra batteries`;
+    } else if (dailyUsage >= 0.31) {
+        // Delta Pro Ultra + enough batteries
         const ultra = ecoflowProducts[2];
-        const maxUltraCapacity = ultra.base + ultra.step * ultra.maxExtras;
-        if (extendedCapacity <= maxUltraCapacity) {
-            return getConfig(ultra, extendedCapacity);
+        let neededBatteries = Math.ceil((extendedCapacity - ultra.base) / ultra.step);
+        neededBatteries = Math.max(0, neededBatteries);
+        if (neededBatteries <= ultra.maxExtras) {
+            extended = {
+                model: ultra.model,
+                tier: ultra.tier,
+                label: `${ultra.model} + ${neededBatteries} extra battery${neededBatteries !== 1 ? 'ies' : ''}`,
+                capacity: ultra.base + ultra.step * neededBatteries,
+                extras: neededBatteries,
+                link: ultra.link
+            };
         } else {
             // Multiple Ultra units
-            const units = Math.ceil(extendedCapacity / ultra.base);
-            return {
-                model: `${units}x ${ultra.model}`,
+            const unitCapacity = ultra.base + ultra.step * ultra.maxExtras;
+            const units = Math.ceil(extendedCapacity / unitCapacity);
+            extended = {
+                model: ultra.model,
                 tier: ultra.tier,
-                label: `${units}x ${ultra.model}`,
-                capacity: ultra.base * units,
-                extras: 0,
+                label: `${units}x ${ultra.model} (max batteries per unit)`,
+                capacity: units * unitCapacity,
+                extras: ultra.maxExtras,
                 link: ultra.link
             };
         }
     }
-    // Fallback: try all products
-    return getSmallestConfig(extendedCapacity);
+    if (extended) recs.push({ ...extended, tierLabel: "Extended Backup" });
+
+    return recs;
 }
 
 // --- Main Recommendation Function ---
@@ -533,7 +544,7 @@ function updateDeltaRecommendation() {
     document.getElementById('totalUsageValue').textContent = `${totalUsage.toFixed(2)} kWh/year`;
     document.getElementById('dailyUsageValue').textContent = `${dailyUsage.toFixed(2)} kWh/day`;
 
-    // Usage message logic (new rules)
+    // Usage message logic
     let usageMsg = "Enter your monthly usage data to see recommendations";
     if (dailyUsage < 0.30 && dailyUsage > 0) {
         usageMsg = "Your daily usage is minimal.";
@@ -550,79 +561,37 @@ function updateDeltaRecommendation() {
         return;
     }
 
-    // --- Recommendation Engine ---
-    const recs = [];
-    const usedLabels = new Set();
-
-    // Good Tier
-    let goodStartTier = 0;
-    let ultraAllowed = true;
-    if (dailyUsage >= 0.50) {
-        goodStartTier = 1; // Pro 3
-    } else if (dailyUsage >= 0.30) {
-        goodStartTier = 0; // Delta Pro
-    }
-    if (dailyUsage < 0.60) ultraAllowed = false;
-    let good = getSmallestConfig(dailyUsage, goodStartTier, ultraAllowed);
-    if (!good) good = getSmallestConfig(dailyUsage, 0, true);
-    if (good) {
-        recs.push(good);
-        usedLabels.add(good.label);
-    }
-
-    // Better Tier
-    let better = null;
-    if (good) {
-        const prod = ecoflowProducts.find(p => p.model === good.model);
-        if (prod && good.extras < prod.maxExtras) {
-            better = getConfig(prod, good.capacity);
-            if (!better || better.capacity <= good.capacity) {
-                better = getConfig(prod, good.capacity + prod.step);
-            }
-        } else {
-            // Not expandable, try next product with higher capacity
-            better = getSmallestConfig(good.capacity + 0.01, prod.tier, true);
-        }
-        if (better && !usedLabels.has(better.label)) {
-            recs.push(better);
-            usedLabels.add(better.label);
-        }
-    }
-
-    // Best Tier
-    let best = null;
-    if (good) {
-        const nextTierProd = getNextTierProduct(good.tier);
-        if (nextTierProd) {
-            best = getConfig(nextTierProd, better ? better.capacity + 0.01 : good.capacity + 0.01);
-            if (best && !usedLabels.has(best.label)) {
-                recs.push(best);
-                usedLabels.add(best.label);
-            }
-        }
-    }
-
-    // Extended Backup Tier
-    if (dailyUsage <= 3.00) {
-        let extended = getExtendedBackupConfig(dailyUsage);
-        if (extended && !usedLabels.has(extended.label)) {
-            recs.push(extended);
-            usedLabels.add(extended.label);
-        }
-    }
+    // --- Build Recommendations ---
+    const recs = getRecommendations(dailyUsage);
 
     // --- Build HTML ---
     let recommendationHTML = `<div class="recommendation-content">`;
     if (recs.length === 0) {
         recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
+        // Show persistent discount message even if no config
+        recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
+        You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
+    </div>`;
     } else {
-        recommendationHTML += `<h3>Recommended Power Solutions</h3>
-            <ul class="product-links">`;
-        if (recs[0]) recommendationHTML += `<li><b>Good:</b> <a href="${recs[0].link}" target="_blank">${recs[0].label}</a> - Total Capacity: <b>${recs[0].capacity.toFixed(3)}kWh</b></li>`;
-        if (recs[1]) recommendationHTML += `<li><b>Better:</b> <a href="${recs[1].link}" target="_blank">${recs[1].label}</a> - Total Capacity: <b>${recs[1].capacity.toFixed(3)}kWh</b></li>`;
-        if (recs[2]) recommendationHTML += `<li><b>Best:</b> <a href="${recs[2].link}" target="_blank">${recs[2].label}</a> - Total Capacity: <b>${recs[2].capacity.toFixed(3)}kWh</b></li>`;
-        if (recs[3]) recommendationHTML += `<li><b>Extended Backup:</b> <a href="${recs[3].link}" target="_blank">${recs[3].label}</a> - Total Capacity: <b>${recs[3].capacity.toFixed(3)}kWh</b> <span style='color:#7fb0d0;'>(Outage Backup)</span></li>`;
+        recommendationHTML += `<h3>Recommended Power Solutions:</h3>
+        <ul class="product-links">`;
+        recs.forEach(opt => {
+            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}`;
+            // Add persistent discount message directly under Extended Backup label
+            if (opt.tierLabel === "Extended Backup") {
+                recommendationHTML += `<div style="margin-top:0.5em;padding:0.75em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
+                You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
+            </div>`;
+            }
+            recommendationHTML += `</li>`;
+        });
         recommendationHTML += `</ul>`;
+        // If no Extended Backup was recommended, show the message at the end
+        if (!recs.some(opt => opt.tierLabel === "Extended Backup")) {
+            recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
+            You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
+        </div>`;
+        }
     }
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
