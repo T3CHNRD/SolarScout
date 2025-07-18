@@ -390,7 +390,9 @@
             </div>
         </div>
 
-        <!-- Add this block just below the Monthly Usage Entry section, before #deltaRecommendation -->
+        <!-- Remove usageDisplay/footer usage summary if present -->
+
+        <!-- Add this block just above #deltaRecommendation, after Monthly Usage Entry section -->
         <div id="usageSummary" style="
             margin: 2rem 0 0 0;
             padding: 1.5rem;
@@ -531,13 +533,14 @@ function updateDeltaRecommendation() {
     document.getElementById('totalUsageValue').textContent = `${totalUsage.toFixed(2)} kWh/year`;
     document.getElementById('dailyUsageValue').textContent = `${dailyUsage.toFixed(2)} kWh/day`;
 
+    // Usage message logic (new rules)
     let usageMsg = "Enter your monthly usage data to see recommendations";
-    if (dailyUsage >= 0.25) {
-        usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial.`;
-    } else if (dailyUsage >= 0.10) {
-        usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is moderate.`;
-    } else if (dailyUsage > 0) {
-        usageMsg = `Your daily usage of ${dailyUsage.toFixed(2)} kWh is minimal.`;
+    if (dailyUsage < 0.30 && dailyUsage > 0) {
+        usageMsg = "Your daily usage is minimal.";
+    } else if (dailyUsage >= 0.30 && dailyUsage < 0.60) {
+        usageMsg = "Your daily usage is moderate.";
+    } else if (dailyUsage >= 0.60) {
+        usageMsg = "Your daily usage is substantial.";
     }
     document.getElementById('usageMessage').textContent = usageMsg;
 
