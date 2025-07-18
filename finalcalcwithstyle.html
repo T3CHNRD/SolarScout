@@ -485,19 +485,26 @@ function getConfig(product, minCapacity) {
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
     const recs = [];
-    // Good: lowest-end config that meets daily usage (Delta Pro 3 or Delta Pro 3 + battery)
-    let good = getConfig(ecoflowProducts[1], dailyUsage);
+    // Good: Smallest config that meets daily usage (Delta Pro, Delta Pro + battery, Delta Pro 3)
+    let good = getConfig(ecoflowProducts[0], dailyUsage);
+    if (!good) good = getConfig(ecoflowProducts[1], dailyUsage);
     if (good) recs.push({ ...good, tierLabel: "Good" });
 
-    // Better: mid-tier config that meets daily usage (Delta Pro 3 or Delta Pro 3 + battery)
-    let better = getConfig(ecoflowProducts[1], dailyUsage);
+    // Better: Next config up, meets daily usage + 1 day buffer (Delta Pro + battery, Delta Pro 3, Delta Pro 3 + battery)
+    let better = null;
+    // Try Delta Pro with 1 battery
+    better = getConfig(ecoflowProducts[0], dailyUsage * 2);
+    // If not enough, try Delta Pro 3
+    if (!better) better = getConfig(ecoflowProducts[1], dailyUsage * 2);
     if (better && (!good || better.capacity > good.capacity)) recs.push({ ...better, tierLabel: "Better" });
 
-    // Best: high-end config that meets daily usage × 2.0 (Delta Pro Ultra + batteries)
-    let best = getConfig(ecoflowProducts[2], dailyUsage * 2.0);
-    if (best) recs.push({ ...best, tierLabel: "Best" });
+    // Best: High-end config, meets daily usage + 2 day buffer (Delta Pro 3 + battery, Delta Pro Ultra)
+    let best = null;
+    best = getConfig(ecoflowProducts[1], dailyUsage * 3);
+    if (!best) best = getConfig(ecoflowProducts[2], dailyUsage * 3);
+    if (best && (!better || best.capacity > better.capacity)) recs.push({ ...best, tierLabel: "Best" });
 
-    // Extended Backup: must cover daily usage × 3.5
+    // Extended Backup: Must cover daily usage × 3.5
     let extended = null;
     const extendedCapacity = dailyUsage * 3.5;
     if (dailyUsage <= 0.30) {
@@ -574,33 +581,24 @@ function updateDeltaRecommendation() {
     const recs = getRecommendations(dailyUsage);
 
     // --- Build HTML ---
-    let recommendationHTML = `<div class="recommendation-content">`;
-    if (recs.length === 0) {
-        recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
-        // Persistent discount message
-        recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
-            You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
-        </div>`;
-    } else {
-        recommendationHTML += `<h3>Recommended Power Solutions:</h3>
-        <ul class="product-links">`;
-        recs.forEach(opt => {
-            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}`;
-            // Always show discount message under Extended Backup
-            if (opt.tierLabel === "Extended Backup") {
-                recommendationHTML += `<div style="margin-top:0.5em;padding:0.75em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
-                    You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
-                </div>`;
-            }
-            recommendationHTML += `</li>`;
-        });
-        recommendationHTML += `</ul>`;
-        // If no Extended Backup was recommended, show the message at the end
-        if (!recs.some(opt => opt.tierLabel === "Extended Backup")) {
-            recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
+    let recommendationHTML = `<div class="recommendation-content"><h3>Recommended Power Solutions:</h3><ul class="product-links">`;
+    recs.forEach(opt => {
+        recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}`;
+        // Show discount message directly under Extended Backup
+        if (opt.tierLabel === "Extended Backup") {
+            recommendationHTML += `<div style="margin-top:0.5em;padding:0.75em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
                 You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
             </div>`;
         }
+        recommendationHTML += `</li>`;
+    });
+    recommendationHTML += `</ul>`;
+
+    // If no Extended Backup was recommended, show the message at the end
+    if (!recs.some(opt => opt.tierLabel === "Extended Backup")) {
+        recommendationHTML += `<div style="margin-top:1em;padding:1em;border-radius:6px;background:linear-gradient(135deg,#4c3a5f,#826894);color:#fff;font-weight:500;text-align:center;">
+            You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout
+        </div>`;
     }
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
@@ -626,5 +624,11 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDeltaRecommendation();
 });
 </script>
-</body>
-</html>
+
+<!-- Persistent purple gradient footer -->
+<div class="footer">
+    <div class="footer-text">
+        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
+    </div>
+</div>
+<!--
