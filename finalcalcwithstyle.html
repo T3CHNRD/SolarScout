@@ -320,7 +320,7 @@
                 <a href="about.html" class="nav-button">About Solar Scout</a>
                 <a href="blackoutbuddy.html" class="nav-button">Blackout Buddy</a>
                 <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
-                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
+                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=SolarScoute&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
             </div>
             <br>
             <br>
@@ -477,82 +477,16 @@ const ecoflowProducts = [
     }
 ];
 
-// Helper: Find smallest config for a product that meets capacity
-function getConfig(product, minCapacity) {
-    for (let extras = 0; extras <= product.maxExtras; extras++) {
-        const cap = product.base + product.step * extras;
-        if (cap >= minCapacity) {
-            return {
-                model: product.model,
-                tier: product.tier,
-                label: extras === 0 ? product.model : `${product.model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
-                capacity: cap,
-                extras,
-                link: product.link
-            };
-        }
-    }
-    return null;
-}
-
-function getBestConfig(minCapacity) {
-    // Try all configs, return the smallest that meets minCapacity
-    let best = null;
-    ecoflowProducts.forEach(product => {
-        for (let extras = 0; extras <= product.maxExtras; extras++) {
-            const cap = product.base + product.step * extras;
-            if (cap >= minCapacity) {
-                if (!best || cap < best.capacity) {
-                    best = {
-                        model: product.model,
-                        tier: product.tier,
-                        label: extras === 0 ? product.model : `${product.model} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
-                        capacity: cap,
-                        extras,
-                        link: product.link
-                    };
-                }
-            }
-        }
-    });
-    return best;
-}
-
-function getNextConfig(currentConfig) {
-    // Returns the next higher config (more extras, or next model)
-    const idx = ecoflowProducts.findIndex(p => p.model === currentConfig.model);
-    // Try more extras
-    if (currentConfig.extras < ecoflowProducts[idx].maxExtras) {
-        return {
-            model: currentConfig.model,
-            tier: currentConfig.tier,
-            label: `${currentConfig.model} + ${currentConfig.extras + 1} extra battery${currentConfig.extras + 1 > 1 ? 'ies' : ''}`,
-            capacity: currentConfig.capacity + ecoflowProducts[idx].step,
-            extras: currentConfig.extras + 1,
-            link: ecoflowProducts[idx].link // <-- FIXED: previously missing value here
-        };
-    }
-    // Try next model
-    if (idx + 1 < ecoflowProducts.length) {
-        return {
-            model: ecoflowProducts[idx + 1].model,
-            tier: ecoflowProducts[idx + 1].tier,
-            label: ecoflowProducts[idx + 1].model,
-            capacity: ecoflowProducts[idx + 1].base,
-            extras: 0,
-            link: ecoflowProducts[idx + 1].link
-        };
-    }
-    return null;
-}
+// Add batteries object (required for getRecommendations)
+const batteries = {
+    pro:   { base: 3.6,   extra: 3.6,   maxExtras: 2 },
+    pro3:  { base: 4.096, extra: 4.096, maxExtras: 2 },
+    ultra: { base: 6.0,   extra: 3.0,   maxExtras: 5 }
+};
 
 // --- Recommendation Logic ---
-// This version strictly follows your rules for Good, Better, Best, Extended Backup
-
 function getRecommendations(dailyUsage) {
     const configs = [];
-    const usedLabels = new Set();
-
     // Helper: runtime estimate (days + hours)
     function runtimeEstimate(capacity, dailyUsage) {
         if (dailyUsage <= 0) return "N/A";
@@ -561,7 +495,6 @@ function getRecommendations(dailyUsage) {
         const hours = Math.round(totalHours % 24);
         return `${days} days ${hours} hours (guesstimate)`;
     }
-
     // Helper: generate all configs for a battery spec
     function allConfigs(spec, name, link) {
         const arr = [];
@@ -576,7 +509,6 @@ function getRecommendations(dailyUsage) {
         }
         return arr;
     }
-
     // Build all configs
     const proConfigs   = allConfigs(batteries.pro,   "Delta Pro",      ecoflowProducts[0].link);
     const pro3Configs  = allConfigs(batteries.pro3,  "Delta Pro 3",    ecoflowProducts[1].link);
@@ -588,12 +520,10 @@ function getRecommendations(dailyUsage) {
         c.capacity >= dailyUsage &&
         !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
     );
-    // Prefer 1 unit + extras over tier jumps
     goodCandidates = goodCandidates.sort((a, b) => a.capacity - b.capacity);
     let good = goodCandidates[0];
     if (good) {
         configs.push({ ...good, tierLabel: "Good", runtime: runtimeEstimate(good.capacity, dailyUsage) });
-        usedLabels.add(good.label);
     } else {
         configs.push({ tierLabel: "Good", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
     }
@@ -601,17 +531,12 @@ function getRecommendations(dailyUsage) {
     // --- Better ---
     let betterCandidates = all.filter(c =>
         c.capacity > (good ? good.capacity : 0) &&
-        c.capacity >= dailyUsage &&
-        (
-            (c.model === (good ? good.model : "") && c.extras > (good ? good.extras : -1)) ||
-            (["Delta Pro", "Delta Pro 3", "Delta Pro Ultra"].indexOf(c.model) > ["Delta Pro", "Delta Pro 3", "Delta Pro Ultra"].indexOf(good ? good.model : ""))
-        )
+        c.capacity >= dailyUsage
     );
     betterCandidates = betterCandidates.sort((a, b) => a.capacity - b.capacity);
     let better = betterCandidates[0];
     if (better) {
         configs.push({ ...better, tierLabel: "Better", runtime: runtimeEstimate(better.capacity, dailyUsage) });
-        usedLabels.add(better.label);
     } else {
         configs.push({ tierLabel: "Better", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
     }
@@ -619,23 +544,12 @@ function getRecommendations(dailyUsage) {
     // --- Best ---
     let bestCandidates = all.filter(c =>
         c.capacity > (better ? better.capacity : 0) &&
-        c.capacity >= dailyUsage * 2 &&
-        (
-            (c.model === (better ? better.model : "") && c.extras > (better ? better.extras : -1)) ||
-            (["Delta Pro", "Delta Pro 3", "Delta Pro Ultra"].indexOf(c.model) > ["Delta Pro", "Delta Pro 3", "Delta Pro Ultra"].indexOf(better ? better.model : ""))
-        )
+        c.capacity >= dailyUsage * 2
     );
-    // Prefer Pro 3 over Pro + 2 extras unless latter is higher capacity
-    const pro3Best = bestCandidates.find(c => c.model === "Delta Pro 3");
-    const pro2max = bestCandidates.find(c => c.model === "Delta Pro" && c.extras === 2);
-    if (pro3Best && pro2max && pro3Best.capacity > pro2max.capacity) {
-        bestCandidates = bestCandidates.filter(c => !(c.model === "Delta Pro" && c.extras === 2));
-    }
     bestCandidates = bestCandidates.sort((a, b) => a.capacity - b.capacity);
     let best = bestCandidates[0];
     if (best) {
         configs.push({ ...best, tierLabel: "Best", runtime: runtimeEstimate(best.capacity, dailyUsage) });
-        usedLabels.add(best.label);
     } else {
         configs.push({ tierLabel: "Best", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
     }
@@ -646,29 +560,6 @@ function getRecommendations(dailyUsage) {
         c.capacity > (best ? best.capacity : 0) &&
         c.capacity >= extMin
     );
-
-    // Model selection for Extended Backup
-    if (extMin >= 1.0) {
-        // Ultra + extras logic
-        if (extMin >= 1.00 && extMin <= 1.25) {
-            extCandidates = ultraConfigs.filter(c => c.extras === 0 && c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-        } else if (extMin > 1.25 && extMin <= 1.50) {
-            extCandidates = ultraConfigs.filter(c => c.extras === 1 && c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-        } else if (extMin > 1.50 && extMin <= 1.60) {
-            extCandidates = ultraConfigs.filter(c => c.extras === 2 && c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-        } else if (extMin > 1.60 && extMin <= 1.75) {
-            extCandidates = ultraConfigs.filter(c => c.extras === 3 && c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-        } else if (extMin > 1.75 && extMin <= 1.90) {
-            extCandidates = ultraConfigs.filter(c => c.extras === 4 && c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-        } else if (extMin > 1.90) {
-            extCandidates = ultraConfigs.filter(c => c.extras === 5 && c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-        }
-    } else if (dailyUsage < 0.60) {
-        extCandidates = pro3Configs.filter(c => c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-    } else {
-        extCandidates = ultraConfigs.filter(c => c.capacity >= extMin && c.capacity > (best ? best.capacity : 0));
-    }
-
     extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity);
     let extended = extCandidates[0];
     if (extended) {
@@ -676,16 +567,8 @@ function getRecommendations(dailyUsage) {
     } else {
         configs.push({ tierLabel: "Extended Backup", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
     }
-
     return configs;
 }
-
-// Add batteries object (missing in your script, required for getRecommendations)
-const batteries = {
-    pro:   { base: 3.6,   extra: 3.6,   maxExtras: 2 },
-    pro3:  { base: 4.096, extra: 4.096, maxExtras: 2 },
-    ultra: { base: 6.0,   extra: 3.0,   maxExtras: 5 }
-};
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
@@ -699,7 +582,7 @@ function updateDeltaRecommendation() {
         }
     }
 
-    // Use average of filled months for daily usage
+    // Use sum of all months for total, average for daily
     const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
     const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
 
@@ -718,7 +601,7 @@ function updateDeltaRecommendation() {
     }
     document.getElementById('usageMessage').textContent = usageMsg;
 
-    // Always show all 4 tiers
+    // Show all 4 tiers
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
     let recs = [];
     if (filledMonths > 0 && dailyUsage > 0) {
@@ -729,7 +612,6 @@ function updateDeltaRecommendation() {
         });
         recommendationHTML += `</ul>`;
     } else {
-        // Show all 4 tiers as "No viable config" if no months filled
         recommendationHTML += `<ul class="product-links">`;
         ["Good", "Better", "Best", "Extended Backup"].forEach(tier => {
             recommendationHTML += `<li><b>${tier}:</b> No viable config</li>`;
@@ -741,12 +623,13 @@ function updateDeltaRecommendation() {
 }
 
 // --- Reset Button Logic ---
-document.getElementById('resetButton').addEventListener('click', function() {
+function resetCalculator() {
     for (let i = 1; i <= 12; i++) {
         document.getElementById(`month${i}`).value = '';
     }
     updateDeltaRecommendation();
-});
+}
+document.getElementById('resetButton').addEventListener('click', resetCalculator);
 
 // Attach listeners for live updates on every input change
 window.addEventListener('DOMContentLoaded', function() {
