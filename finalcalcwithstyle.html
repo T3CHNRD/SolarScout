@@ -422,12 +422,28 @@
             <!-- Recommendations will be populated by JavaScript -->
         </div>
 
+        <!-- Restore discount message just below recommendations -->
+        <div id="discountMessage" style="
+            margin: 1.5rem 0 0 0;
+            padding: 1rem;
+            background: #fffbe6;
+            border-left: 4px solid #FFD700;
+            color: #826894;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            text-align: center;
+        ">
+            <span>🌟 <b>Special Offer:</b> Save 5% at EcoFlow.com with code <b>UPPROMOTE</b>! <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" target="_blank" style="color:#4c3a5f;text-decoration:underline;">Shop EcoFlow</a></span>
+        </div>
+
         <div class="estimation-note">
             Note: All calculations and totals are estimates based on provided usage data. Actual costs and usage may vary.
         </div>
-    </div>
+    </div> <!-- end .calculator-card -->
 
-    <!-- This is the only footer that should remain in the document -->
+    <!-- Restore footer at very bottom of page -->
     <div class="footer">
     <div class="footer-text">
         © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
@@ -515,7 +531,7 @@ function getNextConfig(currentConfig) {
             label: `${currentConfig.model} + ${currentConfig.extras + 1} extra battery${currentConfig.extras + 1 > 1 ? 'ies' : ''}`,
             capacity: currentConfig.capacity + ecoflowProducts[idx].step,
             extras: currentConfig.extras + 1,
-            link: currentConfig.link
+            link:
         };
     }
     // Try next model
@@ -666,6 +682,13 @@ function getRecommendations(dailyUsage) {
     return configs;
 }
 
+// Add batteries object (missing in your script, required for getRecommendations)
+const batteries = {
+    pro:   { base: 3.6,   extra: 3.6,   maxExtras: 2 },
+    pro3:  { base: 4.096, extra: 4.096, maxExtras: 2 },
+    ultra: { base: 6.0,   extra: 3.0,   maxExtras: 5 }
+};
+
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
     let monthlyTotal = 0;
@@ -718,6 +741,14 @@ function updateDeltaRecommendation() {
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
+
+// --- Reset Button Logic ---
+document.getElementById('resetButton').addEventListener('click', function() {
+    for (let i = 1; i <= 12; i++) {
+        document.getElementById(`month${i}`).value = '';
+    }
+    updateDeltaRecommendation();
+});
 
 // Attach listeners for live updates on every input change
 window.addEventListener('DOMContentLoaded', function() {
