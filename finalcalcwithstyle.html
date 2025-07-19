@@ -422,21 +422,19 @@
             <!-- Recommendations will be populated by JavaScript -->
         </div>
 
-        <!-- Restore discount message just below recommendations -->
+        <!-- Restore discount message directly below recommendations, above the footer -->
         <div id="discountMessage" style="
-            margin: 1.5rem 0 0 0;
-            padding: 1rem;
-            background: #fffbe6;
-            border-left: 4px solid #FFD700;
-            color: #826894;
-            font-size: 1rem;
-            font-weight: 500;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            text-align: center;
-        ">
-            <span>🌟 <b>Special Offer:</b> Save 5% at EcoFlow.com with code <b>UPPROMOTE</b>! <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" target="_blank" style="color:#4c3a5f;text-decoration:underline;">Shop EcoFlow</a></span>
-        </div>
+    margin: 2rem auto 0 auto;
+    max-width: 800px;
+    padding: 1em;
+    border-radius: 8px;
+    background: linear-gradient(135deg,#4c3a5f,#826894);
+    color: #fff;
+    font-weight: 500;
+    text-align: center;
+">
+    You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout.
+</div>
 
         <div class="estimation-note">
             Note: All calculations and totals are estimates based on provided usage data. Actual costs and usage may vary.
@@ -445,10 +443,10 @@
 
     <!-- Restore footer at very bottom of page -->
     <div class="footer">
-    <div class="footer-text">
-        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
+        <div class="footer-text">
+            © 2024 T3CHNRD - Designed with help by Claude. All rights reserved
+        </div>
     </div>
-</div>
 
     <script>
         // --- Centralized EcoFlow Product Data ---
@@ -531,7 +529,7 @@ function getNextConfig(currentConfig) {
             label: `${currentConfig.model} + ${currentConfig.extras + 1} extra battery${currentConfig.extras + 1 > 1 ? 'ies' : ''}`,
             capacity: currentConfig.capacity + ecoflowProducts[idx].step,
             extras: currentConfig.extras + 1,
-            link:
+            link: ecoflowProducts[idx].link // <-- FIXED: previously missing value here
         };
     }
     // Try next model
@@ -694,8 +692,8 @@ function updateDeltaRecommendation() {
     let monthlyTotal = 0;
     let filledMonths = 0;
     for (let i = 1; i <= 12; i++) {
-        const val = parseFloat(document.getElementById(`month${i}`).value) || 0;
-        if (val > 0) {
+        const val = parseFloat(document.getElementById(`month${i}`).value);
+        if (!isNaN(val) && val > 0) {
             monthlyTotal += val;
             filledMonths++;
         }
@@ -703,7 +701,7 @@ function updateDeltaRecommendation() {
 
     // Use average of filled months for daily usage
     const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
-    const dailyUsage = avgMonthly / 30;
+    const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
 
     // Update UI summary
     document.getElementById('totalUsageValue').textContent = `${monthlyTotal.toFixed(2)} kWh/year`;
@@ -720,7 +718,7 @@ function updateDeltaRecommendation() {
     }
     document.getElementById('usageMessage').textContent = usageMsg;
 
-    // Always show all 4 tiers if at least one month is filled
+    // Always show all 4 tiers
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
     let recs = [];
     if (filledMonths > 0 && dailyUsage > 0) {
