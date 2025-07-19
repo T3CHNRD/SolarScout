@@ -573,6 +573,7 @@ function getRecommendations(dailyUsage) {
         c.capacity >= dailyUsage &&
         !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
     );
+    // Prefer 1 unit + extras over tier jumps
     goodCandidates = goodCandidates.sort((a, b) => a.capacity - b.capacity);
     let good = goodCandidates[0];
     if (good && !usedLabels.has(good.label)) {
@@ -583,7 +584,7 @@ function getRecommendations(dailyUsage) {
     // --- Better ---
     let betterCandidates = all.filter(c =>
         c.capacity > good.capacity &&
-        c.capacity >= dailyUsage * 2 &&
+        c.capacity >= dailyUsage &&
         (
             (c.model === good.model && c.extras > good.extras) ||
             (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === good.model))
@@ -605,7 +606,7 @@ function getRecommendations(dailyUsage) {
             (ecoflowProducts.findIndex(p => p.model === c.model) > ecoflowProducts.findIndex(p => p.model === better.model))
         )
     );
-    // Prefer Delta Pro 3 if it outperforms Delta Pro + 2 extras
+    // Prefer Delta Pro 3 over Pro + extras unless Pro + extras is better
     const dp3 = all.find(c => c.model === "Delta Pro 3" && c.capacity > better.capacity);
     const dp2max = all.find(c => c.model === "Delta Pro" && c.extras === 2 && c.capacity > better.capacity);
     if (dp3 && dp2max && dp3.capacity > dp2max.capacity) {
@@ -619,7 +620,6 @@ function getRecommendations(dailyUsage) {
     }
 
     // --- Extended Backup ---
-    let extended;
     const extMin = dailyUsage * 3.5;
     let extCandidates = all.filter(c =>
         c.capacity > (best ? best.capacity : 0) &&
@@ -633,26 +633,39 @@ function getRecommendations(dailyUsage) {
         extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra");
     }
 
-    // Ultra configuration cutoffs
-    if (dailyUsage >= 1.00 && dailyUsage <= 1.25) {
-        extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 0);
-    } else if (dailyUsage > 1.25 && dailyUsage <= 1.50) {
-        extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 1);
-    } else if (dailyUsage > 1.50 && dailyUsage <= 1.60) {
-        extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 2);
-    } else if (dailyUsage > 1.60 && dailyUsage <= 1.75) {
-        extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 3);
-    } else if (dailyUsage > 1.75 && dailyUsage <= 1.90) {
-        extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 4);
-    } else if (dailyUsage > 1.90) {
-        extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 5);
+    // Ultra configuration cutoffs for Extended Backup
+    if (dailyUsage * 3.5 >= 1.00) {
+        if (extMin >= 1.00 && extMin <= 1.25) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 0);
+        } else if (extMin > 1.25 && extMin <= 1.50) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 1);
+        } else if (extMin > 1.50 && extMin <= 1.60) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 2);
+        } else if (extMin > 1.60 && extMin <= 1.75) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 3);
+        } else if (extMin > 1.75 && extMin <= 1.90) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 4);
+        } else if (extMin > 1.90) {
+            extCandidates = extCandidates.filter(c => c.model === "Delta Pro Ultra" && c.extras === 5);
+        }
     }
 
     extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity);
-    extended = extCandidates[0];
+    let extended = extCandidates[0];
     if (extended && !usedLabels.has(extended.label)) {
         configs.push({ ...extended, tierLabel: "Extended Backup", runtime: runtimeEstimate(extended.capacity, dailyUsage) });
         usedLabels.add(extended.label);
+    }
+
+    // Always show all 4 tiers (fill with null if not found)
+    while (configs.length < 4) {
+        configs.push({
+            tierLabel: ["Good", "Better", "Best", "Extended Backup"][configs.length],
+            label: "No viable config",
+            capacity: 0,
+            runtime: "N/A",
+            link: "#"
+        });
     }
 
     return configs;
