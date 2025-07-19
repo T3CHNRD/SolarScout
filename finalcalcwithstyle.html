@@ -502,59 +502,59 @@ function getRecommendations(dailyUsage) {
         return arr;
     }
 
-    // Helper: Find viable configs by criteria and rank by efficiency
-    function findViableConfigs(allConfigs, minCapacity, additionalFilter = () => true, maxResults = 2) {
-        const viable = allConfigs
-            .filter(c => c.capacity >= minCapacity && additionalFilter(c))
-            .sort((a, b) => {
-                // Primary sort: Total units (main + extras)
-                if (a.totalUnits !== b.totalUnits) return a.totalUnits - b.totalUnits;
-                // Secondary sort: Total capacity (prefer smaller when units equal)
-                return a.capacity - b.capacity;
-            });
-        
-        return viable.slice(0, maxResults); // Return top options
-    }
-
-    // Build all configs
+    // Build all possible configurations
     const proConfigs = allConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
     const pro3Configs = allConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
     const ultraConfigs = allConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
-    const all = [...proConfigs, ...pro3Configs, ...ultraConfigs];
-
-    // --- Good ---
-    // Rule: Must meet dailyUsage total (no Ultra unless dailyUsage ≥ 0.35)
-    const goodConfigs = findViableConfigs(
-        all, 
-        dailyUsage,
-        c => !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
-    );
-
-    // --- Better ---
-    // Rule: Must exceed Good's best capacity and meet dailyUsage × 1
-    const minBetterCapacity = Math.max(
-        dailyUsage,
-        goodConfigs.length > 0 ? goodConfigs[0].capacity + 0.001 : 0
-    );
     
-    const betterConfigs = findViableConfigs(
-        all,
-        minBetterCapacity,
-        c => !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
-    );
+    // Combine all configs and sort by efficiency (fewest units, then lowest capacity)
+    const allConfigs = [...proConfigs, ...pro3Configs, ...ultraConfigs].sort((a, b) => {
+        // Primary sort: Total units (main + extras)
+        if (a.totalUnits !== b.totalUnits) return a.totalUnits - b.totalUnits;
+        // Secondary sort: Total capacity (prefer smaller when units equal)
+        return a.capacity - b.capacity;
+    });
 
-    // --- Best ---
-    // Rule: Must exceed Better's best capacity and meet dailyUsage × 2
-    const minBestCapacity = Math.max(
-        dailyUsage * 2,
-        betterConfigs.length > 0 ? betterConfigs[0].capacity + 0.001 : 0
-    );
+    // --- GOOD TIER ---
+    // Filter: Must meet dailyUsage (no Ultra unless dailyUsage ≥ 0.35)
+    const goodOptions = allConfigs
+        .filter(c => 
+            c.capacity >= dailyUsage && 
+            !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
+        )
+        .slice(0, 3); // Get top 3 most efficient options
+
+    // --- BETTER TIER ---
+    // Filter: Must exceed Good's capacity (if available) and meet dailyUsage × 1
+    let minBetterCapacity = dailyUsage;
     
-    const bestConfigs = findViableConfigs(all, minBestCapacity);
+    // If we have a Good option, Better must exceed it
+    if (goodOptions.length > 0) {
+        minBetterCapacity = Math.max(minBetterCapacity, goodOptions[0].capacity + 0.001);
+    }
+    
+    const betterOptions = allConfigs
+        .filter(c => 
+            c.capacity >= minBetterCapacity && 
+            !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
+        )
+        .slice(0, 3); // Get top 3 most efficient options
 
-    // --- Extended Backup ---
-    // Rule 5: always shown, must meet dailyUsage × 3.5
-    // KEEPING THIS LOGIC UNTOUCHED AS REQUESTED
+    // --- BEST TIER ---
+    // Filter: Must exceed Better's capacity (if available) and meet dailyUsage × 2
+    let minBestCapacity = dailyUsage * 2;
+    
+    // If we have a Better option, Best must exceed it
+    if (betterOptions.length > 0) {
+        minBestCapacity = Math.max(minBestCapacity, betterOptions[0].capacity + 0.001);
+    }
+    
+    const bestOptions = allConfigs
+        .filter(c => c.capacity >= minBestCapacity)
+        .slice(0, 3); // Get top 3 most efficient options
+
+    // --- EXTENDED BACKUP TIER ---
+    // ⚠️ KEEPING THIS LOGIC UNTOUCHED AS REQUESTED
     let extMin = dailyUsage * 3.5;
     let extendedConfigs = [];
     
@@ -583,9 +583,9 @@ function getRecommendations(dailyUsage) {
 
     // Format output with multiple options per tier
     return {
-        good: goodConfigs.map(c => ({ ...c, tierLabel: "Good" })),
-        better: betterConfigs.map(c => ({ ...c, tierLabel: "Better" })),
-        best: bestConfigs.map(c => ({ ...c, tierLabel: "Best" })),
+        good: goodOptions.map(c => ({ ...c, tierLabel: "Good" })),
+        better: betterOptions.map(c => ({ ...c, tierLabel: "Better" })),
+        best: bestOptions.map(c => ({ ...c, tierLabel: "Best" })),
         extended: extendedConfigs
     };
 }
@@ -631,7 +631,7 @@ function updateDeltaRecommendation() {
         recommendationHTML += `<ul class="product-links">`;
         
         // Good tier options
-        recommendationHTML += `<li><b>Good:</b></li>`;
+        recommendationHTML += `<li><b>Good:</b> <span style="font-size:0.9em;color:#666;">(meets daily usage of ${dailyUsage.toFixed(2)} kWh)</span></li>`;
         if (recs.good.length > 0) {
             recs.good.forEach((opt, idx) => {
                 recommendationHTML += `<li style="margin-left:20px;">${idx+1}. <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b></li>`;
@@ -641,7 +641,7 @@ function updateDeltaRecommendation() {
         }
         
         // Better tier options
-        recommendationHTML += `<li><b>Better:</b></li>`;
+        recommendationHTML += `<li><b>Better:</b> <span style="font-size:0.9em;color:#666;">(exceeds Good and provides headroom)</span></li>`;
         if (recs.better.length > 0) {
             recs.better.forEach((opt, idx) => {
                 recommendationHTML += `<li style="margin-left:20px;">${idx+1}. <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b></li>`;
@@ -651,7 +651,7 @@ function updateDeltaRecommendation() {
         }
         
         // Best tier options
-        recommendationHTML += `<li><b>Best:</b></li>`;
+        recommendationHTML += `<li><b>Best:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 2).toFixed(2)} kWh for extended use)</span></li>`;
         if (recs.best.length > 0) {
             recs.best.forEach((opt, idx) => {
                 recommendationHTML += `<li style="margin-left:20px;">${idx+1}. <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b></li>`;
@@ -661,7 +661,7 @@ function updateDeltaRecommendation() {
         }
         
         // Extended Backup (unchanged logic)
-        recommendationHTML += `<li><b>Extended Backup:</b></li>`;
+        recommendationHTML += `<li><b>Extended Backup:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3.5).toFixed(2)} kWh for outages)</span></li>`;
         if (recs.extended.length > 0) {
             recs.extended.forEach(opt => {
                 recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b> <span style='color:#7fb0d0;'>(Outage Backup)</span></li>`;
