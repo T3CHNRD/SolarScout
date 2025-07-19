@@ -486,16 +486,7 @@ const batteries = {
 
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
-    const configs = [];
-    // Helper: runtime estimate (days + hours)
-    function runtimeEstimate(capacity, dailyUsage) {
-        if (dailyUsage <= 0) return "N/A";
-        const totalHours = (capacity / dailyUsage) * 24;
-        const days = Math.floor(totalHours / 24);
-        const hours = Math.round(totalHours % 24);
-        return `${days} days ${hours} hours (guesstimate)`;
-    }
-    // Helper: generate all configs for a battery spec
+    // Helper: Generate all configs for a battery spec
     function allConfigs(spec, name, link) {
         const arr = [];
         for (let extras = 0; extras <= spec.maxExtras; extras++) {
@@ -509,6 +500,7 @@ function getRecommendations(dailyUsage) {
         }
         return arr;
     }
+
     // Build all configs
     const proConfigs   = allConfigs(batteries.pro,   "Delta Pro",      ecoflowProducts[0].link);
     const pro3Configs  = allConfigs(batteries.pro3,  "Delta Pro 3",    ecoflowProducts[1].link);
@@ -520,53 +512,58 @@ function getRecommendations(dailyUsage) {
         c.capacity >= dailyUsage &&
         !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
     );
+    // Prefer same model + extras over tier jump
     goodCandidates = goodCandidates.sort((a, b) => a.capacity - b.capacity);
     let good = goodCandidates[0];
-    if (good) {
-        configs.push({ ...good, tierLabel: "Good", runtime: runtimeEstimate(good.capacity, dailyUsage) });
-    } else {
-        configs.push({ tierLabel: "Good", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
-    }
 
     // --- Better ---
     let betterCandidates = all.filter(c =>
         c.capacity > (good ? good.capacity : 0) &&
         c.capacity >= dailyUsage
     );
+    // Prefer extras over tier jump
     betterCandidates = betterCandidates.sort((a, b) => a.capacity - b.capacity);
     let better = betterCandidates[0];
-    if (better) {
-        configs.push({ ...better, tierLabel: "Better", runtime: runtimeEstimate(better.capacity, dailyUsage) });
-    } else {
-        configs.push({ tierLabel: "Better", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
-    }
 
     // --- Best ---
     let bestCandidates = all.filter(c =>
         c.capacity > (better ? better.capacity : 0) &&
         c.capacity >= dailyUsage * 2
     );
+    // Prefer Delta Pro 3 over Delta Pro + 2 extras unless Pro + extras has more capacity
     bestCandidates = bestCandidates.sort((a, b) => a.capacity - b.capacity);
     let best = bestCandidates[0];
-    if (best) {
-        configs.push({ ...best, tierLabel: "Best", runtime: runtimeEstimate(best.capacity, dailyUsage) });
-    } else {
-        configs.push({ tierLabel: "Best", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
-    }
 
     // --- Extended Backup ---
-    const extMin = dailyUsage * 3.5;
-    let extCandidates = all.filter(c =>
-        c.capacity > (best ? best.capacity : 0) &&
-        c.capacity >= extMin
-    );
-    extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity);
-    let extended = extCandidates[0];
-    if (extended) {
-        configs.push({ ...extended, tierLabel: "Extended Backup", runtime: runtimeEstimate(extended.capacity, dailyUsage) });
-    } else {
-        configs.push({ tierLabel: "Extended Backup", label: "No viable config", capacity: 0, runtime: "N/A", link: "#" });
+    // Always shown, must meet dailyUsage × 3.5
+    let extMin = dailyUsage * 3.5;
+    let extended = null;
+    if (dailyUsage > 0) {
+        // Ultra config selection by dailyUsage range
+        let ultraExtras = 0;
+        if (dailyUsage > 1.91) ultraExtras = 5;
+        else if (dailyUsage > 1.76) ultraExtras = 4;
+        else if (dailyUsage > 1.61) ultraExtras = 3;
+        else if (dailyUsage > 1.51) ultraExtras = 2;
+        else if (dailyUsage > 1.26) ultraExtras = 1;
+        else ultraExtras = 0;
+        let ultraConfig = ultraConfigs[ultraExtras];
+        if (ultraConfig.capacity >= extMin) {
+            extended = { ...ultraConfig, tierLabel: "Extended Backup" };
+        } else {
+            // If Ultra config doesn't meet, find next best
+            let extCandidates = ultraConfigs.filter(c => c.capacity >= extMin);
+            extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity);
+            extended = extCandidates[0] ? { ...extCandidates[0], tierLabel: "Extended Backup" } : null;
+        }
     }
+
+    // Format output for UI
+    const configs = [];
+    configs.push(good ? { ...good, tierLabel: "Good" } : { tierLabel: "Good", label: "No viable config", capacity: 0, link: "#" });
+    configs.push(better ? { ...better, tierLabel: "Better" } : { tierLabel: "Better", label: "No viable config", capacity: 0, link: "#" });
+    configs.push(best ? { ...best, tierLabel: "Best" } : { tierLabel: "Best", label: "No viable config", capacity: 0, link: "#" });
+    configs.push(extended ? extended : { tierLabel: "Extended Backup", label: "No viable config", capacity: 0, link: "#" });
     return configs;
 }
 
@@ -582,7 +579,7 @@ function updateDeltaRecommendation() {
         }
     }
 
-    // Use sum of all months for total, average for daily
+    // Use average of non-zero months for dailyUsage
     const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
     const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
 
@@ -608,7 +605,7 @@ function updateDeltaRecommendation() {
         recs = getRecommendations(dailyUsage);
         recommendationHTML += `<ul class="product-links">`;
         recs.forEach(opt => {
-            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b> <span style="color:#7fb0d0;">Estimated Runtime (guesstimate): ${opt.runtime}</span>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
+            recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
         });
         recommendationHTML += `</ul>`;
     } else {
