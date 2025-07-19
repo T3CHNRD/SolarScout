@@ -508,6 +508,7 @@ function getRecommendations(dailyUsage) {
     const all = [...proConfigs, ...pro3Configs, ...ultraConfigs];
 
     // --- Good ---
+    // Rule 2: smallest config ≥ dailyUsage (no Ultra unless dailyUsage ≥ 0.35)
     let goodCandidates = all.filter(c =>
         c.capacity >= dailyUsage &&
         !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
@@ -517,6 +518,7 @@ function getRecommendations(dailyUsage) {
     let good = goodCandidates[0];
 
     // --- Better ---
+    // Rule 3: config > Good and ≥ dailyUsage × 1.0. Prefer extras over tier jump
     let betterCandidates = all.filter(c =>
         c.capacity > (good ? good.capacity : 0) &&
         c.capacity >= dailyUsage
@@ -526,6 +528,7 @@ function getRecommendations(dailyUsage) {
     let better = betterCandidates[0];
 
     // --- Best ---
+    // Rule 4: config > Better and ≥ dailyUsage × 2.0
     let bestCandidates = all.filter(c =>
         c.capacity > (better ? better.capacity : 0) &&
         c.capacity >= dailyUsage * 2
@@ -535,7 +538,7 @@ function getRecommendations(dailyUsage) {
     let best = bestCandidates[0];
 
     // --- Extended Backup ---
-    // Always shown, must meet dailyUsage × 3.5
+    // Rule 5: always shown, must meet dailyUsage × 3.5
     let extMin = dailyUsage * 3.5;
     let extended = null;
     if (dailyUsage > 0) {
@@ -547,6 +550,7 @@ function getRecommendations(dailyUsage) {
         else if (dailyUsage > 1.51) ultraExtras = 2;
         else if (dailyUsage > 1.26) ultraExtras = 1;
         else ultraExtras = 0;
+        
         let ultraConfig = ultraConfigs[ultraExtras];
         if (ultraConfig.capacity >= extMin) {
             extended = { ...ultraConfig, tierLabel: "Extended Backup" };
@@ -571,6 +575,8 @@ function getRecommendations(dailyUsage) {
 function updateDeltaRecommendation() {
     let monthlyTotal = 0;
     let filledMonths = 0;
+    
+    // Calculate total and count filled months
     for (let i = 1; i <= 12; i++) {
         const val = parseFloat(document.getElementById(`month${i}`).value);
         if (!isNaN(val) && val > 0) {
@@ -579,7 +585,7 @@ function updateDeltaRecommendation() {
         }
     }
 
-    // Use average of non-zero months for dailyUsage
+    // Rule 1: dailyUsage = average of non-zero monthly usage
     const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
     const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
 
@@ -600,9 +606,9 @@ function updateDeltaRecommendation() {
 
     // Show all 4 tiers
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
-    let recs = [];
+    
     if (filledMonths > 0 && dailyUsage > 0) {
-        recs = getRecommendations(dailyUsage);
+        const recs = getRecommendations(dailyUsage);
         recommendationHTML += `<ul class="product-links">`;
         recs.forEach(opt => {
             recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
@@ -615,6 +621,7 @@ function updateDeltaRecommendation() {
         });
         recommendationHTML += `</ul>`;
     }
+    
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
@@ -626,16 +633,21 @@ function resetCalculator() {
     }
     updateDeltaRecommendation();
 }
-document.getElementById('resetButton').addEventListener('click', resetCalculator);
 
-// Attach listeners for live updates on every input change
-window.addEventListener('DOMContentLoaded', function() {
+// Make sure event listeners are properly attached
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach reset button listener
+    document.getElementById('resetButton').addEventListener('click', resetCalculator);
+    
+    // Attach listeners for live updates on every input change
     for (let i = 1; i <= 12; i++) {
         const inputElement = document.getElementById(`month${i}`);
         if (inputElement) {
             inputElement.addEventListener('input', updateDeltaRecommendation);
         }
     }
+    
+    // Initial update
     updateDeltaRecommendation();
 });
 </script>
