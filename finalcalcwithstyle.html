@@ -677,7 +677,8 @@ function updateDeltaRecommendation() {
             filledMonths++;
         }
     }
-    // Use average of non-zero months
+
+    // Use average of filled months for daily usage
     const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
     const dailyUsage = avgMonthly / 30;
 
@@ -696,29 +697,29 @@ function updateDeltaRecommendation() {
     }
     document.getElementById('usageMessage').textContent = usageMsg;
 
-    // Recommendation logic
+    // Always show all 4 tiers if at least one month is filled
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
     let recs = [];
-    if (dailyUsage > 0) {
+    if (filledMonths > 0 && dailyUsage > 0) {
         recs = getRecommendations(dailyUsage);
-    }
-
-    if (recs.length > 0) {
         recommendationHTML += `<ul class="product-links">`;
         recs.forEach(opt => {
             recommendationHTML += `<li><b>${opt.tierLabel}:</b> <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)}kWh</b> <span style="color:#7fb0d0;">Estimated Runtime (guesstimate): ${opt.runtime}</span>${opt.tierLabel === "Extended Backup" ? " <span style='color:#7fb0d0;'>(Outage Backup)</span>" : ""}</li>`;
         });
         recommendationHTML += `</ul>`;
     } else {
-        recommendationHTML += `<p>No viable recommendations for current usage.</p>`;
+        // Show all 4 tiers as "No viable config" if no months filled
+        recommendationHTML += `<ul class="product-links">`;
+        ["Good", "Better", "Best", "Extended Backup"].forEach(tier => {
+            recommendationHTML += `<li><b>${tier}:</b> No viable config</li>`;
+        });
+        recommendationHTML += `</ul>`;
     }
-
-    document.getElementById('discountMessage').style.display = "block";
     recommendationHTML += `</div>`;
     document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
 }
 
-// Attach listeners for real-time updates
+// Attach listeners for live updates on every input change
 window.addEventListener('DOMContentLoaded', function() {
     for (let i = 1; i <= 12; i++) {
         const inputElement = document.getElementById(`month${i}`);
