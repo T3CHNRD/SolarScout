@@ -523,56 +523,60 @@ function getRecommendations(dailyUsage) {
     const proConfigs = generateBatteryConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
     const pro3Configs = generateBatteryConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
     const ultraConfigs = generateBatteryConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
-    const batteryConfigs = [...proConfigs, ...pro3Configs, ...ultraConfigs];
 
     // --- GOOD ---
-    let goodCandidates = batteryConfigs.filter(config => {
-        // Must meet or exceed dailyUsage
-        if (config.capacity < dailyUsage) return false;
-        
-        // For usage > 1.30, must use Pro + extras
-        if (dailyUsage > 1.30) {
-            return config.model === "Delta Pro" && config.extras > 0;
-        }
-        
-        return true;
-    });
-
-    // Sort by closest match to dailyUsage for Good tier
-    goodCandidates.sort((a, b) => Math.abs(a.capacity - dailyUsage) - Math.abs(b.capacity - dailyUsage));
-    const goodOption = goodCandidates[0];
+    // Must meet or exceed dailyUsage, always suggest a valid config
+    let goodCandidates = [];
+    if (dailyUsage <= 1.30) {
+        // Allow solo units for <= 1.30
+        goodCandidates = [
+            ...proConfigs.filter(c => c.capacity >= dailyUsage && c.extras === 0),
+            ...pro3Configs.filter(c => c.capacity >= dailyUsage && c.extras === 0),
+            ...ultraConfigs.filter(c => c.capacity >= dailyUsage && c.extras === 0)
+        ];
+    } else {
+        // For >1.30, must suggest Delta Pro + at least 1 extra battery (never solo units)
+        goodCandidates = [
+            ...proConfigs.filter(c => c.capacity >= dailyUsage && c.extras >= 1),
+            ...pro3Configs.filter(c => c.capacity >= dailyUsage),
+            ...ultraConfigs.filter(c => c.capacity >= dailyUsage)
+        ];
+    }
+    // Always pick the first valid config (no efficiency sorting)
+    const goodOption = goodCandidates.length > 0 ? goodCandidates[0] : null;
 
     // --- BETTER ---
-    const betterMinCapacity = Math.max(
-        dailyUsage * 1.5, // Must exceed 1.5x daily usage
-        goodOption ? goodOption.capacity + 0.001 : 0 // Must exceed Good capacity
-    );
-
-    let betterCandidates = batteryConfigs.filter(config => {
-        return config.capacity >= betterMinCapacity;
-    });
-
-    // Sort by capacity for Better tier - don't prioritize efficiency
-    betterCandidates.sort((a, b) => a.capacity - b.capacity);
-    const betterOption = betterCandidates[0];
+    // Must exceed Good and meet at least dailyUsage × 1.5
+    let betterMinCapacity = Math.max(dailyUsage * 1.5, goodOption ? goodOption.capacity + 0.001 : 0);
+    let betterCandidates = [];
+    if (goodOption && goodOption.model === "Delta Pro") {
+        // Allow Delta Pro + more extras for Better
+        betterCandidates = [
+            ...proConfigs.filter(c => c.capacity >= betterMinCapacity && c.extras > goodOption.extras),
+            ...pro3Configs.filter(c => c.capacity >= betterMinCapacity),
+            ...ultraConfigs.filter(c => c.capacity >= betterMinCapacity)
+        ];
+    } else {
+        betterCandidates = [
+            ...proConfigs.filter(c => c.capacity >= betterMinCapacity && c.extras >= 1),
+            ...pro3Configs.filter(c => c.capacity >= betterMinCapacity),
+            ...ultraConfigs.filter(c => c.capacity >= betterMinCapacity)
+        ];
+    }
+    const betterOption = betterCandidates.length > 0 ? betterCandidates[0] : null;
 
     // --- BEST ---
-    const bestMinCapacity = Math.max(
-        dailyUsage * 2.5, // Must exceed 2.5x daily usage
-        betterOption ? betterOption.capacity + 0.001 : 0 // Must exceed Better capacity
-    );
-
-    let bestCandidates = batteryConfigs.filter(config => 
-        config.capacity >= bestMinCapacity && 
-        !(config.model === "Delta Pro" && config.extras > 0) // Never suggest Pro + extras for Best
-    );
-
-    // Sort by capacity for Best tier
-    bestCandidates.sort((a, b) => a.capacity - b.capacity);
-    const bestOption = bestCandidates[0];
+    // Must exceed Better and meet at least dailyUsage × 2.5
+    let bestMinCapacity = Math.max(dailyUsage * 2.5, betterOption ? betterOption.capacity + 0.001 : 0);
+    let bestCandidates = [
+        // ⚠️ Never suggest Delta Pro + extras for Best
+        ...pro3Configs.filter(c => c.capacity >= bestMinCapacity),
+        ...ultraConfigs.filter(c => c.capacity >= bestMinCapacity)
+    ];
+    const bestOption = bestCandidates.length > 0 ? bestCandidates[0] : null;
 
     // --- EXTENDED BACKUP --- 
-    // Keeping existing logic exactly as is
+    // DO NOT MODIFY THIS LOGIC
     let extendedConfigs = [];
     if (dailyUsage > 0) {
         let ultraExtras = 0;
@@ -581,19 +585,18 @@ function getRecommendations(dailyUsage) {
         else if (dailyUsage > 1.61) ultraExtras = 3;
         else if (dailyUsage > 1.51) ultraExtras = 2;
         else if (dailyUsage > 1.26) ultraExtras = 1;
-        
         const ultraConfig = ultraConfigs[ultraExtras];
         if (ultraConfig && ultraConfig.capacity >= dailyUsage * 3.5) {
             extendedConfigs.push({ ...ultraConfig, tierLabel: "Extended Backup" });
         }
     }
 
-    // Format output
+    // Format output - ensure we have valid options for each tier
     return {
         good: goodOption ? [{ ...goodOption, tierLabel: "Good" }] : [],
         better: betterOption ? [{ ...betterOption, tierLabel: "Better" }] : [],
         best: bestOption ? [{ ...bestOption, tierLabel: "Best" }] : [],
-        extended: extendedConfigs // Unchanged
+        extended: extendedConfigs
     };
 }
 
