@@ -698,39 +698,64 @@ function updateDeltaRecommendation() {
     if (recElement) recElement.innerHTML = recommendationHTML;
 }
 
-// --- Reset Button Logic ---
-// Restore original reset logic and ensure UI is updated
-function resetCalculator() {
-    for (let i = 1; i <= 12; i++) {
-        const input = document.getElementById(`month${i}`);
+// --- Fix for Reset Button and IE Compatibility ---
+// Use a more robust reset function and event attachment for IE support
+function resetCalculator(event) {
+    // Prevent default button behavior for IE
+    if (event && event.preventDefault) event.preventDefault();
+
+    for (var i = 1; i <= 12; i++) {
+        var input = document.getElementById('month' + i);
         if (input) input.value = '';
     }
     updateDeltaRecommendation();
 }
 
-// --- Event Listeners ---
-// Remove duplicate DOMContentLoaded listeners and avoid function overrides
-document.addEventListener('DOMContentLoaded', function() {
-    window.solarScoutDebug = false;
+// --- Event Listeners (IE compatible) ---
+if (document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', function() {
+        window.solarScoutDebug = false;
 
-    // Attach reset button listener
-    const resetBtn = document.getElementById('resetButton');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', resetCalculator);
-    }
-
-    // Attach listeners for live updates on every input change
-    for (let i = 1; i <= 12; i++) {
-        const inputElement = document.getElementById(`month${i}`);
-        if (inputElement) {
-            inputElement.addEventListener('input', updateDeltaRecommendation);
-            inputElement.addEventListener('change', updateDeltaRecommendation);
+        // Attach reset button listener (IE compatible)
+        var resetBtn = document.getElementById('resetButton');
+        if (resetBtn) {
+            resetBtn.onclick = resetCalculator;
         }
-    }
 
-    // Initial update
-    updateDeltaRecommendation();
-});
+        // Attach listeners for live updates on every input change (IE compatible)
+        for (var i = 1; i <= 12; i++) {
+            var inputElement = document.getElementById('month' + i);
+            if (inputElement) {
+                inputElement.oninput = updateDeltaRecommendation;
+                inputElement.onchange = updateDeltaRecommendation;
+            }
+        }
+
+        // Initial update
+        updateDeltaRecommendation();
+    });
+} else if (window.attachEvent) {
+    // IE8 fallback
+    window.attachEvent('onload', function() {
+        window.solarScoutDebug = false;
+
+        var resetBtn = document.getElementById('resetButton');
+        if (resetBtn) {
+            resetBtn.onclick = resetCalculator;
+        }
+
+        for (var i = 1; i <= 12; i++) {
+            var inputElement = document.getElementById('month' + i);
+            if (inputElement) {
+                inputElement.oninput = updateDeltaRecommendation;
+                inputElement.onchange = updateDeltaRecommendation;
+            }
+        }
+
+        updateDeltaRecommendation();
+    });
+}
     </script>
 </body>
 </html>
+
