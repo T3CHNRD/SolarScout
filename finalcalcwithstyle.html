@@ -503,7 +503,7 @@ function toggleDebug() {
 
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
-    // Helper: Generate configs for a battery spec (renamed to avoid conflict)
+    // Helper: Generate configs for a battery spec
     function generateBatteryConfigs(spec, name, link) {
         const arr = [];
         for (let extras = 0; extras <= spec.maxExtras; extras++) {
@@ -519,17 +519,15 @@ function getRecommendations(dailyUsage) {
         return arr;
     }
 
-    // Build all configs using the renamed function
+    // Build all possible configurations
     const proConfigs = generateBatteryConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
     const pro3Configs = generateBatteryConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
     const ultraConfigs = generateBatteryConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
-    
-    // Combine configurations
     const batteryConfigs = [...proConfigs, ...pro3Configs, ...ultraConfigs];
 
-    // Helper: sort by fewest units, then extras, then lowest capacity
-    function sortEfficient(configs) {
-        return configs.sort((a, b) => {
+    // Helper: Sort configs by efficiency (fewest units, then extras, then lowest capacity)
+    function sortByEfficiency(configs) {
+        return [...configs].sort((a, b) => {
             if (a.totalUnits !== b.totalUnits) return a.totalUnits - b.totalUnits;
             if (a.extras !== b.extras) return a.extras - b.extras;
             return a.capacity - b.capacity;
@@ -537,37 +535,35 @@ function getRecommendations(dailyUsage) {
     }
 
     // --- GOOD ---
-    // Must meet or exceed dailyUsage (no Ultra unless dailyUsage ≥ 0.35)
-    let goodCandidates = batteryConfigs.filter(c =>
-        c.capacity >= dailyUsage &&
-        !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
-    );
-    goodCandidates = sortEfficient(goodCandidates);
+    // Must meet or exceed dailyUsage with minimum viable configuration
+    let goodCandidates = batteryConfigs.filter(c => c.capacity >= dailyUsage);
+    goodCandidates = sortByEfficiency(goodCandidates);
     const goodOption = goodCandidates[0];
 
     // --- BETTER ---
-    // Must exceed Good and meet dailyUsage * 2
-    let betterMin = Math.max(dailyUsage * 2, goodOption ? goodOption.capacity + 0.001 : 0);
-    let betterCandidates = batteryConfigs.filter(c =>
-        c.capacity >= betterMin &&
-        !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
+    // Must exceed Good capacity and meet 2x dailyUsage (1 day headroom)
+    const betterMinCapacity = Math.max(dailyUsage * 2, goodOption ? goodOption.capacity + 0.001 : 0);
+    let betterCandidates = batteryConfigs.filter(c => 
+        c.capacity >= betterMinCapacity && 
+        (c.model !== "Delta Pro Ultra" || c.capacity >= dailyUsage * 2)
     );
-    betterCandidates = sortEfficient(betterCandidates);
+    betterCandidates = sortByEfficiency(betterCandidates);
     const betterOption = betterCandidates[0];
 
     // --- BEST ---
-    // Must exceed Better and meet dailyUsage * 3
-    // Never suggest Delta Pro + extras
-    let bestMin = Math.max(dailyUsage * 3, betterOption ? betterOption.capacity + 0.001 : 0);
-    let bestCandidates = batteryConfigs.filter(c =>
-        c.capacity >= bestMin &&
-        !(c.model === "Delta Pro" && c.extras > 0)
+    // Must exceed Better capacity and meet 3x dailyUsage (2 days headroom)
+    // Never suggest Delta Pro + extras for Best tier
+    const bestMinCapacity = Math.max(dailyUsage * 3, betterOption ? betterOption.capacity + 0.001 : 0);
+    let bestCandidates = batteryConfigs.filter(c => 
+        c.capacity >= bestMinCapacity &&
+        !(c.model === "Delta Pro" && c.extras > 0) &&
+        (c.model !== "Delta Pro Ultra" || c.capacity >= dailyUsage * 3)
     );
-    bestCandidates = sortEfficient(bestCandidates);
+    bestCandidates = sortByEfficiency(bestCandidates);
     const bestOption = bestCandidates[0];
 
-    // --- EXTENDED BACKUP (unchanged) ---
-    let extMin = dailyUsage * 3.5;
+    // --- EXTENDED BACKUP --- 
+    // Keeping existing logic untouched as requested
     let extendedConfigs = [];
     if (dailyUsage > 0) {
         let ultraExtras = 0;
@@ -576,20 +572,14 @@ function getRecommendations(dailyUsage) {
         else if (dailyUsage > 1.61) ultraExtras = 3;
         else if (dailyUsage > 1.51) ultraExtras = 2;
         else if (dailyUsage > 1.26) ultraExtras = 1;
-        else ultraExtras = 0;
-        let ultraConfig = ultraConfigs[ultraExtras];
-        if (ultraConfig.capacity >= extMin) {
+        
+        const ultraConfig = ultraConfigs[ultraExtras];
+        if (ultraConfig && ultraConfig.capacity >= dailyUsage * 3.5) {
             extendedConfigs.push({ ...ultraConfig, tierLabel: "Extended Backup" });
-        } else {
-            let extCandidates = ultraConfigs.filter(c => c.capacity >= extMin);
-            extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity); // <-- FIXED LINE
-            if (extCandidates[0]) {
-                extendedConfigs.push({ ...extCandidates[0], tierLabel: "Extended Backup" });
-            }
         }
     }
 
-    // Format output - one option per tier
+    // Format output - ensure we have valid options for each tier
     return {
         good: goodOption ? [{ ...goodOption, tierLabel: "Good" }] : [],
         better: betterOption ? [{ ...betterOption, tierLabel: "Better" }] : [],
