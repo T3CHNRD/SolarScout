@@ -604,9 +604,14 @@ function updateDeltaRecommendation() {
     let monthlyTotal = 0;
     let filledMonths = 0;
     
-    // Calculate total and count filled months
+    // Defensive: Check all input elements exist before accessing value
     for (let i = 1; i <= 12; i++) {
-        const val = parseFloat(document.getElementById(`month${i}`).value);
+        const inputEl = document.getElementById(`month${i}`);
+        if (!inputEl) {
+            console.error(`Input element month${i} not found`);
+            continue;
+        }
+        const val = parseFloat(inputEl.value);
         if (!isNaN(val) && val > 0) {
             monthlyTotal += val;
             filledMonths++;
@@ -614,23 +619,17 @@ function updateDeltaRecommendation() {
         }
     }
 
-    // Rule 1: dailyUsage = average of non-zero monthly usage
-    const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
-    const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
-    
-    debugLog('Usage Calculation', {
-        monthlyTotal,
-        filledMonths,
-        avgMonthly,
-        dailyUsage
-    });
-
-    // Update UI summary
-    document.getElementById('totalUsageValue').textContent = `${monthlyTotal.toFixed(2)} kWh/year`;
-    document.getElementById('dailyUsageValue').textContent = `${dailyUsage.toFixed(2)} kWh/day`;
+    // Defensive: Only update UI if summary elements exist
+    const totalUsageEl = document.getElementById('totalUsageValue');
+    const dailyUsageEl = document.getElementById('dailyUsageValue');
+    const usageMsgEl = document.getElementById('usageMessage');
+    if (totalUsageEl) totalUsageEl.textContent = `${monthlyTotal.toFixed(2)} kWh/year`;
+    if (dailyUsageEl) dailyUsageEl.textContent = `${(filledMonths > 0 ? (monthlyTotal / filledMonths / 30).toFixed(2) : "0.00")} kWh/day`;
 
     // Usage message logic
     let usageMsg = "Enter your monthly usage data to see recommendations";
+    const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
+    const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
     if (dailyUsage < 0.30 && dailyUsage > 0) {
         usageMsg = "Your daily usage is minimal.";
     } else if (dailyUsage >= 0.30 && dailyUsage < 0.60) {
@@ -638,20 +637,24 @@ function updateDeltaRecommendation() {
     } else if (dailyUsage >= 0.60) {
         usageMsg = "Your daily usage is substantial.";
     }
-    document.getElementById('usageMessage').textContent = usageMsg;
+    if (usageMsgEl) usageMsgEl.textContent = usageMsg;
 
-    // Get recommendations - this is the key part
-    const recs = filledMonths > 0 && dailyUsage > 0 ? getRecommendations(dailyUsage) : null;
-    
+    // Defensive: Only call getRecommendations if inputs are valid
+    let recs = null;
+    try {
+        recs = filledMonths > 0 && dailyUsage > 0 ? getRecommendations(dailyUsage) : null;
+    } catch (err) {
+        console.error("Error in getRecommendations:", err);
+        recs = null;
+    }
     debugLog('Recommendations Result', recs);
 
-    // Show all tiers with single optimized option per tier
+    // Defensive: Only update recommendations if element exists
+    const recElement = document.getElementById('deltaRecommendation');
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
-    
     if (recs) {
         recommendationHTML += `<ul class="product-links">`;
-        
-        // Good tier option
+        // Good
         recommendationHTML += `<li><b>Good:</b> <span style="font-size:0.9em;color:#666;">(meets daily usage of ${dailyUsage.toFixed(2)} kWh)</span></li>`;
         if (recs.good && recs.good.length > 0) {
             const opt = recs.good[0];
@@ -659,8 +662,7 @@ function updateDeltaRecommendation() {
         } else {
             recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
         }
-        
-        // Better tier option
+        // Better
         recommendationHTML += `<li><b>Better:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 2).toFixed(2)} kWh for 1 day of headroom)</span></li>`;
         if (recs.better && recs.better.length > 0) {
             const opt = recs.better[0];
@@ -668,8 +670,7 @@ function updateDeltaRecommendation() {
         } else {
             recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
         }
-        
-        // Best tier option
+        // Best
         recommendationHTML += `<li><b>Best:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3).toFixed(2)} kWh for 2 days of headroom)</span></li>`;
         if (recs.best && recs.best.length > 0) {
             const opt = recs.best[0];
@@ -677,8 +678,7 @@ function updateDeltaRecommendation() {
         } else {
             recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
         }
-        
-        // Extended Backup (unchanged logic)
+        // Extended Backup
         recommendationHTML += `<li><b>Extended Backup:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3.5).toFixed(2)} kWh for outages)</span></li>`;
         if (recs.extended && recs.extended.length > 0) {
             const opt = recs.extended[0];
@@ -686,7 +686,6 @@ function updateDeltaRecommendation() {
         } else {
             recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
         }
-        
         recommendationHTML += `</ul>`;
     } else {
         recommendationHTML += `<ul class="product-links">`;
@@ -695,17 +694,8 @@ function updateDeltaRecommendation() {
         });
         recommendationHTML += `</ul>`;
     }
-    
     recommendationHTML += `</div>`;
-    
-    // Update the DOM with recommendation HTML
-    const recElement = document.getElementById('deltaRecommendation');
-    if (recElement) {
-        recElement.innerHTML = recommendationHTML;
-        debugLog('UI Update', 'Recommendations HTML updated');
-    } else {
-        console.error('Element #deltaRecommendation not found');
-    }
+    if (recElement) recElement.innerHTML = recommendationHTML;
 }
 
 // --- Reset Button Logic ---
