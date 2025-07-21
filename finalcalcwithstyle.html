@@ -503,7 +503,7 @@ function toggleDebug() {
 
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
-    // Helper: Generate all configs for a battery spec - renamed to avoid conflict
+    // Helper: Generate configs for a battery spec (renamed to avoid conflict)
     function generateBatteryConfigs(spec, name, link) {
         const arr = [];
         for (let extras = 0; extras <= spec.maxExtras; extras++) {
@@ -519,11 +519,13 @@ function getRecommendations(dailyUsage) {
         return arr;
     }
 
-    // Build all configs using renamed function
+    // Build all configs using the renamed function
     const proConfigs = generateBatteryConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
     const pro3Configs = generateBatteryConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
     const ultraConfigs = generateBatteryConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
-    const allConfigs = [...proConfigs, ...pro3Configs, ...ultraConfigs];
+    
+    // Combine configurations
+    const batteryConfigs = [...proConfigs, ...pro3Configs, ...ultraConfigs];
 
     // Helper: sort by fewest units, then extras, then lowest capacity
     function sortEfficient(configs) {
@@ -536,7 +538,7 @@ function getRecommendations(dailyUsage) {
 
     // --- GOOD ---
     // Must meet or exceed dailyUsage (no Ultra unless dailyUsage ≥ 0.35)
-    let goodCandidates = allConfigs.filter(c =>
+    let goodCandidates = batteryConfigs.filter(c =>
         c.capacity >= dailyUsage &&
         !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
     );
@@ -546,7 +548,7 @@ function getRecommendations(dailyUsage) {
     // --- BETTER ---
     // Must exceed Good and meet dailyUsage * 2
     let betterMin = Math.max(dailyUsage * 2, goodOption ? goodOption.capacity + 0.001 : 0);
-    let betterCandidates = allConfigs.filter(c =>
+    let betterCandidates = batteryConfigs.filter(c =>
         c.capacity >= betterMin &&
         !(c.model === "Delta Pro Ultra" && dailyUsage < 0.35)
     );
@@ -557,7 +559,7 @@ function getRecommendations(dailyUsage) {
     // Must exceed Better and meet dailyUsage * 3
     // Never suggest Delta Pro + extras
     let bestMin = Math.max(dailyUsage * 3, betterOption ? betterOption.capacity + 0.001 : 0);
-    let bestCandidates = allConfigs.filter(c =>
+    let bestCandidates = batteryConfigs.filter(c =>
         c.capacity >= bestMin &&
         !(c.model === "Delta Pro" && c.extras > 0)
     );
@@ -698,8 +700,7 @@ function updateDeltaRecommendation() {
     if (recElement) recElement.innerHTML = recommendationHTML;
 }
 
-// --- Fix for Reset Button and IE Compatibility ---
-// Use a more robust reset function and event attachment for IE support
+// --- Enhanced Reset Function ---
 function resetCalculator(event) {
     // Prevent default button behavior
     if (event) {
@@ -707,26 +708,47 @@ function resetCalculator(event) {
         event.stopPropagation();
     }
 
-    // Reset all monthly input fields and trigger updates
-    const inputs = document.querySelectorAll('input[id^="month"]');
-    inputs.forEach(input => {
-        input.value = '0';
-        // Trigger both input and change events for complete reset
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    try {
+        // Reset all monthly input fields
+        for (let i = 1; i <= 12; i++) {
+            const input = document.getElementById(`month${i}`);
+            if (input) {
+                input.value = '0';
+                // Create and dispatch events for IE compatibility
+                if (typeof(Event) === 'function') {
+                    // Modern browsers
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    // IE fallback
+                    const inputEvent = document.createEvent('Event');
+                    const changeEvent = document.createEvent('Event');
+                    inputEvent.initEvent('input', true, true);
+                    changeEvent.initEvent('change', true, true);
+                    input.dispatchEvent(inputEvent);
+                    input.dispatchEvent(changeEvent);
+                }
+            }
+        }
 
-    // Reset summary values
-    const totalUsageEl = document.getElementById('totalUsageValue');
-    const dailyUsageEl = document.getElementById('dailyUsageValue');
-    const usageMsgEl = document.getElementById('usageMessage');
-    
-    if (totalUsageEl) totalUsageEl.textContent = '0.00 kWh/year';
-    if (dailyUsageEl) dailyUsageEl.textContent = '0.00 kWh/day';
-    if (usageMsgEl) usageMsgEl.textContent = 'Enter your monthly usage data to see recommendations';
+        // Reset summary values
+        const elements = {
+            total: document.getElementById('totalUsageValue'),
+            daily: document.getElementById('dailyUsageValue'),
+            message: document.getElementById('usageMessage'),
+            recommendation: document.getElementById('deltaRecommendation')
+        };
 
-    // Force recommendation update
-    updateDeltaRecommendation();
+        if (elements.total) elements.total.textContent = '0.00 kWh/year';
+        if (elements.daily) elements.daily.textContent = '0.00 kWh/day';
+        if (elements.message) elements.message.textContent = 'Enter your monthly usage data to see recommendations';
+        
+        // Force recommendation update
+        updateDeltaRecommendation();
+
+    } catch (error) {
+        console.error('Error during reset:', error);
+    }
 }
 
 // Update event listener attachment
@@ -734,20 +756,21 @@ if (document.addEventListener) {
     document.addEventListener('DOMContentLoaded', function() {
         window.solarScoutDebug = false;
 
+        // Attach reset button listener
         const resetBtn = document.getElementById('resetButton');
         if (resetBtn) {
-            // Remove any existing listeners first
-            resetBtn.removeEventListener('click', resetCalculator);
-            // Add the click listener
-            resetBtn.addEventListener('click', resetCalculator);
+            // Clean up any existing listeners
+            const newResetBtn = resetBtn.cloneNode(true);
+            resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+            newResetBtn.addEventListener('click', resetCalculator);
         }
 
-        // Attach listeners for live updates on every input change (IE compatible)
-        for (var i = 1; i <= 12; i++) {
-            var inputElement = document.getElementById('month' + i);
+        // Attach input listeners
+        for (let i = 1; i <= 12; i++) {
+            const inputElement = document.getElementById(`month${i}`);
             if (inputElement) {
-                inputElement.oninput = updateDeltaRecommendation;
-                inputElement.onchange = updateDeltaRecommendation;
+                inputElement.addEventListener('input', updateDeltaRecommendation);
+                inputElement.addEventListener('change', updateDeltaRecommendation);
             }
         }
 
@@ -761,10 +784,10 @@ if (document.addEventListener) {
         if (resetBtn) {
             resetBtn.onclick = resetCalculator;
         }
-        for (var i = 1; i <= 12; i++) {
-            var inputElement = document.getElementById('month' + i);
+
+        for (let i = 1; i <= 12; i++) {
+            const inputElement = document.getElementById(`month${i}`);
             if (inputElement) {
-                inputElement.oninput = updateDeltaRecommendation;
                 inputElement.onchange = updateDeltaRecommendation;
             }
         }
@@ -775,3 +798,4 @@ if (document.addEventListener) {
     </script>
 </body>
 </html>
+
