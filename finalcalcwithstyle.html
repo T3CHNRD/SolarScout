@@ -704,10 +704,12 @@ function resetCalculator(event) {
     // Prevent default button behavior for IE
     if (event && event.preventDefault) event.preventDefault();
 
+    // Set all monthly input fields to 0 (not empty string)
     for (var i = 1; i <= 12; i++) {
         var input = document.getElementById('month' + i);
-        if (input) input.value = '';
+        if (input) input.value = '0';
     }
+    // Immediately update UI and calculated values
     updateDeltaRecommendation();
 }
 
