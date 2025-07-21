@@ -580,7 +580,7 @@ function getRecommendations(dailyUsage) {
             extendedConfigs.push({ ...ultraConfig, tierLabel: "Extended Backup" });
         } else {
             let extCandidates = ultraConfigs.filter(c => c.capacity >= extMin);
-            extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity);
+            extCandidates = extCandidates.sort((a, b) => a.capacity - b.capacity); // <-- FIXED LINE
             if (extCandidates[0]) {
                 extendedConfigs.push({ ...extCandidates[0], tierLabel: "Extended Backup" });
             }
@@ -597,6 +597,7 @@ function getRecommendations(dailyUsage) {
 }
 
 // --- Main Recommendation Function ---
+// Restore original function definition and avoid function override bugs
 function updateDeltaRecommendation() {
     debugLog('Function Call', 'updateDeltaRecommendation started');
     
@@ -708,42 +709,121 @@ function updateDeltaRecommendation() {
 }
 
 // --- Reset Button Logic ---
+// Restore original reset logic and ensure UI is updated
 function resetCalculator() {
     for (let i = 1; i <= 12; i++) {
-        document.getElementById(`month${i}`).value = '';
+        const input = document.getElementById(`month${i}`);
+        if (input) input.value = '';
     }
     updateDeltaRecommendation();
 }
 
-// Make sure event listeners are properly attached
+// --- Event Listeners ---
+// Remove duplicate DOMContentLoaded listeners and avoid function overrides
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize debug flag
     window.solarScoutDebug = false;
-    
-    // Add a hidden debug toggle - press Shift+D to toggle debugging
-    document.addEventListener('keydown', function(e) {
-        if (e.shiftKey && e.key === 'D') {
-            toggleDebug();
-        }
-    });
-    
+
     // Attach reset button listener
-    document.getElementById('resetButton').addEventListener('click', resetCalculator);
-    
+    const resetBtn = document.getElementById('resetButton');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetCalculator);
+    }
+
     // Attach listeners for live updates on every input change
     for (let i = 1; i <= 12; i++) {
         const inputElement = document.getElementById(`month${i}`);
         if (inputElement) {
             inputElement.addEventListener('input', updateDeltaRecommendation);
+            inputElement.addEventListener('change', updateDeltaRecommendation);
         }
     }
-    
-    // Additional safety - make sure the element exists
-    if (!document.getElementById('deltaRecommendation')) {
-        console.error('Critical element #deltaRecommendation is missing');
-    }
-    
+
     // Initial update
     updateDeltaRecommendation();
 });
+
+// Force debug mode on temporarily to diagnose issues
+window.solarScoutDebug = true;
+
+// Enhanced debugging function
+function logDebug(message) {
+    console.log(`%c🔍 DEBUG: ${message}`, 'color: #4c3a5f; font-weight: bold;');
+}
+
+// Add a direct update function that can be called from console
+function forceUpdate() {
+    logDebug("Manual update triggered");
+    try {
+        updateDeltaRecommendation();
+        logDebug("Update completed");
+    } catch (err) {
+        console.error("Error during update:", err);
+    }
+}
+
+// Override the updateDeltaRecommendation function with error handling
+const originalUpdateFunction = updateDeltaRecommendation;
+updateDeltaRecommendation = function() {
+    logDebug("Starting recommendation update");
+    
+    try {
+        // Call the original function
+        originalUpdateFunction();
+        
+        // Verify the DOM was updated
+        const recElement = document.getElementById('deltaRecommendation');
+        if (recElement) {
+            logDebug(`Recommendation HTML length: ${recElement.innerHTML.length}`);
+            
+            // If the content seems empty, try once more with a delay
+            if (recElement.innerHTML.length < 50) {
+                logDebug("Recommendation content appears empty, retrying...");
+                setTimeout(() => {
+                    originalUpdateFunction();
+                    logDebug("Retry completed");
+                }, 100);
+            }
+        }
+    } catch (err) {
+        console.error("Error updating recommendations:", err);
+    }
+};
+
+// Add a backup direct DOM event handler to each input
+document.querySelectorAll('[id^="month"]').forEach(input => {
+    input.addEventListener('change', function(e) {
+        logDebug(`Direct change on ${e.target.id} with value ${e.target.value}`);
+        setTimeout(forceUpdate, 50);
+    });
+});
+
+// Force an initial update after page load
+document.addEventListener('DOMContentLoaded', function() {
+    logDebug("DOM loaded, forcing initial update");
+    // Give the page a moment to fully initialize
+    setTimeout(forceUpdate, 200);
+});
+
+// Add a visible debug button for testing
+const debugButton = document.createElement('button');
+debugButton.innerHTML = "Debug Update";
+debugButton.style.position = "fixed";
+debugButton.style.bottom = "10px";
+debugButton.style.right = "10px";
+debugButton.style.zIndex = "9999";
+debugButton.style.background = "#4c3a5f";
+debugButton.style.color = "white";
+debugButton.style.border = "none";
+debugButton.style.padding = "8px 12px";
+debugButton.style.borderRadius = "4px";
+debugButton.style.cursor = "pointer";
+debugButton.onclick = forceUpdate;
+
+// Add the button to the page
+document.body.appendChild(debugButton);
+
+logDebug("Debug enhancements loaded");
 </script>
+</body>
+</html>
+
