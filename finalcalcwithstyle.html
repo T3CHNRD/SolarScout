@@ -484,6 +484,23 @@ const batteries = {
     ultra: { base: 6.0,   extra: 3.0,   maxExtras: 5 }
 };
 
+// Add this debug function right after the batteries object definition
+// This will help us trace the recommendation flow without modifying core logic
+
+function debugLog(section, data) {
+    if (window.solarScoutDebug) {
+        console.group(`Solar Scout Debug: ${section}`);
+        console.log(data);
+        console.groupEnd();
+    }
+}
+
+// Add this toggle function to enable/disable debugging
+function toggleDebug() {
+    window.solarScoutDebug = !window.solarScoutDebug;
+    console.log(`Solar Scout debugging: ${window.solarScoutDebug ? 'ENABLED' : 'DISABLED'}`);
+}
+
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
     // Helper: Generate all configs for a battery spec
@@ -581,6 +598,8 @@ function getRecommendations(dailyUsage) {
 
 // --- Main Recommendation Function ---
 function updateDeltaRecommendation() {
+    debugLog('Function Call', 'updateDeltaRecommendation started');
+    
     let monthlyTotal = 0;
     let filledMonths = 0;
     
@@ -590,12 +609,20 @@ function updateDeltaRecommendation() {
         if (!isNaN(val) && val > 0) {
             monthlyTotal += val;
             filledMonths++;
+            debugLog('Monthly Input', `Month ${i}: ${val} kWh`);
         }
     }
 
     // Rule 1: dailyUsage = average of non-zero monthly usage
     const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
     const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
+    
+    debugLog('Usage Calculation', {
+        monthlyTotal,
+        filledMonths,
+        avgMonthly,
+        dailyUsage
+    });
 
     // Update UI summary
     document.getElementById('totalUsageValue').textContent = `${monthlyTotal.toFixed(2)} kWh/year`;
@@ -612,16 +639,20 @@ function updateDeltaRecommendation() {
     }
     document.getElementById('usageMessage').textContent = usageMsg;
 
+    // Get recommendations - this is the key part
+    const recs = filledMonths > 0 && dailyUsage > 0 ? getRecommendations(dailyUsage) : null;
+    
+    debugLog('Recommendations Result', recs);
+
     // Show all tiers with single optimized option per tier
     let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
     
-    if (filledMonths > 0 && dailyUsage > 0) {
-        const recs = getRecommendations(dailyUsage);
+    if (recs) {
         recommendationHTML += `<ul class="product-links">`;
         
         // Good tier option
         recommendationHTML += `<li><b>Good:</b> <span style="font-size:0.9em;color:#666;">(meets daily usage of ${dailyUsage.toFixed(2)} kWh)</span></li>`;
-        if (recs.good.length > 0) {
+        if (recs.good && recs.good.length > 0) {
             const opt = recs.good[0];
             recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b></li>`;
         } else {
@@ -630,7 +661,7 @@ function updateDeltaRecommendation() {
         
         // Better tier option
         recommendationHTML += `<li><b>Better:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 2).toFixed(2)} kWh for 1 day of headroom)</span></li>`;
-        if (recs.better.length > 0) {
+        if (recs.better && recs.better.length > 0) {
             const opt = recs.better[0];
             recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b></li>`;
         } else {
@@ -639,7 +670,7 @@ function updateDeltaRecommendation() {
         
         // Best tier option
         recommendationHTML += `<li><b>Best:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3).toFixed(2)} kWh for 2 days of headroom)</span></li>`;
-        if (recs.best.length > 0) {
+        if (recs.best && recs.best.length > 0) {
             const opt = recs.best[0];
             recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b></li>`;
         } else {
@@ -648,7 +679,7 @@ function updateDeltaRecommendation() {
         
         // Extended Backup (unchanged logic)
         recommendationHTML += `<li><b>Extended Backup:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3.5).toFixed(2)} kWh for outages)</span></li>`;
-        if (recs.extended.length > 0) {
+        if (recs.extended && recs.extended.length > 0) {
             const opt = recs.extended[0];
             recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b> <span style='color:#7fb0d0;'>(Outage Backup)</span></li>`;
         } else {
@@ -665,7 +696,15 @@ function updateDeltaRecommendation() {
     }
     
     recommendationHTML += `</div>`;
-    document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
+    
+    // Update the DOM with recommendation HTML
+    const recElement = document.getElementById('deltaRecommendation');
+    if (recElement) {
+        recElement.innerHTML = recommendationHTML;
+        debugLog('UI Update', 'Recommendations HTML updated');
+    } else {
+        console.error('Element #deltaRecommendation not found');
+    }
 }
 
 // --- Reset Button Logic ---
@@ -678,6 +717,16 @@ function resetCalculator() {
 
 // Make sure event listeners are properly attached
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize debug flag
+    window.solarScoutDebug = false;
+    
+    // Add a hidden debug toggle - press Shift+D to toggle debugging
+    document.addEventListener('keydown', function(e) {
+        if (e.shiftKey && e.key === 'D') {
+            toggleDebug();
+        }
+    });
+    
     // Attach reset button listener
     document.getElementById('resetButton').addEventListener('click', resetCalculator);
     
@@ -687,6 +736,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (inputElement) {
             inputElement.addEventListener('input', updateDeltaRecommendation);
         }
+    }
+    
+    // Additional safety - make sure the element exists
+    if (!document.getElementById('deltaRecommendation')) {
+        console.error('Critical element #deltaRecommendation is missing');
     }
     
     // Initial update
