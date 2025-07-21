@@ -701,27 +701,45 @@ function updateDeltaRecommendation() {
 // --- Fix for Reset Button and IE Compatibility ---
 // Use a more robust reset function and event attachment for IE support
 function resetCalculator(event) {
-    // Prevent default button behavior for IE
-    if (event && event.preventDefault) event.preventDefault();
-
-    // Set all monthly input fields to 0 (not empty string)
-    for (var i = 1; i <= 12; i++) {
-        var input = document.getElementById('month' + i);
-        if (input) input.value = '0';
+    // Prevent default button behavior
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
-    // Immediately update UI and calculated values
+
+    // Reset all monthly input fields and trigger updates
+    const inputs = document.querySelectorAll('input[id^="month"]');
+    inputs.forEach(input => {
+        input.value = '0';
+        // Trigger both input and change events for complete reset
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // Reset summary values
+    const totalUsageEl = document.getElementById('totalUsageValue');
+    const dailyUsageEl = document.getElementById('dailyUsageValue');
+    const usageMsgEl = document.getElementById('usageMessage');
+    
+    if (totalUsageEl) totalUsageEl.textContent = '0.00 kWh/year';
+    if (dailyUsageEl) dailyUsageEl.textContent = '0.00 kWh/day';
+    if (usageMsgEl) usageMsgEl.textContent = 'Enter your monthly usage data to see recommendations';
+
+    // Force recommendation update
     updateDeltaRecommendation();
 }
 
-// --- Event Listeners (IE compatible) ---
+// Update event listener attachment
 if (document.addEventListener) {
     document.addEventListener('DOMContentLoaded', function() {
         window.solarScoutDebug = false;
 
-        // Attach reset button listener (IE compatible)
-        var resetBtn = document.getElementById('resetButton');
+        const resetBtn = document.getElementById('resetButton');
         if (resetBtn) {
-            resetBtn.onclick = resetCalculator;
+            // Remove any existing listeners first
+            resetBtn.removeEventListener('click', resetCalculator);
+            // Add the click listener
+            resetBtn.addEventListener('click', resetCalculator);
         }
 
         // Attach listeners for live updates on every input change (IE compatible)
@@ -739,13 +757,10 @@ if (document.addEventListener) {
 } else if (window.attachEvent) {
     // IE8 fallback
     window.attachEvent('onload', function() {
-        window.solarScoutDebug = false;
-
-        var resetBtn = document.getElementById('resetButton');
+        const resetBtn = document.getElementById('resetButton');
         if (resetBtn) {
             resetBtn.onclick = resetCalculator;
         }
-
         for (var i = 1; i <= 12; i++) {
             var inputElement = document.getElementById('month' + i);
             if (inputElement) {
