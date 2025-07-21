@@ -503,8 +503,8 @@ function toggleDebug() {
 
 // --- Recommendation Logic ---
 function getRecommendations(dailyUsage) {
-    // Helper: Generate all configs for a battery spec
-    function allConfigs(spec, name, link) {
+    // Helper: Generate all configs for a battery spec - renamed to avoid conflict
+    function generateBatteryConfigs(spec, name, link) {
         const arr = [];
         for (let extras = 0; extras <= spec.maxExtras; extras++) {
             arr.push({
@@ -519,10 +519,10 @@ function getRecommendations(dailyUsage) {
         return arr;
     }
 
-    // Build all configs
-    const proConfigs = allConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
-    const pro3Configs = allConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
-    const ultraConfigs = allConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
+    // Build all configs using renamed function
+    const proConfigs = generateBatteryConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
+    const pro3Configs = generateBatteryConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
+    const ultraConfigs = generateBatteryConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
     const allConfigs = [...proConfigs, ...pro3Configs, ...ultraConfigs];
 
     // Helper: sort by fewest units, then extras, then lowest capacity
@@ -775,4 +775,3 @@ if (document.addEventListener) {
     </script>
 </body>
 </html>
-
