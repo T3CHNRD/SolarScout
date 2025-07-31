@@ -151,11 +151,6 @@
             gap: 0.5rem;
         }
     
-        .month-input label {
-            font-size: 0.9rem;
-            color: var(--text-dark);
-        }
-    
         .results {
             background: linear-gradient(135deg, var(--purple-gradient-dark), var(--purple-gradient-light));
             padding: 1.5rem;
@@ -204,6 +199,47 @@
             opacity: 0.9;
         }
     
+        /* Update the usage-display styling to be truly persistent with proper gradient */
+        .usage-display {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
+            color: var(--text-white);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .usage-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .usage-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .usage-message {
+            flex: 2;
+            text-align: center;
+            font-weight: 500;
+            padding: 0 1rem;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Add padding to the body to prevent content from being hidden behind the fixed footer */
+        body {
+            padding-bottom: 6rem;
+        }
+
         @media (max-width: 768px) {
             .calculator-card {
                 margin: -1rem 1rem 2rem;
@@ -256,7 +292,23 @@
         font-size: 0.9rem;
         line-height: 1.5;
     }
+
+    .usage-display {
+            flex-direction: column;
+            padding: 0.75rem;
         }
+        
+        .usage-message {
+            border-left: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        body {
+            padding-bottom: 9rem;
+        }
+    }
     </style>
 </head>
 <body>
@@ -268,7 +320,7 @@
                 <a href="about.html" class="nav-button">About Solar Scout</a>
                 <a href="blackoutbuddy.html" class="nav-button">Blackout Buddy</a>
                 <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
-                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
+                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=SolarScoute&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
             </div>
             <br>
             <br>
@@ -281,76 +333,6 @@
     </div>
 
     <div class="calculator-card">
-        <div class="section">
-            <div class="section-title">Electricity Rate Settings</div>
-            <div class="section-description">
-                Enter your electricity rates from your utility bill. These are typically measured in cents per kilowatt-hour (¢/kWh).
-            </div>
-            <div class="input-group">
-                <label>Peak Rate (cents/kWh)</label>
-                <input type="number" id="peakRate" min="0" step="0.01">
-            </div>
-            <div class="input-group">
-                <label>Off-Peak Rate (cents/kWh)</label>
-                <input type="number" id="offPeakRate" min="0" step="0.01">
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Time-of-Use Settings</div>
-            <div class="section-description">
-                Select when your peak rate hours begin and end. These are typically during high-demand periods when electricity costs more.
-            </div>
-            <div class="time-selection">
-                <div class="input-group">
-                    <label>Peak Hours Start</label>
-                    <div class="time-block">
-                        <select id="peakStart">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                            <option value="11">11</option>
-                            <option value="12">12</option>
-                        </select>
-                        <select id="peakStartAMPM">
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <label>Peak Hours End</label>
-                    <div class="time-block">
-                        <select id="peakEnd">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                            <option value="11">11</option>
-                            <option value="12">12</option>
-                        </select>
-                        <select id="peakEndAMPM">
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="section">
             <div class="section-title">Monthly Usage Entry</div>
             <div class="section-description">
@@ -408,406 +390,413 @@
             </div>
         </div>
 
-        <div class="results">
-            <div id="totalUsage" class="result-item">Total Usage: 0 kWh</div>
-            <div id="peakUsage" class="result-item">Peak Usage: 0 kWh</div>
-            <div id="offPeakUsage" class="result-item">Off-Peak Usage: 0 kWh</div>
-            <div id="peakCost" class="result-item">Peak Cost: $0.00</div>
-            <div id="offPeakCost" class="result-item">Off-Peak Cost: $0.00</div>
-            <div id="totalCost" class="result-item">Total Cost: $0.00</div>
+        <!-- Remove usageDisplay/footer usage summary if present -->
+
+        <!-- Add this block just above #deltaRecommendation, after Monthly Usage Entry section -->
+        <div id="usageSummary" style="
+            margin: 2rem 0 0 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2d2d2d, #826894);
+            color: #fff;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-around;
+            gap: 2rem;
+        ">
+            <div>
+                <div style="font-size:1.1rem;font-weight:600;">Total Usage</div>
+                <div id="totalUsageValue" style="font-size:1.3rem;font-weight:700;">0 kWh/year</div>
+            </div>
+            <div>
+                <div style="font-size:1.1rem;font-weight:600;">Daily Usage</div>
+                <div id="dailyUsageValue" style="font-size:1.3rem;font-weight:700;">0 kWh/day</div>
+            </div>
+            <div id="usageMessage" style="font-size:1.05rem;font-weight:500;text-align:center;flex:2;">
+                Enter your monthly usage data to see recommendations
+            </div>
         </div>
 
         <div id="deltaRecommendation" class="recommendation">
             <!-- Recommendations will be populated by JavaScript -->
         </div>
 
+        <!-- Restore discount message directly below recommendations, above the footer -->
+        <div id="discountMessage" style="
+    margin: 2rem auto 0 auto;
+    max-width: 800px;
+    padding: 1em;
+    border-radius: 8px;
+    background: linear-gradient(135deg,#4c3a5f,#826894);
+    color: #fff;
+    font-weight: 500;
+    text-align: center;
+">
+    You can take 5% off your order when using the links to the suggested power stations or by using the code <b>SolarScout</b> at checkout.
+</div>
+
         <div class="estimation-note">
             Note: All calculations and totals are estimates based on provided usage data. Actual costs and usage may vary.
         </div>
+    </div> <!-- end .calculator-card -->
+
+    <!-- Restore footer at very bottom of page -->
+    <div class="footer">
+        <div class="footer-text">
+            © 2025 T3CHNRD - Designed with help by All the AI's. All rights reserved
+        </div>
     </div>
+
     <script>
-        // Utility function to parse number inputs safely
-        const parseInput = (value) => {
-            const parsed = parseFloat(value);
-            return isNaN(parsed) ? 0 : parsed;
-        };
-    
-        // Function to calculate time-based usage split
-        function calculatePeakHours() {
-            const peakStart = document.getElementById('peakStart').value;
-            const peakStartAMPM = document.getElementById('peakStartAMPM').value;
-            const peakEnd = document.getElementById('peakEnd').value;
-            const peakEndAMPM = document.getElementById('peakEndAMPM').value;
-    
-            // Convert to 24-hour format
-            let start = parseInt(peakStart);
-            let end = parseInt(peakEnd);
-            
-            // Convert start time to 24-hour format
-            if (peakStartAMPM === 'PM' && start !== 12) {
-                start += 12;
-            } else if (peakStartAMPM === 'AM' && start === 12) {
-                start = 0;
-            }
-            
-            // Convert end time to 24-hour format
-            if (peakEndAMPM === 'PM' && end !== 12) {
-                end += 12;
-            } else if (peakEndAMPM === 'AM' && end === 12) {
-                end = 0;
-            }
-    
-            // Calculate hours in peak period
-            let peakHours;
-            if (end > start) {
-                // Normal case (e.g., 9 AM to 5 PM)
-                peakHours = end - start;
-            } else {
-                // Overnight case (e.g., 10 PM to 6 AM)
-                peakHours = (24 - start) + end;
-            }
-    
-            // Return the ratio of peak hours to total day
-            return peakHours / 24;
-        }
-    
-        // --- Battery Recommendation Logic: Show 3 Options Per Model, All Models, No Early Exit ---
-const deltaProducts = [
-  {
-    name: "Delta Pro",
-    baseCapacity: 3.6,
-    step: 3.6,
-    options: [
-      { label: "Delta Pro", extras: 0, total: 3.6 },
-      { label: "Delta Pro + 1 extra battery", extras: 1, total: 7.2 },
-      { label: "Delta Pro + 2 extra batteries", extras: 2, total: 10.8 }
-    ],
-    link: "https://www.ecoflow.com/us/delta-pro-portable-power-station"
-  },
-  {
-    name: "Delta Pro 3",
-    baseCapacity: 4.096,
-    step: 4.096,
-    options: [
-      { label: "Delta Pro 3", extras: 0, total: 4.096 },
-      { label: "Delta Pro 3 + 1 extra battery", extras: 1, total: 8.192 },
-      { label: "Delta Pro 3 + 2 extra batteries", extras: 2, total: 12.288 }
-    ],
-    link: "https://www.ecoflow.com/us/delta-pro-3-portable-power-station"
-  },
-  {
-    name: "Delta Pro Ultra",
-    baseCapacity: 6,
-    step: 6,
-    options: [
-      { label: "Delta Pro Ultra", extras: 0, total: 6 },
-      { label: "Delta Pro Ultra + 1 extra battery", extras: 1, total: 12 },
-      { label: "Delta Pro Ultra + 5 extra batteries", extras: 5, total: 36 }
-    ],
-    link: "https://www.ecoflow.com/us/delta-pro-ultra-portable-power-station"
-  }
+        // --- Centralized EcoFlow Product Data ---
+const ecoflowProducts = [
+    {
+        model: "Delta Pro",
+        tier: 1,
+        base: 3.6,
+        step: 3.6,
+        maxExtras: 2,
+        link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"
+    },
+    {
+        model: "Delta Pro 3",
+        tier: 2,
+        base: 4.096,
+        step: 4.096,
+        maxExtras: 2,
+        link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"
+    },
+    {
+        model: "Delta Pro Ultra",
+        tier: 3,
+        base: 6,
+        step: 3, // Each Ultra battery is 3.0 kWh
+        maxExtras: 5,
+        link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
+    }
 ];
 
-// Utility: Get days in month
-function getDaysInMonth(monthIndex) {
-  const year = new Date().getFullYear();
-  return new Date(year, monthIndex, 0).getDate();
+// Add batteries object (required for getRecommendations)
+const batteries = {
+    pro:   { base: 3.6,   extra: 3.6,   maxExtras: 2 },
+    pro3:  { base: 4.096, extra: 4.096, maxExtras: 2 },
+    ultra: { base: 6.0,   extra: 3.0,   maxExtras: 5 }
+};
+
+// Add this debug function right after the batteries object definition
+// This will help us trace the recommendation flow without modifying core logic
+
+function debugLog(section, data) {
+    if (window.solarScoutDebug) {
+        console.group(`Solar Scout Debug: ${section}`);
+        console.log(data);
+        console.groupEnd();
+    }
+}
+
+// Add this toggle function to enable/disable debugging
+function toggleDebug() {
+    window.solarScoutDebug = !window.solarScoutDebug;
+    console.log(`Solar Scout debugging: ${window.solarScoutDebug ? 'ENABLED' : 'DISABLED'}`);
+}
+
+// --- Recommendation Logic ---
+function getRecommendations(dailyUsage) {
+    // Helper: Generate configs for a battery spec
+    function generateBatteryConfigs(spec, name, link) {
+        const arr = [];
+        for (let extras = 0; extras <= spec.maxExtras; extras++) {
+            arr.push({
+                model: name,
+                label: extras === 0 ? name : `${name} + ${extras} extra battery${extras > 1 ? 'ies' : ''}`,
+                capacity: spec.base + spec.extra * extras,
+                extras,
+                totalUnits: extras + 1,
+                link
+            });
+        }
+        return arr;
+    }
+
+    // Build all possible configurations
+    const proConfigs = generateBatteryConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);
+    const pro3Configs = generateBatteryConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);
+    const ultraConfigs = generateBatteryConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);
+
+    // --- GOOD ---
+    // Must meet or exceed dailyUsage, always suggest a valid config
+    let goodCandidates = [];
+    if (dailyUsage <= 1.30) {
+        // Allow solo units for <= 1.30
+        goodCandidates = [
+            ...proConfigs.filter(c => c.capacity >= dailyUsage && c.extras === 0),
+            ...pro3Configs.filter(c => c.capacity >= dailyUsage && c.extras === 0),
+            ...ultraConfigs.filter(c => c.capacity >= dailyUsage && c.extras === 0)
+        ];
+    } else {
+        // For >1.30, must suggest Delta Pro + at least 1 extra battery (never solo units)
+        goodCandidates = [
+            ...proConfigs.filter(c => c.capacity >= dailyUsage && c.extras >= 1),
+            ...pro3Configs.filter(c => c.capacity >= dailyUsage),
+            ...ultraConfigs.filter(c => c.capacity >= dailyUsage)
+        ];
+    }
+    // Always pick the first valid config (no efficiency sorting)
+    const goodOption = goodCandidates.length > 0 ? goodCandidates[0] : null;
+
+    // --- BETTER ---
+    // Must exceed Good and meet at least dailyUsage × 1.5
+    let betterMinCapacity = Math.max(dailyUsage * 1.5, goodOption ? goodOption.capacity + 0.001 : 0);
+    let betterCandidates = [];
+    if (goodOption && goodOption.model === "Delta Pro") {
+        // Allow Delta Pro + more extras for Better
+        betterCandidates = [
+            ...proConfigs.filter(c => c.capacity >= betterMinCapacity && c.extras > goodOption.extras),
+            ...pro3Configs.filter(c => c.capacity >= betterMinCapacity),
+            ...ultraConfigs.filter(c => c.capacity >= betterMinCapacity)
+        ];
+    } else {
+        betterCandidates = [
+            ...proConfigs.filter(c => c.capacity >= betterMinCapacity && c.extras >= 1),
+            ...pro3Configs.filter(c => c.capacity >= betterMinCapacity),
+            ...ultraConfigs.filter(c => c.capacity >= betterMinCapacity)
+        ];
+    }
+    const betterOption = betterCandidates.length > 0 ? betterCandidates[0] : null;
+
+    // --- BEST ---
+    // Must exceed Better and meet at least dailyUsage × 2.5
+    let bestMinCapacity = Math.max(dailyUsage * 2.5, betterOption ? betterOption.capacity + 0.001 : 0);
+    let bestCandidates = [
+        // ⚠️ Never suggest Delta Pro + extras for Best
+        ...pro3Configs.filter(c => c.capacity >= bestMinCapacity),
+        ...ultraConfigs.filter(c => c.capacity >= bestMinCapacity)
+    ];
+    const bestOption = bestCandidates.length > 0 ? bestCandidates[0] : null;
+
+    // --- EXTENDED BACKUP --- 
+    // DO NOT MODIFY THIS LOGIC
+    let extendedConfigs = [];
+    if (dailyUsage > 0) {
+        let ultraExtras = 0;
+        if (dailyUsage > 1.91) ultraExtras = 5;
+        else if (dailyUsage > 1.76) ultraExtras = 4;
+        else if (dailyUsage > 1.61) ultraExtras = 3;
+        else if (dailyUsage > 1.51) ultraExtras = 2;
+        else if (dailyUsage > 1.26) ultraExtras = 1;
+        const ultraConfig = ultraConfigs[ultraExtras];
+        if (ultraConfig && ultraConfig.capacity >= dailyUsage * 3.5) {
+            extendedConfigs.push({ ...ultraConfig, tierLabel: "Extended Backup" });
+        }
+    }
+
+    // Format output - ensure we have valid options for each tier
+    return {
+        good: goodOption ? [{ ...goodOption, tierLabel: "Good" }] : [],
+        better: betterOption ? [{ ...betterOption, tierLabel: "Better" }] : [],
+        best: bestOption ? [{ ...bestOption, tierLabel: "Best" }] : [],
+        extended: extendedConfigs
+    };
 }
 
 // --- Main Recommendation Function ---
+// Restore original function definition and avoid function override bugs
 function updateDeltaRecommendation() {
-  // Calculate total usage and max daily usage
-  let totalUsage = 0;
-  let maxDaily = 0;
-  for (let i = 1; i <= 12; i++) {
-    const monthUsage = parseFloat(document.getElementById(`month${i}`).value) || 0;
-    totalUsage += monthUsage;
-    const days = getDaysInMonth(i);
-    if (days > 0) {
-      const daily = monthUsage / days;
-      if (daily > maxDaily) maxDaily = daily;
-    }
-  }
-  const requiredCapacity = totalUsage + maxDaily;
-
-  let recommendationHTML = `<div class="recommendation-content">
-    <h3>Recommended Power Solutions</h3>
-    <p>Based on your requirements (Total Usage + Max Daily Usage = <b>${requiredCapacity.toFixed(2)} kWh</b>):</p>
-  `;
-
-  let anyOption = false;
-
-  deltaProducts.forEach(product => {
-    // For each model, generate 3 options (base, +1, max expansion)
-    let validOptions = [];
-    product.options.forEach(opt => {
-      if (opt.total >= requiredCapacity) {
-        validOptions.push({
-          label: opt.label,
-          totalCapacity: opt.total,
-          link: product.link
-        });
-      }
-    });
-
-    // Always show up to 3 valid options if possible
-    if (validOptions.length > 0) {
-      anyOption = true;
-      recommendationHTML += `<div style="margin-bottom:1em;"><b>${product.name} Options:</b><ul>`;
-      validOptions.forEach(opt => {
-        recommendationHTML += `<li>
-          <a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.totalCapacity.toFixed(3)}kWh</b>
-        </li>`;
-      });
-      recommendationHTML += `</ul></div>`;
-    }
-  });
-
-  if (!anyOption) {
-    recommendationHTML += `<p>No single battery configuration meets your requirements. Consider multiple units or consult a professional.</p>`;
-  }
-
-  recommendationHTML += `</div>`;
-  document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
-}
-
-// --- Reset Button: Full Functionality Fix ---
-
-// Make sure your reset button has id="resetButton" in your HTML:
-// <button id="resetButton" type="button">Reset</button>
-
-function resetForm() {
-    // 1. Reset all month input fields to 0
-    for (let i = 1; i <= 12; i++) {
-        const input = document.getElementById(`month${i}`);
-        if (input) input.value = 0;
-    }
-
-    // 2. Clear calculated displays (adjust IDs as needed)
-    const dailyUsageDisplay = document.getElementById('dailyUsage');
-    if (dailyUsageDisplay) dailyUsageDisplay.textContent = '';
-
-    const recommendationsDisplay = document.getElementById('deltaRecommendation');
-    if (recommendationsDisplay) recommendationsDisplay.innerHTML = '';
-
-    // 3. Clear any error messages or validation
-    const errorMessage = document.getElementById('errorMessage');
-    if (errorMessage) errorMessage.textContent = '';
-
-    // 4. Reset any global variables/state (if used)
-    window.totalUsage = 0;
-    window.dailyUsage = 0;
-    window.recommendations = [];
-
-    // 5. Optionally, reset any other result fields
-    // ... add as needed ...
-}
-
-// Attach the event listener (ensure this runs after DOM is loaded)
-document.getElementById('resetButton').addEventListener('click', resetForm);
+    debugLog('Function Call', 'updateDeltaRecommendation started');
     
-        // Add this utility function:
-function getDaysInMonth(monthIndex) {
-    // monthIndex: 1 = January, 12 = December
-    const year = new Date().getFullYear();
-    return new Date(year, monthIndex, 0).getDate();
-}
-
-// Compute daily usage for each month and use the maximum (worst-case)
-function getMaxDailyUsage() {
-    let maxDaily = 0;
+    let monthlyTotal = 0;
+    let filledMonths = 0;
+    
+    // Defensive: Check all input elements exist before accessing value
     for (let i = 1; i <= 12; i++) {
-        const monthUsage = parseInput(document.getElementById(`month${i}`).value);
-        const days = getDaysInMonth(i);
-        if (days > 0) {
-            const daily = monthUsage / days;
-            if (daily > maxDaily) maxDaily = daily;
+        const inputEl = document.getElementById(`month${i}`);
+        if (!inputEl) {
+            console.error(`Input element month${i} not found`);
+            continue;
+        }
+        const val = parseFloat(inputEl.value);
+        if (!isNaN(val) && val > 0) {
+            monthlyTotal += val;
+            filledMonths++;
+            debugLog('Monthly Input', `Month ${i}: ${val} kWh`);
         }
     }
-    return maxDaily;
-}
 
-// Function to update all calculations
-function updateCalculations() {
-    const peakRate = parseInput(document.getElementById('peakRate').value) / 100; // Convert cents to dollars
-    const offPeakRate = parseInput(document.getElementById('offPeakRate').value) / 100;
-    const peakTimeRatio = calculatePeakHours();
-    const maxDailyUsage = getMaxDailyUsage();
-    
-    // Calculate total usage
-    let totalUsage = 0;
-    for (let i = 1; i <= 12; i++) {
-        totalUsage += parseInput(document.getElementById(`month${i}`).value);
+    // Defensive: Only update UI if summary elements exist
+    const totalUsageEl = document.getElementById('totalUsageValue');
+    const dailyUsageEl = document.getElementById('dailyUsageValue');
+    const usageMsgEl = document.getElementById('usageMessage');
+    if (totalUsageEl) totalUsageEl.textContent = `${monthlyTotal.toFixed(2)} kWh/year`;
+    if (dailyUsageEl) dailyUsageEl.textContent = `${(filledMonths > 0 ? (monthlyTotal / filledMonths / 30).toFixed(2) : "0.00")} kWh/day`;
+
+    // Usage message logic
+    let usageMsg = "Enter your monthly usage data to see recommendations";
+    const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;
+    const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;
+    if (dailyUsage < 0.30 && dailyUsage > 0) {
+        usageMsg = "Your daily usage is minimal.";
+    } else if (dailyUsage >= 0.30 && dailyUsage < 0.60) {
+        usageMsg = "Your daily usage is moderate.";
+    } else if (dailyUsage >= 0.60) {
+        usageMsg = "Your daily usage is substantial.";
     }
-    
-    // Calculate peak and off-peak usage
-    const peakUsage = totalUsage * peakTimeRatio;
-    const offPeakUsage = totalUsage - peakUsage;
-    
-    // Calculate costs
-    const peakCost = peakUsage * peakRate;
-    const offPeakCost = offPeakUsage * offPeakRate;
-    const totalCost = peakCost + offPeakCost;
-    
-    // Update display
-    document.getElementById('totalUsage').textContent = `Total Usage: ${totalUsage.toFixed(1)} kWh`;
-    document.getElementById('peakUsage').textContent = `Peak Usage: ${peakUsage.toFixed(1)} kWh`;
-    document.getElementById('offPeakUsage').textContent = `Off-Peak Usage: ${offPeakUsage.toFixed(1)} kWh`;
-    document.getElementById('peakCost').textContent = `Peak Cost: $${peakCost.toFixed(2)}`;
-    document.getElementById('offPeakCost').textContent = `Off-Peak Cost: $${offPeakCost.toFixed(2)}`;
-    document.getElementById('totalCost').textContent = `Total Cost: $${totalCost.toFixed(2)}`;
-    
-    // Update Delta recommendation
-    updateDeltaRecommendation(totalUsage / 12); // Average monthly usage
-}
-    
-        // Only allow these batteries and their expandability
+    if (usageMsgEl) usageMsgEl.textContent = usageMsg;
 
-    // Function to reset calculator
-function resetCalculator() {
-    // Reset rate inputs
-    document.getElementById('peakRate').value = '';
-    document.getElementById('offPeakRate').value = '';
-    
-    // Reset time selects
-    document.getElementById('peakStart').value = '1';
-    document.getElementById('peakStartAMPM').value = 'AM';
-    document.getElementById('peakEnd').value = '1';
-    document.getElementById('peakEndAMPM').value = 'AM';
-    
-    // Reset all monthly inputs
-    for (let i = 1; i <= 12; i++) {
-        document.getElementById(`month${i}`).value = '';
+    // Defensive: Only call getRecommendations if inputs are valid
+    let recs = null;
+    try {
+        recs = filledMonths > 0 && dailyUsage > 0 ? getRecommendations(dailyUsage) : null;
+    } catch (err) {
+        console.error("Error in getRecommendations:", err);
+        recs = null;
     }
-    
-    // Reset all displays
-    document.getElementById('totalUsage').textContent = 'Total Usage: 0 kWh';
-    document.getElementById('peakUsage').textContent = 'Peak Usage: 0 kWh';
-    document.getElementById('offPeakUsage').textContent = 'Off-Peak Usage: 0 kWh';
-    document.getElementById('peakCost').textContent = 'Peak Cost: $0.00';
-    document.getElementById('offPeakCost').textContent = 'Off-Peak Cost: $0.00';
-    document.getElementById('totalCost').textContent = 'Total Cost: $0.00';
-    
-    // Clear recommendation
-    document.getElementById('deltaRecommendation').innerHTML = '';
+    debugLog('Recommendations Result', recs);
 
-    // Optional: Add visual feedback
-    alert('Calculator has been reset!');
-}
-
-// Add event listener for the reset button as a backup
-document.addEventListener('DOMContentLoaded', function() {
-    const resetButton = document.querySelector('button[onclick="resetCalculator()"]');
-    if (resetButton) {
-        resetButton.addEventListener('click', resetCalculator);
-    }
-});
-        // Function to update Delta product recommendations
-       // Find the existing updateDeltaRecommendation function and replace it with this:
-function updateDeltaRecommendation(averageMonthlyUsage) {
-    const yearlyUsage = averageMonthlyUsage * 12;
-    const dailyUsage = yearlyUsage / 365;
-    
-    // Define product links map
-    const productLinks = {
-        "DELTA Mini": "https://us.ecoflow.com/products/delta-mini-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-        "DELTA 2": "https://us.ecoflow.com/products/delta-2-portable-power-station?_pos=1&_sid=cd6c8860b&_ss=r&variant=40569176326217&sca_ref=7408943.R33f7CbNF7&sca_source=EcoFlow DELTA 2",
-        "DELTA Max": "https://us.ecoflow.com/products/delta-max-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-        "DELTA Pro": "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-        "DELTA Pro 3": "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3",
-        "DELTA Pro Ultra": "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"
-    };
-
-    const suitableProducts = deltaProducts.filter(product => {
-        return (dailyUsage <= product.suitableDaily * 1.2); // 20% margin
-    });
-
-    let recommendationHTML = '<div class="recommendation-content">';
-    
-    if (suitableProducts.length === 0) {
-        recommendationHTML += `
-            <h3>Recommended Power Solutions</h3>
-            <p>Your daily usage of ${dailyUsage.toFixed(2)} kWh is substantial. We recommend considering:</p>
-            <ul class="product-links">
-                <li><a href="${productLinks['DELTA Pro Ultra']}" target="_blank">DELTA Pro Ultra</a> - Maximum Power Backup</li>
-            </ul>
-            <p>Features:</p>
-            <ul>
-                <li>Base Capacity: 6kWh (expandable up to 30kWh)</li>
-                <li>Maximum Output: 7200W</li>
-            </ul>
-        `;
+    // Defensive: Only update recommendations if element exists
+    const recElement = document.getElementById('deltaRecommendation');
+    let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';
+    if (recs) {
+        recommendationHTML += `<ul class="product-links">`;
+        // Good
+        recommendationHTML += `<li><b>Good:</b> <span style="font-size:0.9em;color:#666;">(meets daily usage of ${dailyUsage.toFixed(2)} kWh)</span></li>`;
+        if (recs.good && recs.good.length > 0) {
+            const opt = recs.good[0];
+            recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b></li>`;
+        } else {
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
+        }
+        // Better
+        recommendationHTML += `<li><b>Better:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 2).toFixed(2)} kWh for 1 day of headroom)</span></li>`;
+        if (recs.better && recs.better.length > 0) {
+            const opt = recs.better[0];
+            recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b></li>`;
+        } else {
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
+        }
+        // Best
+        recommendationHTML += `<li><b>Best:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3).toFixed(2)} kWh for 2 days of headroom)</span></li>`;
+        if (recs.best && recs.best.length > 0) {
+            const opt = recs.best[0];
+            recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b></li>`;
+        } else {
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
+        }
+        // Extended Backup
+        recommendationHTML += `<li><b>Extended Backup:</b> <span style="font-size:0.9em;color:#666;">(meets ${(dailyUsage * 3.5).toFixed(2)} kWh for outages)</span></li>`;
+        if (recs.extended && recs.extended.length > 0) {
+            const opt = recs.extended[0];
+            recommendationHTML += `<li style="margin-left:20px;"><a href="${opt.link}" target="_blank">${opt.label}</a> - Total Capacity: <b>${opt.capacity.toFixed(3)} kWh</b> <span style='color:#7fb0d0;'>(Outage Backup)</span></li>`;
+        } else {
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;
+        }
+        recommendationHTML += `</ul>`;
     } else {
-        const bestFit = suitableProducts[0];
-        recommendationHTML += `
-            <h3>Recommended Power Solutions</h3>
-            <p>Based on your daily usage of ${dailyUsage.toFixed(2)} kWh, here are our recommendations:</p>
-            <ul class="product-links">
-        `;
-        
-        // Add best fit and alternative options
-        suitableProducts.forEach(product => {
-            recommendationHTML += `
-                <li><a href="${productLinks[product.name]}" target="_blank">${product.name}</a> - 
-                    Base Capacity: ${product.baseCapacity}kWh${product.expandable ? ` (expandable to ${product.maxCapacity}kWh)` : ''}</li>
-            `;
+        recommendationHTML += `<ul class="product-links">`;
+        ["Good", "Better", "Best", "Extended Backup"].forEach(tier => {
+            recommendationHTML += `<li><b>${tier}:</b> No viable config</li>`;
         });
-        
-        recommendationHTML += '</ul>';
+        recommendationHTML += `</ul>`;
+    }
+    recommendationHTML += `</div>`;
+    if (recElement) recElement.innerHTML = recommendationHTML;
+}
+
+// --- Enhanced Reset Function ---
+function resetCalculator(event) {
+    // Prevent default button behavior
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
 
-    // Add disclaimer
-    recommendationHTML += `
-        <div class="recommendation-disclaimer">
-            <strong>Note:</strong> This recommendation is based on the information provided. You may need multiple units
-            or a larger capacity battery system if you require longer run times or have additional power needs.
-            Please consult with a professional for critical power backup solutions.
-        </div>
-    </div>`;
-
-    document.getElementById('deltaRecommendation').innerHTML = recommendationHTML;
-}
-    
-        // Function to reset calculator
-        function resetCalculator() {
-            document.getElementById('peakRate').value = '';
-            document.getElementById('offPeakRate').value = '';
-            document.getElementById('peakStart').value = '1';
-            document.getElementById('peakStartAMPM').value = 'AM';
-            document.getElementById('peakEnd').value = '1';
-            document.getElementById('peakEndAMPM').value = 'AM';
-            
-            // Reset all monthly inputs
-            for (let i = 1; i <= 12; i++) {
-                document.getElementById(`month${i}`).value = '';
+    try {
+        // Reset all monthly input fields
+        for (let i = 1; i <= 12; i++) {
+            const input = document.getElementById(`month${i}`);
+            if (input) {
+                input.value = '0';
+                // Create and dispatch events for IE compatibility
+                if (typeof(Event) === 'function') {
+                    // Modern browsers
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    // IE fallback
+                    const inputEvent = document.createEvent('Event');
+                    const changeEvent = document.createEvent('Event');
+                    inputEvent.initEvent('input', true, true);
+                    changeEvent.initEvent('change', true, true);
+                    input.dispatchEvent(inputEvent);
+                    input.dispatchEvent(changeEvent);
+                }
             }
-            
-            updateCalculations();
         }
-    
-        // Add event listeners to all inputs
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add listeners to rate inputs
-            document.getElementById('peakRate').addEventListener('input', updateCalculations);
-            document.getElementById('offPeakRate').addEventListener('input', updateCalculations);
-            
-            // Add listeners to time selects
-            document.getElementById('peakStart').addEventListener('change', updateCalculations);
-            document.getElementById('peakStartAMPM').addEventListener('change', updateCalculations);
-            document.getElementById('peakEnd').addEventListener('change', updateCalculations);
-            document.getElementById('peakEndAMPM').addEventListener('change', updateCalculations);
-            
-            // Add listeners to all month inputs
-            for (let i = 1; i <= 12; i++) {
-                document.getElementById(`month${i}`).addEventListener('input', updateCalculations);
-            }
-        });
-    </script>
-    </body>
-    </html>
 
-    <footer class="footer">
-        <div class="footer-text">
-            © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
-        </div>
-    </footer>
+        // Reset summary values
+        const elements = {
+            total: document.getElementById('totalUsageValue'),
+            daily: document.getElementById('dailyUsageValue'),
+            message: document.getElementById('usageMessage'),
+            recommendation: document.getElementById('deltaRecommendation')
+        };
+
+        if (elements.total) elements.total.textContent = '0.00 kWh/year';
+        if (elements.daily) elements.daily.textContent = '0.00 kWh/day';
+        if (elements.message) elements.message.textContent = 'Enter your monthly usage data to see recommendations';
+        
+        // Force recommendation update
+        updateDeltaRecommendation();
+
+    } catch (error) {
+        console.error('Error during reset:', error);
+    }
+}
+
+// Update event listener attachment
+if (document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', function() {
+        window.solarScoutDebug = false;
+
+        // Attach reset button listener
+        const resetBtn = document.getElementById('resetButton');
+        if (resetBtn) {
+            // Clean up any existing listeners
+            const newResetBtn = resetBtn.cloneNode(true);
+            resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+            newResetBtn.addEventListener('click', resetCalculator);
+        }
+
+        // Attach input listeners
+        for (let i = 1; i <= 12; i++) {
+            const inputElement = document.getElementById(`month${i}`);
+            if (inputElement) {
+                inputElement.addEventListener('input', updateDeltaRecommendation);
+                inputElement.addEventListener('change', updateDeltaRecommendation);
+            }
+        }
+
+        // Initial update
+        updateDeltaRecommendation();
+    });
+} else if (window.attachEvent) {
+    // IE8 fallback
+    window.attachEvent('onload', function() {
+        const resetBtn = document.getElementById('resetButton');
+        if (resetBtn) {
+            resetBtn.onclick = resetCalculator;
+        }
+
+        for (let i = 1; i <= 12; i++) {
+            const inputElement = document.getElementById(`month${i}`);
+            if (inputElement) {
+                inputElement.onchange = updateDeltaRecommendation;
+            }
+        }
+
+        updateDeltaRecommendation();
+    });
+}
+    </script>
+</body>
+</html>
