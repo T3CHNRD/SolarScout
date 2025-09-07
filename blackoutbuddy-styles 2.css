@@ -1,0 +1,94 @@
+/* Recommendation Styles */
+.recommendation-container {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.power-assessment {
+  margin-bottom: 1.5rem;
+}
+
+.power-assessment h3 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.product-recommendations h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.product-card h4 {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.product-details {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.product-details li {
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.product-link {
+  display: inline-block;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-align: center;
+  transition: background-color 0.2s;
+  margin-top: auto;
+}
+
+.product-link:hover {
+  background: #0056b3;
+  text-decoration: none;
+  color: white;
+}
+
+.daily-usage-note {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.daily-usage-note ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+
+.daily-usage-note li {
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
