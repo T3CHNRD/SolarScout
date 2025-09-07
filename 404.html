@@ -3,190 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found</title>
+    <title>404 Not Found - SolarScout</title>
+    <link rel="stylesheet" href="css/theme.css">
     <style>
-    :root {
-      --area51: #1a1a1a;
-      --area51-light: #2d2d2d;
-      --light-blue: #4a90e2;
-      --high-purple: #9b59b6;
-      --earth-brown: #8b4513;
-      --lighter-blue: #5dade2;
-      --sunlight: #f1c40f;
-      --text-primary: var(--area51);
-      --text-secondary: #666666;
-      --background-primary: #ffffff;
-      --background-secondary: #f5f5f5;
-      --border-color: #e0e0e0;
-      --cloud-color: #ecf0f1;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      color: var(--text-primary);
-      line-height: 1.6;
-      background-color: var(--background-primary);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      text-align: center;
-      padding: 3rem;
-      background-color: var(--background-secondary);
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      width: 90%;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(to right, var(--light-blue), var(--high-purple));
-    }
-
-    .error-code {
-      font-size: 8rem;
-      color: var(--area51);
-      margin: 0;
-      line-height: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    /* Simple Animations */
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
-    @keyframes shine {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
-    }
-
-    @keyframes drift {
-      0%, 100% { transform: translateX(0); }
-      50% { transform: translateX(15px); }
-    }
-
-    .sun-rays {
-      animation: shine 3s ease-in-out infinite;
-    }
-
-    .sun-circle {
-      animation: float 4s ease-in-out infinite;
-    }
-
-    .cloud {
-      animation: drift 6s ease-in-out infinite;
-    }
-
-    p {
-      font-size: 1.25rem;
-      color: var(--text-secondary);
-      margin: 1.5rem 0 2.5rem;
-    }
-
-    .home-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background-color: var(--area51);
-      color: white;
-      padding: 0.75rem 2rem;
-      border-radius: 4px;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      font-weight: 500;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .home-button:hover {
-      background-color: var(--area51-light);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .home-button svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .error-code {
-        font-size: 6rem;
-      }
-      
-      .container {
-        padding: 2rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .error-code {
-        font-size: 4rem;
-      }
-      
-      p {
-        font-size: 1.1rem;
-      }
-    }
+        /* Custom styles for the 404 page content */
+        .error-container {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        .error-container h1 {
+            font-size: 2.2rem;
+            color: #e74c3c; /* Error color */
+            margin-bottom: 1rem;
+        }
+        .error-container p {
+            font-size: 1.1rem;
+            max-width: 550px;
+            margin: 0 auto 1.5rem auto;
+        }
+        .error-container .button {
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        .error-container img {
+            max-width: 285px; /* Increased from 170px for a larger appearance */
+            height: auto;
+            border-radius: 25%;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="error-code">
-            4
-            <svg viewBox="0 0 200 200" width="120" height="120">
-                <!-- Sun -->
-                <circle class="sun-circle" cx="100" cy="100" r="30" fill="var(--sunlight)"/>
-                <!-- Sun Rays -->
-                <g class="sun-rays">
-                    <path d="M100,50 L100,30 M150,100 L170,100 M100,150 L100,170 M50,100 L30,100
-                            M135,65 L150,50 M135,135 L150,150 M65,135 L50,150 M65,65 L50,50" 
-                          stroke="var(--high-purple)" 
-                          stroke-width="4"
-                          fill="none"/>
-                </g>
-                <!-- Cloud -->
-                <g class="cloud">
-                    <path d="M60,95 
-                            C60,85 70,75 80,75
-                            C80,65 90,55 105,55
-                            C120,55 130,65 130,75
-                            C140,75 150,85 150,95
-                            C150,105 140,115 130,115
-                            L80,115
-                            C70,115 60,105 60,95Z" 
-                          fill="var(--cloud-color)"
-                          stroke="var(--lighter-blue)"
-                          stroke-width="2"/>
-                </g>
-            </svg>
-            4
+    <!-- 1. Standardized Header (without menu) -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo-link">
+                <img src="assets/ssmenuicon.jpg" alt="SolarScout Logo" class="logo">
+            </a>
+            <!-- Navigation menu removed from 404 page as requested -->
         </div>
-        <p>Oops! The page you are looking for cannot be found.</p>
-        <a href="/" class="home-button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-            Return to Home Page
-        </a>
-    </div>
+    </header>
+
+    <!-- 2. Page-Specific Content -->
+    <main class="container">
+        <div class="error-container">
+            <h1>404: Lost Signal</h1>
+            <p> Our solar scout can't find this location. You've wandered off the grid into an uncharted sector where there's no power.</p>
+            <a href="index.html" class="button">Recalibrate Coordinates</a>
+            <div>
+                <img src="assets/sslogo.jpg" alt="SolarScout Logo">
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. Standardized Footer -->
+    <footer class="footer">
+        <p>© 2025 T3CHNRD and a few of his friend, chatgpt, claude and gemini and very specaial thank you to Rob White II- All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts are not needed as the menu is removed -->
 </body>
 </html>

@@ -3,402 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackoutBuddy - Power Usage Calculator</title>
-   <style>
-        :root {
-            --purple-gradient-dark: #4c3a5f;
-            --purple-gradient-light: #826894;
-            --nav-purple: rgba(255, 255, 255, 0.1);
-            --text-white: #ffffff;
-            --card-bg: #ffffff;
-            --text-dark: #333333;
-            --border-color: #e0e0e0;
-            --accent-blue: #7fb0d0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --section-bg: #f8f9fa;
-            --area51-light: #2d2d2d;
-        }
- 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-    
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
-            color: var(--text-dark);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-    
-        .header, .footer {
-            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
-            color: var(--text-white);
-        }
-    
-        .header {
-            padding: 2rem 0;
-            text-align: center;
-        }
-    
-        .header h1 {
-            margin: 0 0 1.5rem 0;
-            font-size: 2rem;
-            font-weight: 600;
-        }
-
-        .title {
-           text-align: center;
-           margin: 1rem auto;
-           max-width: 90%;
-        }
-    
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-    
-        .nav-button {
-            background: var(--nav-purple);
-            border: none;
-            color: var(--text-white);
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.3s ease;
-            text-decoration: none;
-        }
-    
-        .nav-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .shop-link {
-           color: #FFD700;
-           font-weight: bold;
-           text-decoration: underline;
-        }
-
-        .shop-link:hover {
-            color: #FFA500;
-        }
-    
-        .calculator-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            max-width: 1200px;
-            margin: -2rem auto 2rem;
-            padding: 2rem;
-            position: relative;
-            flex: 1;
-        }
-    
-        .section {
-            margin: 2rem 0;
-            padding: 1rem;
-            background: var(--section-bg);
-            border-radius: 8px;
-        }
-    
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-align: center;
-            color: var(--purple-gradient-dark);
-            margin: 0 0 1rem 0;
-        }
-    
-        .section-description {
-            color: #666;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-    
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-    
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-dark);
-            font-size: 0.9rem;
-        }
-    
-        input, select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-    
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--purple-gradient-light);
-        }
-    
-        .instructions {
-            margin: 1rem 0;
-            text-align: center;
-            padding: 1rem;
-            background: var(--section-bg);
-            border-radius: 8px;
-            line-height: 1.5;
-        }
-
-        .instructions ol {
-            display: inline-block;
-            text-align: left;
-            margin: 1rem auto;
-        }
-
-        .appliance-grid {
-            display: grid;
-            gap: 20px;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 40px;
-        }
-
-        .appliance-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-            gap: 40px;
-            align-items: center;
-            padding: 10px;
-            background: white;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-    
-        .results {
-            background: linear-gradient(135deg, var(--purple-gradient-dark), var(--purple-gradient-light));
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-            color: var(--text-white);
-        }
-
-        .recommendation-section {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .recommendation-section li {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-    
-        .result-item {
-            padding: 0.75rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-    
-        .result-item:last-child {
-            border-bottom: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-    
-        .recommendation {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: var(--section-bg);
-            border-radius: 8px;
-            border-left: 4px solid var(--purple-gradient-light);
-        }
-    
-        .estimation-note {
-            text-align: center;
-            padding: 1rem;
-            color: #666;
-            font-size: 0.9rem;
-            font-style: italic;
-            margin: 2rem 0 0 0;
-        }
-    
-        .footer {
-            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
-            color: var(--text-white);
-            padding: 1rem;
-            text-align: center;
-            margin-top: auto;
-        }
-    
-        .footer-text {
-            font-size: 0.9rem;
-            color: var(--text-white);
-            opacity: 0.9;
-        }
-    
-        @media (max-width: 1200px) {
-            .calculator-card {
-                margin: -1rem 1rem 2rem;
-                padding: 1.5rem;
-            }
-    
-            .nav-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-    
-            .nav-button {
-                width: 80%;
-            }
-        }
-
-        @media screen and (max-width: 768px) {
-            .nav-button {
-                display: block;
-                width: 100%;
-                text-align: center;
-                margin: 5px 0;
-                padding: 10px;
-            }
-
-            .title {
-                font-size: 1.5rem;
-                padding: 10px;
-                text-align: center;
-            }
-
-            .instructions {
-                padding: 15px;
-                margin: 10px;
-            }
-
-            .appliance-grid {
-                overflow-x: auto;
-                padding: 10px;
-            }
-
-            .appliance-row {
-                display: grid;
-                grid-template-columns: minmax(120px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr) minmax(80px, 1fr);
-                gap: 10px;
-                padding: 8px;
-            }
-
-            .grid-header {
-                font-size: 0.9rem;
-            }
-
-            .results {
-                padding: 15px;
-                margin: 10px;
-            }
-
-            .total-power {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-
-            .recommendation-section {
-                padding: 15px;
-                margin-top: 15px;
-            }
-        }
-
-        @media screen and (max-width: 480px) {
-            .appliance-row {
-                font-size: 0.85rem;
-                grid-template-columns: minmax(100px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr) minmax(70px, 1fr);
-                gap: 5px;
-            }
-
-            .grid-header {
-                font-size: 0.8rem;
-            }
-
-            .appliance-grid {
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: thin;
-            }
-
-            .instructions ol {
-                padding-left: 20px;
-                margin: 10px 0;
-            }
-
-            button, input, select {
-                min-height: 44px;
-            }
-        }
-
-        @media screen and (min-width: 769px) and (max-width: 1024px) {
-            .calculator-card {
-                margin: 20px auto;
-                max-width: 90%;
-            }
-
-            .appliance-row {
-                gap: 15px;
-            }
-
-            .nav-button {
-                padding: 8px 15px;
-                margin: 0 5px;
-            }
-        }
-
-        @media (hover: none) and (pointer: coarse) {
-            input, select, button {
-                padding: 12px;
-                margin: 5px 0;
-            }
-          
-            .appliance-row > * {
-                margin: 5px 0;
-            }
-        }
-    </style>
+    <title>Blackout Buddy - SolarScout</title>
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
-   <div class="header">
-            <div class="nav-buttons">
-                <a href="index.html" class="nav-button">Home</a>
-                <a href="about.html" class="nav-button">About Solar Scout</a>
-                <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
-                <a href="finalcalcwithstyle.html" class="nav-button">Solar Scout Whole Home Power Planner</a>
-                <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button" target="_blank" rel="noopener noreferrer">Save 5% at Ecoflow.com</a>
-            </div>
-            <br>
-            <div style="margin-top: 2em; text-align: center; padding-center: px;">
-            <h1 class="header-title">BlackoutBuddy - Portable Power Usage Calculator</h1>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo-link">
+                <img src="assets/ssmenuicon.jpg" alt="SolarScout Logo" class="logo">
+            </a>
+            <nav class="nav-container">
+                <button class="menu-button" id="hamburger-menu">
+                    <img src="assets/ssmenuicon.jpg" alt="Menu" class="ss-logo">
+                    <span class="menu-text">Menu</span>
+                </button>
+                <ul class="nav-menu" id="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="finalcalcwithstyle.html">Power Planner</a></li>
+                    <li><a href="blackoutbuddy.html" class="active">Blackout Buddy</a></li>
+                    <li><a href="https://www.linspyre.com/ecoholics/calc_voc.html" target="_blank">Solar Basics</a></li>
+                    <li><a href="https://us.ecoflow.com/?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" target="_blank">Save 5% at Ecoflow.com</a></li>
+                </ul>
+            </nav>
         </div>
-            <div class="action-buttons">
-                <div style="margin-top: 2em; text-align: center; padding-center: px;">
-                    <button id="resetButton" class="nav-button">Reset Calculator</button>
-                <button onclick="printResults()" class="nav-button">Print Results</button>
-            </div>
-        </div>
-        </div>
+    </header>
 
-        <div class="calculator-card">
+    <main class="container">
+        <div class="card">
             <div class="instructions">
-                <p>Welcome to BlackoutBuddy! This calculator helps you plan your portable power needs:</p>
+                <p>Welcome to BlackoutBuddy! This calculator helps you plan your portable power needs.</p>
                 <ol>
-                    <li>Select your appliances from the list below</li>
-                    <li>Enter how many hours per day you plan to run each item</li>
-                    <li>The calculator will show your total power needs and recommend solutions</li>
-                    <li>All pre-filled numbers are average estimates. Please adjust these numbers to match your specific product's wattage</li>
-                    <li>If you select "Other" from the dropdown menu, you will need to manually enter the wattage for your appliance</li>
-                    <li>For multiple days, convert to total hours (example: 2 days = 48 hours, 3 days = 72 hours)</li>
-                    <li>Don't Forget you can save 5% by using the code " solarscout " at checkout on Ecoflow.com</li>
+                    <li>Select your appliances from the list below.</li>
+                    <li>Enter how many hours per day you plan to run each item.</li>
+                    <li>The calculator will show your total power needs and recommend solutions.</li>
+                    <li>All pre-filled numbers are average estimates. Please adjust these numbers to match your specific product's wattage.</li>
+                    <li>If you select "Other" from the dropdown menu, you will need to manually enter the wattage for your appliance.</li>
+                    <li>For multiple days, convert to total hours (example: 2 days = 48 hours, 3 days = 72 hours).</li>
+                    <li>Don't Forget you can save 5% by using the code "solarscout" at checkout on Ecoflow.com</li>
                 </ol>
             </div>
 
@@ -410,556 +52,188 @@
                     <div>Hours/Day</div>
                     <div>Daily kWh</div>
                 </div>
-                <div id="applianceRows"></div>
+
+                <div id="applianceRows">
+                    <!-- Row 1 -->
+                    <div class="appliance-row">
+                        <select class="appliance-select" aria-label="Appliance 1">
+                            <option value="">Select Appliance</option>
+                            <option>Air Conditioner (Window)</option>
+                            <option>Box Fan</option>
+                            <option>Coffee Pot - Keurig</option>
+                            <option>CPAP</option>
+                            <option>Desktop Computer</option>
+                            <option>Electric Clothes Dryer</option>
+                            <option>Electric Stove</option>
+                            <option>Freezer</option>
+                            <option>Microwave</option>
+                            <option>OTHER - insert your own values</option>
+                            <option>Refrigerator</option>
+                            <option>Space Heater</option>
+                            <option>Television</option>
+                            <option>Washing Machine</option>
+                        </select>
+                        <input type="number" class="running-watts" placeholder="Running Watts" min="0" step="1" aria-label="Running Watts 1" />
+                        <input type="number" class="starting-watts" placeholder="Starting Watts" min="0" step="1" aria-label="Starting Watts (Surge) 1" />
+                        <input type="number" class="hours" placeholder="Hours" min="0" max="24" step="0.1" aria-label="Hours/Day 1" />
+                        <div class="daily-kwh">0.00 kWh</div>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="appliance-row">
+                        <select class="appliance-select" aria-label="Appliance 2">
+                            <option value="">Select Appliance</option>
+                            <option>Air Conditioner (Window)</option>
+                            <option>Box Fan</option>
+                            <option>Coffee Pot - Keurig</option>
+                            <option>CPAP</option>
+                            <option>Desktop Computer</option>
+                            <option>Electric Clothes Dryer</option>
+                            <option>Electric Stove</option>
+                            <option>Freezer</option>
+                            <option>Microwave</option>
+                            <option>OTHER - insert your own values</option>
+                            <option>Refrigerator</option>
+                            <option>Space Heater</option>
+                            <option>Television</option>
+                            <option>Washing Machine</option>
+                        </select>
+                        <input type="number" class="running-watts" placeholder="Running Watts" min="0" step="1" aria-label="Running Watts 2" />
+                        <input type="number" class="starting-watts" placeholder="Starting Watts" min="0" step="1" aria-label="Starting Watts (Surge) 2" />
+                        <input type="number" class="hours" placeholder="Hours" min="0" max="24" step="0.1" aria-label="Hours/Day 2" />
+                        <div class="daily-kwh">0.00 kWh</div>
+                    </div>
+
+                    <!-- Row 3 -->
+                    <div class="appliance-row">
+                        <select class="appliance-select" aria-label="Appliance 3">
+                            <option value="">Select Appliance</option>
+                            <option>Air Conditioner (Window)</option>
+                            <option>Box Fan</option>
+                            <option>Coffee Pot - Keurig</option>
+                            <option>CPAP</option>
+                            <option>Desktop Computer</option>
+                            <option>Electric Clothes Dryer</option>
+                            <option>Electric Stove</option>
+                            <option>Freezer</option>
+                            <option>Microwave</option>
+                            <option>OTHER - insert your own values</option>
+                            <option>Refrigerator</option>
+                            <option>Space Heater</option>
+                            <option>Television</option>
+                            <option>Washing Machine</option>
+                        </select>
+                        <input type="number" class="running-watts" placeholder="Running Watts" min="0" step="1" aria-label="Running Watts 3" />
+                        <input type="number" class="starting-watts" placeholder="Starting Watts" min="0" step="1" aria-label="Starting Watts (Surge) 3" />
+                        <input type="number" class="hours" placeholder="Hours" min="0" max="24" step="0.1" aria-label="Hours/Day 3" />
+                        <div class="daily-kwh">0.00 kWh</div>
+                    </div>
+
+                    <!-- Row 4 -->
+                    <div class="appliance-row">
+                        <select class="appliance-select" aria-label="Appliance 4">
+                            <option value="">Select Appliance</option>
+                            <option>Air Conditioner (Window)</option>
+                            <option>Box Fan</option>
+                            <option>Coffee Pot - Keurig</option>
+                            <option>CPAP</option>
+                            <option>Desktop Computer</option>
+                            <option>Electric Clothes Dryer</option>
+                            <option>Electric Stove</option>
+                            <option>Freezer</option>
+                            <option>Microwave</option>
+                            <option>OTHER - insert your own values</option>
+                            <option>Refrigerator</option>
+                            <option>Space Heater</option>
+                            <option>Television</option>
+                            <option>Washing Machine</option>
+                        </select>
+                        <input type="number" class="running-watts" placeholder="Running Watts" min="0" step="1" aria-label="Running Watts 4" />
+                        <input type="number" class="starting-watts" placeholder="Starting Watts" min="0" step="1" aria-label="Starting Watts (Surge) 4" />
+                        <input type="number" class="hours" placeholder="Hours" min="0" max="24" step="0.1" aria-label="Hours/Day 4" />
+                        <div class="daily-kwh">0.00 kWh</div>
+                    </div>
+
+                    <!-- Row 5 -->
+                    <div class="appliance-row">
+                        <select class="appliance-select" aria-label="Appliance 5">
+                            <option value="">Select Appliance</option>
+                            <option>Air Conditioner (Window)</option>
+                            <option>Box Fan</option>
+                            <option>Coffee Pot - Keurig</option>
+                            <option>CPAP</option>
+                            <option>Desktop Computer</option>
+                            <option>Electric Clothes Dryer</option>
+                            <option>Electric Stove</option>
+                            <option>Freezer</option>
+                            <option>Microwave</option>
+                            <option>OTHER - insert your own values</option>
+                            <option>Refrigerator</option>
+                            <option>Space Heater</option>
+                            <option>Television</option>
+                            <option>Washing Machine</option>
+                        </select>
+                        <input type="number" class="running-watts" placeholder="Running Watts" min="0" step="1" aria-label="Running Watts 5" />
+                        <input type="number" class="starting-watts" placeholder="Starting Watts" min="0" step="1" aria-label="Starting Watts (Surge) 5" />
+                        <input type="number" class="hours" placeholder="Hours" min="0" max="24" step="0.1" aria-label="Hours/Day 5" />
+                        <div class="daily-kwh">0.00 kWh</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="results">
-                <div class="total-power">
-                    <div id="totalWatts">Total Running Watts: 0 W</div>
-                    <div id="totalStarting">Total Starting Watts: 0 W</div>
-                    <div id="totalKwh">Total Daily Usage: 0 kWh</div>
-                </div>
-                <div id="recommendation" class="recommendation-section">
-                    Select appliances to get recommendations.
-                </div>
+            <div id="results" class="results results-bar" style="margin-top: 1rem;">
+                <div><strong id="totalWatts">Total Running Watts: 0 W</strong></div>
+                <div><strong id="totalStarting">Total Starting Watts: 0 W</strong></div>
+                <div><strong id="totalKwh">Total Daily Usage: 0.00 kWh</strong></div>
+            </div>
+
+            <div id="recommendation" class="recommendation-section" style="margin-top: .5rem;">
+                Select appliances to get recommendations.
+            </div>
+
+            <div class="button-group" style="display: flex; gap: 1rem; margin-top: 1.25rem;">
+                <button id="resetButton" class="button">RESET CALCULATOR</button>
+                <button id="printButton" class="button">PRINT RESULTS</button>
             </div>
         </div>
+    </main>
 
     <footer class="footer">
-        <div class="footer-text">
-            © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
-        </div>
+        <p>© 2025 T3CHNRD and a few of his friend, chatgpt, claude and gemini and very specaial thank you to Rob White II- All rights reserved.</p>
     </footer>
 
+    <!-- Load external BlackoutBuddy script (defer ensures DOM is ready). Update ?v= to bust cache during dev -->
+    <script src="js/blackoutbuddy.js?v=20250905" defer></script>
+
+    <!-- Small loader/checker: warns if JS fails to load or functions are missing, and triggers initial render if available -->
     <script>
-        const commonAppliances = [
-            {
-                name: "Refrigerator",
-                runningWatts: 150,
-                startingWatts: 1200,
-                category: "Essential"
-            },
-            {
-                name: "CPAP",
-                runningWatts: 60,
-                startingWatts: 100,
-                category: "Essential"
-            },
-            {
-                name: "Freezer",
-                runningWatts: 100,
-                startingWatts: 800,
-                category: "Essential"
-            },
-            {
-                name: "Microwave",
-                runningWatts: 1000,
-                startingWatts: 1500,
-                category: "Kitchen"
-            },
-            {
-                name: "Electric Stove",
-                runningWatts: 2000,
-                startingWatts: 2100,
-                category: "Kitchen"
-            },
-            {
-                name: "Coffee Pot - Keurig",
-                runningWatts: 1500,
-                startingWatts: 1500,
-                category: "Kitchen"
-            },
-            {
-                name: "Air Conditioner (Window)",
-                runningWatts: 1000,
-                startingWatts: 2200,
-                category: "Climate"
-            },
-            {
-                name: "Box Fan",
-                runningWatts: 75,
-                startingWatts: 100,
-                category: "Climate"
-            },
-            {
-                name: "Space Heater",
-                runningWatts: 1500,
-                startingWatts: 1500,
-                category: "Climate"
-            },
-            {
-                name: "Television",
-                runningWatts: 100,
-                startingWatts: 150,
-                category: "Entertainment"
-            },
-            {
-                name: "Desktop Computer",
-                runningWatts: 200,
-                startingWatts: 200,
-                category: "Entertainment"
-            },
-            {
-                name: "Washing Machine",
-                runningWatts: 500,
-                startingWatts: 1200,
-                category: "Laundry"
-            },
-            {
-                name: "OTHER - insert your own values",
-                runningWatts: 0,
-                startingWatts: 0,
-                category: "Other"
-            },
-            {
-                name: "Electric Clothes Dryer",
-                runningWatts: 3000,
-                startingWatts: 5000,
-                category: "Laundry"
-            }
-        ];
-
-        const ecoFlowProducts = [
-            // DELTA Products
-            {
-                name: "DELTA Mini",
-                series: "DELTA",
-                baseCapacity: 0.882,
-                maxPower: 1400,
-                surgePower: 2100,
-                expandable: false
-            },
-            {
-                name: "DELTA 2",
-                series: "DELTA",
-                baseCapacity: 1.024,
-                maxPower: 1800,
-                surgePower: 2700,
-                expandable: true,
-                maxCapacity: 2.048
-            },
-            {
-                name: "DELTA 2 Max",
-                series: "DELTA",
-                baseCapacity: 2.048,
-                maxPower: 2400,
-                surgePower: 3400,
-                expandable: true,
-                maxCapacity: 6.048
-            },
-            {
-                name: "DELTA 3",
-                series: "DELTA",
-                baseCapacity: 1.024,
-                maxPower: 1800,
-                surgePower: 3600,
-                expandable: true,
-                maxCapacity: 6.048
-            },
-            {
-                name: "DELTA 3 Plus (2 solar inputs)",
-                series: "DELTA",
-                baseCapacity: 1.024,
-                maxPower: 1800,
-                surgePower: 3600,
-                expandable: true,
-                maxCapacity: 6.048
-            },
-            {
-                name: "DELTA 3 1500",
-                series: "DELTA",
-                baseCapacity: 1.536,
-                maxPower: 1800,
-                surgePower: 3600,
-                expandable: true,
-                maxCapacity: 6.048
-            },
-            {
-                name: "DELTA Pro",
-                series: "DELTA",
-                baseCapacity: 3.6,
-                maxPower: 3600,
-                surgePower: 7200,
-                expandable: true,
-                maxCapacity: 10.8
-            },
-            {
-                name: "DELTA 3 Pro",
-                series: "DELTA",
-                baseCapacity: 4.096,
-                maxPower: 4000,
-                surgePower: 8000,
-                expandable: true,
-                maxCapacity: 12.288
-            },
-            {
-                name: "DELTA Pro Ultra",
-                series: "DELTA",
-                baseCapacity: 6,
-                maxPower: 7200,
-                surgePower: 7200,
-                expandable: true,
-                maxCapacity: 30
-            },
-            
-            // RAPID Products (converted to kWh)
-            {
-                name: "Rapid 10K",
-                series: "RAPID",
-                baseCapacity: 0.037,
-                maxPower: 65,
-                surgePower: 0,
-                expandable: false,
-                maxCapacity: 0.037
-            },
-            {
-                name: "Rapid 5K",
-                series: "RAPID",
-                baseCapacity: 0.0185,
-                maxPower: 30,
-                surgePower: 0,
-                expandable: false,
-                maxCapacity: 0.0185
-            },
-            
-            // RIVER Products
-            {
-                name: "RIVER Pro",
-                series: "RIVER",
-                baseCapacity: 0.72,
-                maxPower: 600,
-                surgePower: 1200,
-                expandable: true,
-                maxCapacity: 1.44
-            },
-            {
-                name: "RIVER 2",
-                series: "RIVER",
-                baseCapacity: 0.24,
-                maxPower: 300,
-                surgePower: 600,
-                expandable: false
-            },
-            {
-                name: "RIVER 2 Max",
-                series: "RIVER",
-                baseCapacity: 0.512,
-                maxPower: 500,
-                surgePower: 1000,
-                expandable: false
-            },
-            {
-                name: "RIVER 2 Pro",
-                series: "RIVER",
-                baseCapacity: 0.716,
-                maxPower: 800,
-                surgePower: 1600,
-                expandable: false
-            },
-            {
-                name: "RIVER 3",
-                series: "RIVER",
-                baseCapacity: 0.245,
-                maxPower: 300,
-                surgePower: 600,
-                expandable: false
-            },
-            {
-                name: "RIVER 3 Plus",
-                series: "RIVER",
-                baseCapacity: 0.286,
-                maxPower: 600,
-                surgePower: 1200,
-                expandable: true,
-                maxCapacity: 0.572
-            },
-            {
-                name: "RIVER 3 Plus Max Wireless ( adds a 5k Rapid charger )",
-                series: "RIVER",
-                baseCapacity: 0.858,
-                maxPower: 600,
-                surgePower: 1200,
-                expandable: true,
-                maxCapacity: 0.572
-            },
-            {
-                name: "RIVER 3 Max",
-                series: "RIVER",
-                baseCapacity: 0.572,
-                maxPower: 600,
-                surgePower: 1200,
-                expandable: true,
-                maxCapacity: 0.858
-            },
-            {
-                name: "RIVER 3 Max Plus",
-                series: "RIVER",
-                baseCapacity: 0.858,
-                maxPower: 600,
-                surgePower: 1200,
-                expandable: true
-            }
-        ];
-
-        const productAffiliateLinks = {
-            "DELTA Mini": "https://us.ecoflow.com/products/delta-mini-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-            "DELTA 2": "https://us.ecoflow.com/products/delta-2-portable-power-station?_pos=1&_sid=cd6c8860b&_ss=r&variant=40569176326217&sca_ref=7408943.R33f7CbNF7&sca_source=EcoFlow DELTA 2",
-            "DELTA 2 Max": "https://us.ecoflow.com/products/delta-2-max-portable-power-station?_pos=1&_sid=cc369e7d5&_ss=r&variant=40538145095753&sca_ref=7408943.R33f7CbNF7&sca_source=delta 2 max",
-            "DELTA 3": "https://us.ecoflow.com/products/delta-3-portable-power-station?_pos=1&_sid=f54de58a6&_ss=r&variant=42017992048713&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3",
-            "DELTA 3 Plus": "https://us.ecoflow.com/products/delta-3-plus-portable-power-station?_pos=1&_sid=3ff778c93&_ss=r&variant=54588299575369&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 plus",
-            "DELTA 3 1500": "https://us.ecoflow.com/products/ecoflow-delta-3-1500-solar-generator?_pos=2&_sid=8d7d9a1ce&_ss=r&variant=41836896682057&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 1500",
-            "DELTA Pro": "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-            "DELTA 3 Pro": "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3",
-            "DELTA Pro Ultra": "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7",
-            "RIVER Pro": "https://us.ecoflow.com/products/river-pro-river-pro-extra-battery-bundle?sca_ref=7408943.R33f7CbNF7",
-            "RIVER 2": "https://us.ecoflow.com/products/river-2-portable-power-station?_pos=1&_sid=0234254f1&_ss=r&variant=40589642039369&sca_ref=7408943.R33f7CbNF7&sca_source=River 2",
-            "RIVER 2 Max": "https://us.ecoflow.com/products/river-2-max-portable-power-station?sca_ref=7408943.R33f7CbNF7",
-            "RIVER 2 Pro": "https://us.ecoflow.com/products/river-2-pro-portable-power-station?_pos=2&_sid=13bd458b5&_ss=r&sca_ref=7408943.R33f7CbNF7&sca_source=River 2 Pro",
-            "RIVER 3": "https://us.ecoflow.com/products/river-3-portable-power-station?_pos=1&_sid=11ece7428&_ss=r&variant=41636504305737&sca_ref=7408943.R33f7CbNF7&sca_source=River 3",
-            "RIVER 3 Plus": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
-            "RIVER 3 Max": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
-            "RIVER 3 Max Plus": "https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc",
-            "RIVER 3 Max Plus Wireless": "https://us.ecoflow.com/products/river-3-max-plus-wireless?_pos=1&_sid=e77e636dd&_ss=r&variant=54478642905161&sca_ref=7408943.R33f7CbNF7&sca_source=RIVER 3 Max Plus Wireless",
-            "RAPID 10K": "https://us.ecoflow.com/collections/power-bank/products/ecoflow-rapid-magnetic-power-bank-10000mah?variant=42021147443273&sca_ref=7408943.R33f7CbNF7&sca_source=Rapid 10k",
-            "RAPID 5K": "https://us.ecoflow.com/products/rapid-magnetic-power-bank-5000mah?variant=54347781832777&sca_ref=7408943.R33f7CbNF7&sca_source=Rapid 5k"
-        };
-
-        function createApplianceRow(index) {
-            return `
-                <div class="appliance-row" id="appliance-${index}">
-                    <select class="appliance-select" onchange="updateWattage(${index})">
-                        <option value="">Select Appliance</option>
-                        ${commonAppliances.map(app => 
-                            `<option value="${app.name}">${app.name}</option>`
-                        ).join('')}
-                    </select>
-                    <input type="number" class="running-watts" placeholder="Running Watts" onchange="calculatePower()">
-                    <input type="number" class="starting-watts" placeholder="Starting Watts" onchange="calculatePower()">
-                    <input type="number" class="hours" placeholder="Hours" min="0" max="24" onchange="calculatePower()">
-                    <div class="daily-kwh">0 kWh</div>
-                </div>
-            `;
+      (function () {
+        const CHECK_FUNCS = ['renderApplianceRows','calculatePower','updateRecommendations'];
+        function markError(msg) {
+          console.warn('BlackoutBuddy loader:', msg);
+          const rec = document.getElementById('recommendation');
+          if (rec) rec.innerHTML = '<div style="color:#b22222;font-weight:600">BlackoutBuddy script not loaded or contains errors — see console.</div>';
         }
-
-        function printResults() {
-            const printWindow = window.open('', '_blank');
-            
-            const totalWatts = document.getElementById('totalWatts').textContent;
-            const totalStarting = document.getElementById('totalStarting').textContent;
-            const totalKwh = document.getElementById('totalKwh').textContent;
-            const recommendation = document.getElementById('recommendation').innerHTML;
-            
-            let applianceTable = '<table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%;">';
-            applianceTable += '<tr><th>Appliance</th><th>Running Watts</th><th>Starting Watts</th><th>Hours/Day</th><th>Daily kWh</th></tr>';
-            
-            document.querySelectorAll('.appliance-row:not(.grid-header)').forEach(row => {
-                const select = row.querySelector('.appliance-select');
-                if (select.value) {
-                    applianceTable += '<tr>';
-                    applianceTable += `<td>${select.value}</td>`;
-                    applianceTable += `<td>${row.querySelector('.running-watts').value}</td>`;
-                    applianceTable += `<td>${row.querySelector('.starting-watts').value}</td>`;
-                    applianceTable += `<td>${row.querySelector('.hours').value}</td>`;
-                    applianceTable += `<td>${row.querySelector('.daily-kwh').textContent}</td>`;
-                    applianceTable += '</tr>';
-                }
-            });
-            applianceTable += '</table>';
-
-            const printContent = `
-                <html>
-                <head>
-                    <title>BlackoutBuddy Results</title>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            padding: 20px;
-                        }
-                        h1 {
-                            text-align: center;
-                            color: #333;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 20px;
-                        }
-                        th, td {
-                            border: 1px solid #ddd;
-                            padding: 8px;
-                            text-align: left;
-                        }
-                        th {
-                            background-color: #f2f2f2;
-                            font-weight: bold;
-                        }
-                        .total {
-                            font-weight: bold;
-                            background-color: #e0e0e0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>BlackoutBuddy Results</h1>
-                    <p><strong>${totalWatts}</strong></p>
-                    <p><strong>${totalStarting}</strong></p>
-                    <p><strong>${totalKwh}</strong></p>
-                    <h2>Recommendations</h2>
-                    <div>${recommendation}</div>
-                    <h2>Appliance Usage Details</h2>
-                    ${applianceTable}
-                </body>
-                </html>
-            `;
-            
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.print();
-        }
-
-        // --- RENDER APPLIANCE ROWS ON LOAD ---
-        let applianceCount = 5; // Default number of rows
-        function renderApplianceRows() {
-            const container = document.getElementById('applianceRows');
-            container.innerHTML = '';
-            for (let i = 0; i < applianceCount; i++) {
-                container.innerHTML += createApplianceRow(i);
-            }
-        }
-        renderApplianceRows();
-
-        // --- PREFILL WATTAGES WHEN APPLIANCE SELECTED ---
-        function updateWattage(index) {
-            const row = document.getElementById(`appliance-${index}`);
-            const select = row.querySelector('.appliance-select');
-            const runningInput = row.querySelector('.running-watts');
-            const startingInput = row.querySelector('.starting-watts');
-            const selected = commonAppliances.find(a => a.name === select.value);
-            if (selected) {
-                if (selected.name === "OTHER - insert your own values") {
-                    runningInput.value = '';
-                    startingInput.value = '';
-                    runningInput.placeholder = "Enter value";
-                    startingInput.placeholder = "Enter value";
-                } else {
-                    runningInput.value = selected.runningWatts;
-                    startingInput.value = selected.startingWatts;
-                    runningInput.placeholder = "";
-                    startingInput.placeholder = "";
-                }
-            }
-            calculatePower();
-        }
-
-        // --- CALCULATE TOTALS AND UPDATE UI ---
-        function calculatePower() {
-            let totalRunning = 0;
-            let totalStarting = 0;
-            let totalKwh = 0;
-            document.querySelectorAll('.appliance-row:not(.grid-header)').forEach(row => {
-                const running = parseFloat(row.querySelector('.running-watts').value) || 0;
-                const starting = parseFloat(row.querySelector('.starting-watts').value) || 0;
-                const hours = parseFloat(row.querySelector('.hours').value) || 0;
-                const dailyKwh = (running * hours / 1000).toFixed(2);
-                row.querySelector('.daily-kwh').textContent = isNaN(dailyKwh) ? '0 kWh' : `${dailyKwh} kWh`;
-                if (row.querySelector('.appliance-select').value) {
-                    totalRunning += running;
-                    totalStarting += starting;
-                    totalKwh += parseFloat(dailyKwh) || 0;
-                }
-            });
-            document.getElementById('totalWatts').textContent = `Total Running Watts: ${totalRunning} W`;
-            document.getElementById('totalStarting').textContent = `Total Starting Watts: ${totalStarting} W`;
-            document.getElementById('totalKwh').textContent = `Total Daily Usage: ${totalKwh.toFixed(2)} kWh`;
-            updateRecommendations(totalRunning, totalStarting, totalKwh);
-        }
-
-        // --- RECOMMENDATION LOGIC ---
-        function updateRecommendations(running, starting, kwh) {
-            let suitable = [];
-            if (running <= 600) {
-                // Prioritize RIVER and RAPID for low power
-                suitable = ecoFlowProducts
-                    .filter(p =>
-                        (p.series === "RIVER" || p.series === "RAPID") &&
-                        p.maxPower >= running &&
-                        p.surgePower >= starting &&
-                        (p.baseCapacity >= kwh || (p.expandable && p.maxCapacity && p.maxCapacity >= kwh))
-                    )
-                    .sort((a, b) => a.baseCapacity - b.baseCapacity);
-
-                // If no RIVER/RAPID matches, fall back to any product
-                if (suitable.length === 0) {
-                    suitable = ecoFlowProducts.filter(p =>
-                        p.maxPower >= running &&
-                        p.surgePower >= starting &&
-                        (p.baseCapacity >= kwh || (p.expandable && p.maxCapacity && p.maxCapacity >= kwh))
-                    );
-                }
+        // After DOM and deferred script should have run, verify functions exist
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            const missing = CHECK_FUNCS.filter(fn => typeof window[fn] !== 'function');
+            if (missing.length) {
+              markError('Missing functions: ' + missing.join(', '));
             } else {
-                // For higher loads, use only products that can actually handle the load
-                suitable = ecoFlowProducts.filter(p =>
-                    p.maxPower >= running &&
-                    p.surgePower >= starting &&
-                    (p.baseCapacity >= kwh || (p.expandable && p.maxCapacity && p.maxCapacity >= kwh)) &&
-                    p.series !== "RIVER" &&
-                    p.series !== "RAPID"
-                );
+              console.info('BlackoutBuddy JS loaded OK');
+              try {
+                // call init handlers if they exist
+                if (typeof renderApplianceRows === 'function') renderApplianceRows();
+                if (typeof calculatePower === 'function') calculatePower();
+              } catch (err) {
+                console.error('Error during BlackoutBuddy init:', err);
+                markError('Initialization error. See console.');
+              }
             }
-
-            // If daily usage is over 2kWh, always suggest at least one higher-capacity model
-            let extraSuggestions = [];
-            if (kwh > 2) {
-                extraSuggestions = ecoFlowProducts.filter(p =>
-                    p.maxPower >= running &&
-                    p.surgePower >= starting &&
-                    ((p.expandable && p.maxCapacity && p.maxCapacity >= kwh) || p.baseCapacity >= kwh) &&
-                    p.baseCapacity >= 2 // Only show higher capacity models
-                );
-            }
-
-            // Remove duplicates
-            let allSuggestions = [...suitable];
-            extraSuggestions.forEach(p => {
-                if (!allSuggestions.includes(p)) allSuggestions.push(p);
-            });
-
-            // Build the HTML
-            let html = '';
-            if (allSuggestions.length === 0) {
-                html = '<li>No EcoFlow product matches your requirements. Try reducing your load or splitting into multiple units.</li>';
-            } else {
-                html = allSuggestions.slice(0, 3).map(p => {
-                    let label = p.name;
-                    // Suggest "with extra battery" if needed
-                    if (p.expandable && p.maxCapacity && kwh > p.baseCapacity && kwh <= p.maxCapacity) {
-                        label += ' with Extra Battery';
-                    }
-                    const link = productAffiliateLinks[p.name] || '#';
-                    return `<li><a href="${link}" target="_blank" class="shop-link">${label}</a> (${p.expandable && p.maxCapacity && kwh > p.baseCapacity ? p.maxCapacity : p.baseCapacity} kWh, ${p.maxPower}W, Surge: ${p.surgePower}W)</li>`;
-                }).join('');
-            }
-            document.getElementById('recommendation').innerHTML = `<ul class="recommendation-section">${html}</ul>`;
-        }
-    
-        // --- ADD/RESET ROWS (OPTIONAL) ---
-        document.getElementById('resetButton').onclick = function() {
-            renderApplianceRows();
-            calculatePower();
-            document.getElementById('recommendation').innerHTML = 'Select appliances to get recommendations.';
-        };
-    
-        // --- INITIAL CALCULATION ---
-        setTimeout(calculatePower, 100);
-    
-        // --- EVENT DELEGATION FOR DYNAMIC ROWS ---
-        document.getElementById('applianceRows').addEventListener('input', function(e) {
-            if (e.target.classList.contains('running-watts') ||
-                e.target.classList.contains('starting-watts') ||
-                e.target.classList.contains('hours')) {
-                calculatePower();
-            }
+          }, 60);
         });
+      })();
     </script>
 </body>
 </html>

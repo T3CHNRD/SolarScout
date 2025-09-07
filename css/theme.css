@@ -1,0 +1,511 @@
+:root {
+    --color-primary: #826894;
+    --color-accent: #333333;
+    --color-white: #fff;
+    --color-black: #000;
+    --color-default: #777777;
+    --color-text-dark: #191919;
+    --color-text-light: #333333;
+    --color-border-color: #ececec;
+    --color-card: #fff; /* Changed to pure white */
+    --font-family-base: 'Ubuntu', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #FFFFFF; /* Clean white background to match the logo */
+    color: #333; /* Dark text for readability on a light background */
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    padding-top: 60px; /* Offset for the fixed header */
+    min-height: 100vh; /* Ensure body takes full viewport height */
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-base);
+    color: var(--color-text-dark);
+    text-transform: uppercase;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-weight: 500;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.75rem; }
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+
+a:hover {
+    color: var(--color-accent);
+}
+
+/* Header and Navigation */
+.header {
+    background: linear-gradient(to right, var(--color-primary), #191919);
+    padding: 0.5rem 1rem;
+    position: fixed; /* Changed to fixed for reliable pinning */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    height: 60px; /* Set a fixed height for the offset */
+    box-sizing: border-box;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Desktop/Tablet Logo (Left Side) */
+.logo-link {
+    display: block; /* Shown by default */
+    flex-shrink: 0;
+}
+
+.logo {
+    height: 40px;
+    width: auto;
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Desktop/Tablet Navigation Menu */
+.nav-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.nav-menu li {
+    margin: 0 1rem; /* This adds the necessary space between menu items */
+}
+
+.nav-menu a {
+    color: var(--color-white);
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 0.5rem 0;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-menu a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Mobile Hamburger Menu Button (Right Side) */
+.menu-button {
+    display: none; /* Hidden by default */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001; /* Above nav menu */
+    perspective: 1000px;
+}
+
+/* Hide menu text on desktop by default */
+.menu-text {
+    display: none;
+}
+
+.ss-logo {
+    width: 40px;
+    height: auto;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.menu-button.open .ss-logo {
+    transform: rotateX(360deg);
+}
+
+/* Main Content and Cards */
+main {
+    padding: 2rem 0;
+    flex: 1;
+}
+
+.card {
+    background-color: #FFFFFF; /* White card background */
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0; /* Add a subtle border to distinguish the card */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Softer shadow for light theme */
+    margin-bottom: 1.5rem;
+}
+
+.card-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Blackout Buddy Specific Styles */
+.instructions {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #fdfdfd;
+    border-left: 4px solid var(--color-primary);
+    border-radius: 4px;
+}
+
+.instructions ol {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.appliance-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.appliance-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+}
+
+.appliance-row.grid-header {
+    font-weight: bold;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-border-color);
+}
+
+.appliance-row input,
+.appliance-row select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border-color);
+    border-radius: 4px;
+}
+
+.daily-kwh {
+    font-weight: 500;
+    text-align: center;
+}
+
+.results {
+    margin-top: 2rem;
+    padding: 1.5rem;
+}
+
+.recommendation-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.recommendation-section li {
+    margin-bottom: 0.5rem;
+}
+
+.shop-link {
+    color: #a9d4ff;
+    font-weight: bold;
+}
+
+/* Style for the logo on the about page */
+.about-page-logo {
+    display: block;
+    margin: 2rem auto;
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+}
+
+/* Footer */
+footer {
+    background-color: #1a1a1a;
+    color: #a0a0a0;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    margin-top: 2rem;
+    font-size: 0.85rem;
+}
+
+/* --- Main Content Styles --- */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.card h3 {
+    margin-bottom: 20px;
+}
+
+.card p {
+    margin-top: 0;
+    line-height: 1.4;
+}
+
+/* Forms and Inputs */
+.field {
+    margin-bottom: 1.5rem;
+}
+
+.label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+select {
+    width: 100%;
+    padding: 13px 18px;
+    border: 1px solid var(--color-border-color);
+    border-radius: 2px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 28px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: 2px solid var(--color-primary);
+    border-radius: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.button:hover {
+    background-color: #826894;
+}
+
+/* Container for the section title and reset button */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-header h2 {
+    margin: 0; /* Prevents the title from adding extra space */
+}
+
+/* Grid for Power Planner */
+.months-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* This creates the 3-column grid */
+    gap: 1.5rem;
+}
+
+.month-input {
+    display: flex;
+    flex-direction: column;
+}
+
+.month-input label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.month-input input {
+    width: 100%;
+}
+
+.results-bar {
+    background: linear-gradient(135deg, #2d2d2d, #826894);
+    color: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.results-bar div {
+    flex: 1;
+    text-align: center;
+    min-width: 200px;
+}
+
+.results-bar strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #ddd;
+}
+
+.results-bar span {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* --- Recommendation Section Compression --- */
+
+/* New container for the 2-column layout */
+.recommendations-container {
+    display: grid;
+    grid-template-columns: 1fr; /* Default to a single column (mobile-first) */
+    gap: 1.5rem; /* Space between items when they are in columns/rows */
+}
+
+/* On screens wider than 992px, switch to a two-column layout */
+@media (min-width: 992px) {
+    .recommendations-container {
+        grid-template-columns: 1fr 1fr; /* Two equal-width columns */
+    }
+}
+
+/* Remove the top margin from the individual sets, as the grid 'gap' now handles spacing */
+.recommendation-set {
+    margin-top: 0 !important;
+    padding: 12px;
+}
+
+/* Reduce header size and spacing */
+.recommendation-set h3 {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+/* Reduce description font size */
+.recommendation-desc {
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+/* Reduce font size and line height for the list of products */
+.product-links {
+    font-size: 0.9em;
+    line-height: 1.4;
+    padding-left: 18px; /* Slightly reduce indent */
+}
+
+/* Reduce spacing between list items */
+.product-links li {
+    margin-bottom: 6px;
+}
+
+/* Reduce the indent of the detailed product line */
+.product-links li[style*="margin-left"] {
+    margin-left: 15px !important;
+}
+
+/* Reduce font size of the "provides X hours" text */
+.product-links li b + span {
+    font-size: 0.95em;
+}
+
+/* Responsive Styles for Mobile */
+@media (max-width: 768px) {
+    .header-content {
+        justify-content: space-between;
+    }
+
+    .logo-link {
+        display: none; /* Hide logo on the left */
+    }
+
+    .menu-button {
+        display: flex; /* Use flex to align icon and text */
+        align-items: center;
+        gap: 0.5rem; /* Space between icon and text */
+    }
+
+    /* Show and style menu text on mobile */
+    .menu-text {
+        display: inline;
+        color: var(--color-white);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    /* Responsive styles for Blackout Buddy */
+    .appliance-row,
+    .appliance-row.grid-header {
+        grid-template-columns: 1fr; /* Stack everything in a single column */
+        gap: 0.5rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
+
+    .appliance-row.grid-header {
+        display: none; /* Hide the header on mobile to reduce clutter */
+    }
+
+    .appliance-row input::placeholder,
+    .appliance-row select {
+        font-size: 0.9rem;
+    }
+
+    .nav-menu {
+        display: none; /* Hide nav menu by default */
+        flex-direction: column;
+        position: fixed; /* Changed to fixed to stay on screen when scrolling */
+        top: 60px; /* Position below header */
+        left: 0;
+        right: 0;
+        background-color: var(--color-primary);
+        width: 100%;
+        text-align: center;
+        z-index: 1000;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .months-grid {
+        grid-template-columns: 1fr; /* This ensures a single column on mobile */
+    }
+
+    .results-bar {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+

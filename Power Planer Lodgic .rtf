@@ -1,0 +1,357 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2865
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww15040\viewh9000\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs26 \cf0   <script>\
+        // --- Centralized EcoFlow Product Data ---\
+const ecoflowProducts = [\
+    \{\
+        model: "Delta Pro",\
+        tier: 1,\
+        base: 3.6,\
+        step: 3.6,\
+        maxExtras: 2,\
+        link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7"\
+    \},\
+    \{\
+        model: "Delta Pro 3",\
+        tier: 2,\
+        base: 4.096,\
+        step: 4.096,\
+        maxExtras: 2,\
+        link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3"\
+    \},\
+    \{\
+        model: "Delta Pro Ultra",\
+        tier: 3,\
+        base: 6,\
+        step: 3, // Each Ultra battery is 3.0 kWh\
+        maxExtras: 5,\
+        link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7"\
+    \}\
+];\
+\
+// Add batteries object (required for getRecommendations)\
+const batteries = \{\
+    pro:   \{ base: 3.6,   extra: 3.6,   maxExtras: 2 \},\
+    pro3:  \{ base: 4.096, extra: 4.096, maxExtras: 2 \},\
+    ultra: \{ base: 6.0,   extra: 3.0,   maxExtras: 5 \}\
+\};\
+\
+// Add this debug function right after the batteries object definition\
+// This will help us trace the recommendation flow without modifying core logic\
+\
+function debugLog(section, data) \{\
+    if (window.solarScoutDebug) \{\
+        console.group(`Solar Scout Debug: $\{section\}`);\
+        console.log(data);\
+        console.groupEnd();\
+    \}\
+\}\
+\
+// Add this toggle function to enable/disable debugging\
+function toggleDebug() \{\
+    window.solarScoutDebug = !window.solarScoutDebug;\
+    console.log(`Solar Scout debugging: $\{window.solarScoutDebug ? 'ENABLED' : 'DISABLED'\}`);\
+\}\
+\
+// --- Recommendation Logic ---\
+function getRecommendations(dailyUsage) \{\
+    // Helper: Generate configs for a battery spec\
+    function generateBatteryConfigs(spec, name, link) \{\
+        const arr = [];\
+        for (let extras = 0; extras <= spec.maxExtras; extras++) \{\
+            arr.push(\{\
+                model: name,\
+                label: extras === 0 ? name : `$\{name\} + $\{extras\} extra battery$\{extras > 1 ? 'ies' : ''\}`,\
+                capacity: spec.base + spec.extra * extras,\
+                extras,\
+                totalUnits: extras + 1,\
+                link\
+            \});\
+        \}\
+        return arr;\
+    \}\
+\
+    // Build all possible configurations\
+    const proConfigs = generateBatteryConfigs(batteries.pro, "Delta Pro", ecoflowProducts[0].link);\
+    const pro3Configs = generateBatteryConfigs(batteries.pro3, "Delta Pro 3", ecoflowProducts[1].link);\
+    const ultraConfigs = generateBatteryConfigs(batteries.ultra, "Delta Pro Ultra", ecoflowProducts[2].link);\
+\
+    // --- GOOD ---\
+    // Must meet or exceed dailyUsage, always suggest a valid config\
+    let goodCandidates = [];\
+    if (dailyUsage <= 1.30) \{\
+        // Allow solo units for <= 1.30\
+        goodCandidates = [\
+            ...proConfigs.filter(c => c.capacity >= dailyUsage && c.extras === 0),\
+            ...pro3Configs.filter(c => c.capacity >= dailyUsage && c.extras === 0),\
+            ...ultraConfigs.filter(c => c.capacity >= dailyUsage && c.extras === 0)\
+        ];\
+    \} else \{\
+        // For >1.30, must suggest Delta Pro + at least 1 extra battery (never solo units)\
+        goodCandidates = [\
+            ...proConfigs.filter(c => c.capacity >= dailyUsage && c.extras >= 1),\
+            ...pro3Configs.filter(c => c.capacity >= dailyUsage),\
+            ...ultraConfigs.filter(c => c.capacity >= dailyUsage)\
+        ];\
+    \}\
+    // Always pick the first valid config (no efficiency sorting)\
+    const goodOption = goodCandidates.length > 0 ? goodCandidates[0] : null;\
+\
+    // --- BETTER ---\
+    // Must exceed Good and meet at least dailyUsage \'d7 1.5\
+    let betterMinCapacity = Math.max(dailyUsage * 1.5, goodOption ? goodOption.capacity + 0.001 : 0);\
+    let betterCandidates = [];\
+    if (goodOption && goodOption.model === "Delta Pro") \{\
+        // Allow Delta Pro + more extras for Better\
+        betterCandidates = [\
+            ...proConfigs.filter(c => c.capacity >= betterMinCapacity && c.extras > goodOption.extras),\
+            ...pro3Configs.filter(c => c.capacity >= betterMinCapacity),\
+            ...ultraConfigs.filter(c => c.capacity >= betterMinCapacity)\
+        ];\
+    \} else \{\
+        betterCandidates = [\
+            ...proConfigs.filter(c => c.capacity >= betterMinCapacity && c.extras >= 1),\
+            ...pro3Configs.filter(c => c.capacity >= betterMinCapacity),\
+            ...ultraConfigs.filter(c => c.capacity >= betterMinCapacity)\
+        ];\
+    \}\
+    const betterOption = betterCandidates.length > 0 ? betterCandidates[0] : null;\
+\
+    // --- BEST ---\
+    // Must exceed Better and meet at least dailyUsage \'d7 2.5\
+    let bestMinCapacity = Math.max(dailyUsage * 2.5, betterOption ? betterOption.capacity + 0.001 : 0);\
+    let bestCandidates = [\
+        // \uc0\u9888 \u65039  Never suggest Delta Pro + extras for Best\
+        ...pro3Configs.filter(c => c.capacity >= bestMinCapacity),\
+        ...ultraConfigs.filter(c => c.capacity >= bestMinCapacity)\
+    ];\
+    const bestOption = bestCandidates.length > 0 ? bestCandidates[0] : null;\
+\
+    // --- EXTENDED BACKUP --- \
+    // DO NOT MODIFY THIS LOGIC\
+    let extendedConfigs = [];\
+    if (dailyUsage > 0) \{\
+        let ultraExtras = 0;\
+        if (dailyUsage > 1.91) ultraExtras = 5;\
+        else if (dailyUsage > 1.76) ultraExtras = 4;\
+        else if (dailyUsage > 1.61) ultraExtras = 3;\
+        else if (dailyUsage > 1.51) ultraExtras = 2;\
+        else if (dailyUsage > 1.26) ultraExtras = 1;\
+        const ultraConfig = ultraConfigs[ultraExtras];\
+        if (ultraConfig && ultraConfig.capacity >= dailyUsage * 3.5) \{\
+            extendedConfigs.push(\{ ...ultraConfig, tierLabel: "Extended Backup" \});\
+        \}\
+    \}\
+\
+    // Format output - ensure we have valid options for each tier\
+    return \{\
+        good: goodOption ? [\{ ...goodOption, tierLabel: "Good" \}] : [],\
+        better: betterOption ? [\{ ...betterOption, tierLabel: "Better" \}] : [],\
+        best: bestOption ? [\{ ...bestOption, tierLabel: "Best" \}] : [],\
+        extended: extendedConfigs\
+    \};\
+\}\
+\
+// --- Main Recommendation Function ---\
+// Restore original function definition and avoid function override bugs\
+function updateDeltaRecommendation() \{\
+    debugLog('Function Call', 'updateDeltaRecommendation started');\
+    \
+    let monthlyTotal = 0;\
+    let filledMonths = 0;\
+    \
+    // Defensive: Check all input elements exist before accessing value\
+    for (let i = 1; i <= 12; i++) \{\
+        const inputEl = document.getElementById(`month$\{i\}`);\
+        if (!inputEl) \{\
+            console.error(`Input element month$\{i\} not found`);\
+            continue;\
+        \}\
+        const val = parseFloat(inputEl.value);\
+        if (!isNaN(val) && val > 0) \{\
+            monthlyTotal += val;\
+            filledMonths++;\
+            debugLog('Monthly Input', `Month $\{i\}: $\{val\} kWh`);\
+        \}\
+    \}\
+\
+    // Defensive: Only update UI if summary elements exist\
+    const totalUsageEl = document.getElementById('totalUsageValue');\
+    const dailyUsageEl = document.getElementById('dailyUsageValue');\
+    const usageMsgEl = document.getElementById('usageMessage');\
+    if (totalUsageEl) totalUsageEl.textContent = `$\{monthlyTotal.toFixed(2)\} kWh/year`;\
+    if (dailyUsageEl) dailyUsageEl.textContent = `$\{(filledMonths > 0 ? (monthlyTotal / filledMonths / 30).toFixed(2) : "0.00")\} kWh/day`;\
+\
+    // Usage message logic\
+    let usageMsg = "Enter your monthly usage data to see recommendations";\
+    const avgMonthly = filledMonths > 0 ? monthlyTotal / filledMonths : 0;\
+    const dailyUsage = avgMonthly > 0 ? avgMonthly / 30 : 0;\
+    if (dailyUsage < 0.30 && dailyUsage > 0) \{\
+        usageMsg = "Your daily usage is minimal.";\
+    \} else if (dailyUsage >= 0.30 && dailyUsage < 0.60) \{\
+        usageMsg = "Your daily usage is moderate.";\
+    \} else if (dailyUsage >= 0.60) \{\
+        usageMsg = "Your daily usage is substantial.";\
+    \}\
+    if (usageMsgEl) usageMsgEl.textContent = usageMsg;\
+\
+    // Defensive: Only call getRecommendations if inputs are valid\
+    let recs = null;\
+    try \{\
+        recs = filledMonths > 0 && dailyUsage > 0 ? getRecommendations(dailyUsage) : null;\
+    \} catch (err) \{\
+        console.error("Error in getRecommendations:", err);\
+        recs = null;\
+    \}\
+    debugLog('Recommendations Result', recs);\
+\
+    // Defensive: Only update recommendations if element exists\
+    const recElement = document.getElementById('deltaRecommendation');\
+    let recommendationHTML = '<div class="recommendation-content"><h3>Recommended Power Solutions:</h3>';\
+    if (recs) \{\
+        recommendationHTML += `<ul class="product-links">`;\
+        // Good\
+        recommendationHTML += `<li><b>Good:</b> <span style="font-size:0.9em;color:#666;">(meets daily usage of $\{dailyUsage.toFixed(2)\} kWh)</span></li>`;\
+        if (recs.good && recs.good.length > 0) \{\
+            const opt = recs.good[0];\
+            recommendationHTML += `<li style="margin-left:20px;"><a href="$\{opt.link\}" target="_blank">$\{opt.label\}</a> - Total Capacity: <b>$\{opt.capacity.toFixed(3)\} kWh</b></li>`;\
+        \} else \{\
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;\
+        \}\
+        // Better\
+        recommendationHTML += `<li><b>Better:</b> <span style="font-size:0.9em;color:#666;">(meets $\{(dailyUsage * 2).toFixed(2)\} kWh for 1 day of headroom)</span></li>`;\
+        if (recs.better && recs.better.length > 0) \{\
+            const opt = recs.better[0];\
+            recommendationHTML += `<li style="margin-left:20px;"><a href="$\{opt.link\}" target="_blank">$\{opt.label\}</a> - Total Capacity: <b>$\{opt.capacity.toFixed(3)\} kWh</b></li>`;\
+        \} else \{\
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;\
+        \}\
+        // Best\
+        recommendationHTML += `<li><b>Best:</b> <span style="font-size:0.9em;color:#666;">(meets $\{(dailyUsage * 3).toFixed(2)\} kWh for 2 days of headroom)</span></li>`;\
+        if (recs.best && recs.best.length > 0) \{\
+            const opt = recs.best[0];\
+            recommendationHTML += `<li style="margin-left:20px;"><a href="$\{opt.link\}" target="_blank">$\{opt.label\}</a> - Total Capacity: <b>$\{opt.capacity.toFixed(3)\} kWh</b></li>`;\
+        \} else \{\
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;\
+        \}\
+        // Extended Backup\
+        recommendationHTML += `<li><b>Extended Backup:</b> <span style="font-size:0.9em;color:#666;">(meets $\{(dailyUsage * 3.5).toFixed(2)\} kWh for outages)</span></li>`;\
+        if (recs.extended && recs.extended.length > 0) \{\
+            const opt = recs.extended[0];\
+            recommendationHTML += `<li style="margin-left:20px;"><a href="$\{opt.link\}" target="_blank">$\{opt.label\}</a> - Total Capacity: <b>$\{opt.capacity.toFixed(3)\} kWh</b> <span style='color:#7fb0d0;'>(Outage Backup)</span></li>`;\
+        \} else \{\
+            recommendationHTML += `<li style="margin-left:20px;">No viable config</li>`;\
+        \}\
+        recommendationHTML += `</ul>`;\
+    \} else \{\
+        recommendationHTML += `<ul class="product-links">`;\
+        ["Good", "Better", "Best", "Extended Backup"].forEach(tier => \{\
+            recommendationHTML += `<li><b>$\{tier\}:</b> No viable config</li>`;\
+        \});\
+        recommendationHTML += `</ul>`;\
+    \}\
+    recommendationHTML += `</div>`;\
+    if (recElement) recElement.innerHTML = recommendationHTML;\
+\}\
+\
+// --- Enhanced Reset Function ---\
+function resetCalculator(event) \{\
+    // Prevent default button behavior\
+    if (event) \{\
+        event.preventDefault();\
+        event.stopPropagation();\
+    \}\
+\
+    try \{\
+        // Reset all monthly input fields\
+        for (let i = 1; i <= 12; i++) \{\
+            const input = document.getElementById(`month$\{i\}`);\
+            if (input) \{\
+                input.value = '0';\
+                // Create and dispatch events for IE compatibility\
+                if (typeof(Event) === 'function') \{\
+                    // Modern browsers\
+                    input.dispatchEvent(new Event('input', \{ bubbles: true \}));\
+                    input.dispatchEvent(new Event('change', \{ bubbles: true \}));\
+                \} else \{\
+                    // IE fallback\
+                    const inputEvent = document.createEvent('Event');\
+                    const changeEvent = document.createEvent('Event');\
+                    inputEvent.initEvent('input', true, true);\
+                    changeEvent.initEvent('change', true, true);\
+                    input.dispatchEvent(inputEvent);\
+                    input.dispatchEvent(changeEvent);\
+                \}\
+            \}\
+        \}\
+\
+        // Reset summary values\
+        const elements = \{\
+            total: document.getElementById('totalUsageValue'),\
+            daily: document.getElementById('dailyUsageValue'),\
+            message: document.getElementById('usageMessage'),\
+            recommendation: document.getElementById('deltaRecommendation')\
+        \};\
+\
+        if (elements.total) elements.total.textContent = '0.00 kWh/year';\
+        if (elements.daily) elements.daily.textContent = '0.00 kWh/day';\
+        if (elements.message) elements.message.textContent = 'Enter your monthly usage data to see recommendations';\
+        \
+        // Force recommendation update\
+        updateDeltaRecommendation();\
+\
+    \} catch (error) \{\
+        console.error('Error during reset:', error);\
+    \}\
+\}\
+\
+// Update event listener attachment\
+if (document.addEventListener) \{\
+    document.addEventListener('DOMContentLoaded', function() \{\
+        window.solarScoutDebug = false;\
+\
+        // Attach reset button listener\
+        const resetBtn = document.getElementById('resetButton');\
+        if (resetBtn) \{\
+            // Clean up any existing listeners\
+            const newResetBtn = resetBtn.cloneNode(true);\
+            resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);\
+            newResetBtn.addEventListener('click', resetCalculator);\
+        \}\
+\
+        // Attach input listeners\
+        for (let i = 1; i <= 12; i++) \{\
+            const inputElement = document.getElementById(`month$\{i\}`);\
+            if (inputElement) \{\
+                inputElement.addEventListener('input', updateDeltaRecommendation);\
+                inputElement.addEventListener('change', updateDeltaRecommendation);\
+            \}\
+        \}\
+\
+        // Initial update\
+        updateDeltaRecommendation();\
+    \});\
+\} else if (window.attachEvent) \{\
+    // IE8 fallback\
+    window.attachEvent('onload', function() \{\
+        const resetBtn = document.getElementById('resetButton');\
+        if (resetBtn) \{\
+            resetBtn.onclick = resetCalculator;\
+        \}\
+\
+        for (let i = 1; i <= 12; i++) \{\
+            const inputElement = document.getElementById(`month$\{i\}`);\
+            if (inputElement) \{\
+                inputElement.onchange = updateDeltaRecommendation;\
+            \}\
+        \}\
+\
+        updateDeltaRecommendation();\
+    \});\
+\}\
+    </script>}

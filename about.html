@@ -3,257 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My EcoFlow Journey</title>
-    <style>
-       :root {
-            --purple-gradient-dark: #4c3a5f;
-            --purple-gradient-light: #826894;
-            --nav-purple: rgba(255, 255, 255, 0.1);
-            --text-white: #ffffff;
-            --card-bg: #ffffff;
-            --text-dark: #333333;
-            --border-color: #e0e0e0;
-            --accent-blue: #7fb0d0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --section-bg: #f8f9fa;
-            --area51-light: #2d2d2d;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            display: block;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            background-color: var(--white);
-            color: #ffffff;
-        }
-
-        .header, .footer {
-            background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
-            color: var(--text-white);
-        }
-
-         .header {
-            padding: 2rem 0;
-            text-align: center;
-        }
-    
-        .header h1 {
-            margin: 0 0 1.5rem 0;
-            font-size: 2rem;
-            font-weight: 600;
-        }
-    
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-    
-        .nav-button {
-            background: var(--nav-purple);
-            border: none;
-            color: var(--text-white);
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background-color 0.3s ease;
-            text-decoration: none;
-        }
-    
-        .nav-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .main {
-            max-width: auto;
-            margin: 0;
-            width: 100%;
-            padding: 2rem;
-        }
-
-        .card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            max-width: 1200px;
-            margin: -2rem auto 2rem;
-            padding: 2rem;
-            position: relative;
-            flex: 1;
-            color: #000000;
-        }
-
-        .section {
-            margin-bottom: 2rem;
-            padding: 1rem;
-            border-radius: 4px;
-        }
-
-        .section h2 {
-            color: var(--high-purple);
-            margin-bottom: 1rem;
-        }
-
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        li {
-            margin-bottom: 0.5rem;
-            padding-left: 1.5rem;
-            position: relative;
-        }
-
-        li::before {
-            content: "•";
-            color: var(--high-purple);
-            position: absolute;
-            left: 0;
-        }
-
- /* Responsive Design */
- @media screen and (max-width: 768px) {
-            .nav-buttons {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 0.5rem;
-            }
-
-            .nav-button {
-                width: auto;
-                text-align: center;
-                margin: 0.25rem 1rem;
-            }
-
-            .main {
-                padding: 1rem;
-            }
-
-            .card {
-                margin: -1rem auto 1rem;
-                padding: 1rem;
-            }
-
-            .section {
-                padding: 0.5rem;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-                margin-top: 1rem;
-            }
-
-            h2 {
-                font-size: 1.25rem;
-            }
-        }
-
-         footer {
-               width: 100%;
-               margin: 0;
-               background: linear-gradient(135deg, var(--area51-light), var(--purple-gradient-light));
-               color: var(--text-white);
-               text-align: center;
-               padding: 1.5rem;
-               box-shadow: 0 -2px 15px rgba(76, 88, 102, 0.2);
-            } 
-
-        .footer-text {
-            font-size: 0.9rem;
-            color: var(--text-white);
-            opacity: 0.9;
-        }
-
-    </style>
+    <title>About Solar Scout</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
-    <div class="header">
-        <nav class="nav-buttons">
-            <a href="index.html" class="nav-button">Home</a>
-            <a href="finalcalcwithstyle.html" class="nav-button">Solar Scout Whole Home Power Planner</a>
-            <a href="blackoutbuddy.html" class="nav-button">Blackout Buddy</a>
-            <a href="https://www.linspyre.com/ecoholics/calc_voc.html" class="nav-button">Solar Basics</a>
-            <a href="https://us.ecoflow.com?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" class="nav-button">Save 5% at Ecoflow.com</a>
+<header class="header">
+    <div class="header-content">
+        <a href="index.html" class="logo-link">
+            <img src="assets/ssmenuicon.jpg" alt="SolarScout Logo" class="logo">
+        </a>
+        <nav class="nav-container">
+            <button class="menu-button" id="hamburger-menu">
+                <img src="assets/ssmenuicon.jpg" alt="Menu" class="ss-logo">
+                <span class="menu-text">Menu</span>
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="finalcalcwithstyle.html">Power Planner</a></li>
+                <li><a href="blackoutbuddy.html">Blackout Buddy</a></li>
+                <li><a href="https://www.linspyre.com/ecoholics/calc_voc.html" target="_blank">Solar Basics</a></li>
+                <li><a href="https://us.ecoflow.com/?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" target="_blank">Save 5% at Ecoflow.com</a></li>
+            </ul>
         </nav>
-        <h1>My EcoFlow Journey</h1>
     </div>
+</header>
+<main class="container">
+    <div class="card">
+       <h2>How I Discovered EcoFlow</h2>
+<p>I discovered EcoFlow after exploring various power solutions from brands like Goal Zero, Bluetti, and Jackery in my quest to lower my monthly electricity bill and achieve energy independence. What set EcoFlow apart was not only its innovative Smart Home Panel and comprehensive ecosystem that offered true automation and integration for daily energy management, but also its remarkable plug-and-play ease of use that made installation and setup incredibly straightforward. Unlike other brands that focused primarily on emergency backup, EcoFlow provided a complete solution for both reducing energy costs and seamlessly managing daily power consumption without the complexity typically associated with home energy systems.</p>
 
-    <div class="main">
-        <div class="card">
-            <div class="section">
-                <h2>How I Discovered EcoFlow</h2>
-                <p>Hello, I am T3CHNRD (that is pronounced Tech Nerd) the Solar Scout, and I am here to tell you how I found my way into the Solar world!</p> 
-                <p>I discovered EcoFlow after exploring various power solutions from brands like Goal Zero, Bluetti, and Jackery. What set EcoFlow apart was its innovative Smart Home Panel and comprehensive ecosystem that offered true automation and integration for daily energy management, not just emergency backup.</p>
-                <p>My current setup includes two Delta Pros with extra batteries, smart generators, a Delta Mini, a River 2, and 1600 watts of power from rigid solar panels, enabling my home to run on solar power for nine hours daily.</p>
-                <p>This system proved invaluable during a three-day winter power outage, and combined with excellent community support and continuous product innovation, EcoFlow has transformed my approach to sustainable energy management and independence from traditional utilities.</p>
-            </div>
+    <h2>Why Choose EcoFlow?</h2>
+<p> EcoFlow distinguishes itself with a powerful, versatile, and user-friendly ecosystem. From home backup to portable power on the go, their products are designed with cutting-edge features that set them apart.</p>
+<p><strong>Scalable & Expandable Power:</strong> A standout feature is the ability to expand your energy storage. Many units in the <strong>DELTA</strong> and <strong>RIVER</strong> series can connect to extra batteries, allowing you to customize your capacity for any situation. This ensures you have the power you need today with the option to grow your system tomorrow.</p>
+<p><strong>Unmatched Charging Versatility:</strong> Get back to full power in record time with industry-leading fast charging capabilities. For ultimate reliability, high-end models like the <strong>DELTA Pro</strong> can even integrate with a smart generator, giving you peace of mind during extended outages.</p>
+<p><strong>Smart, Clean, & Quiet Operation:</strong> Enjoy silent, fume-free power that’s good for your home and the environment. With EcoFlow's intuitive smartphone app, you can monitor and control your entire system from the palm of your hand, making power management simple and convenient.</p>
+<p><strong>A Solution for Every Need:</strong> EcoFlow's innovation covers the entire power spectrum. Whether you need a robust home backup system like the <strong>DELTA Pro Ultra</strong> or an extremely portable option for charging your devices on the move—like the <strong>Trail 300</strong> or the <strong>Rapid series</strong> of MagSafe power banks or the RAPID Pro X—there is a solution built for you.</p>
 
-            <div class="section">
-                <h2>Why EcoFlow?</h2>
-                <ul>
-                    <li>Fast charging capabilities</li>
-                    <li>Expandable capacity - many of the EcoFlow units have extra batteries you can attach to expand the capacity, for instance:
-                        <ul>
-                            <li>RIVER Pro</li>
-                            <li>RIVER 3 Plus</li>
-                            <li>RIVER 3 Max</li>
-                            <li>DELTA 2</li>
-                            <li>DELTA 3</li>
-                            <li>DELTA Pro</li>
-                            <li>DELTA Pro Ultra</li>
-                        </ul>
-                        This is just to name a few. On the DELTA Pro, you can even hook a generator to it and charge it that way.
-                    </li>
-                    <li>Silent operation</li>
-                    <li>Clean energy solution</li>
-                    <li>Smart features - can be controlled from a smartphone app!</li>
-                </ul>
-            </div>
+        <h2>My Experience</h2>
+        <p>Since integrating EcoFlow into my life, I’ve experienced the freedom of reliable, portable power. My main setup includes two DELTA Pros paired with two extra batteries and two smart generators. I use this system daily for load shifting—powering my home during peak utility hours and recharging during off-peak times. I’ve also added 2000W (2kWh) of EcoFlow solar panels to help keep things charged without relying on the grid. If things really get dire I can recharge my DELTA Pros with my 2 1800w Smart Genorators</p>
+        <p>For my man cave, I’ve found the perfect combo in a DELTA mini and River 2, which easily powers a space heater during the colder months. I’ve even incorporated other EcoFlow gear like their blankets, cups, lamp lights, and flashlight—bringing comfort and utility wherever I need it.</p>
+        <p>Since making the switch, my electric bill has gone down by about 55% month-over-month for the past two years. Based on my setup, I estimate a return on investment (ROI) of around five years, and I’m already two years in. Of course, your mileage may vary—actual ROI depends on total system cost, usage habits, and how much solar energy you can produce..</p>
+        <p>From full-home energy management to on-the-go comfort, EcoFlow has been a game-changer in my path toward energy independence.</p>
 
-            <div class="section">
-                <h2>My Experience</h2>
-                <p>Since integrating EcoFlow into my life, I’ve experienced the freedom of reliable, portable power. My main setup includes two DELTA Pros paired with two extra batteries and two smart generators. I use this system daily for load shifting—powering my home during peak utility hours and recharging during off-peak times. I’ve also added 1600W of EcoFlow solar panels to help keep things charged without relying on the grid.</p>
-                <p>For my man cave, I’ve found the perfect combo in a DELTA mini and River 2, which easily powers a space heater during the colder months. I’ve even incorporated other EcoFlow gear like their blankets, cups, lamp lights, and flashlight—bringing comfort and utility wherever I need it.</p>
-                <p>Since making the switch, my electric bill has gone down by about 55% month-over-month for the past two years. Based on my setup, I estimate a return on investment (ROI) of around five years, and I’m already two years in. Of course, your mileage may vary—actual ROI depends on total system cost, usage habits, and how much solar energy you can produce..</p>
-                <p>From full-home energy management to on-the-go comfort, EcoFlow has been a game-changer in my path toward energy independence.</p>
-            </div>
-
-<div class="section">
-                <h2>Currernt Gear</h2>
-                <p>The following is the current gear I have and use from Ecoflow</p>
-                <p>2 Delta Pros</p>
-                <p>2 Delta Pros extra Batteries</p>
-                <p>3 Orginal Smart Generators </p>
-                <p>1 Delta Mini</p>
-                <p>1 River 2  </p>
-                <p>1600w ( split into 2 800w 2s4p array) solar panesl </p>
-                <p>1 River 3 Plus </p>
-                <p>1 River 3 Plus 300EB extra battery </p>
-                <p>2 Rapid pack 5k magsafe battery packs </p>
-                <p>2 Rapid pack 10k magsafe battery packs </p>
-                <p>3 Rapid GaN chargers ( 20w, 30w, 65w) </p>
-                <p>4 Ecoflow camp lights ( 3 Small ones one floor light) </p>
-                <p>1 jackery explorer 200 ( yes i do have other brands that I use as well) </p>
-                <p></p>
-            </div>
-            
-            <div class="section">
-                <h2>Why I Created these Calculator</h2>
-                <p>Understanding power needs can be complicated. In the many EcoFlow Facebook groups, one of the most common questions is "Can I use my River battery or Delta battery to power my specific device?" - from CPAP machines to RV coffee makers, new users often need help determining their power requirements.</p>
-                <p>I created these calculators (Blackout Buddy and Solar Scout Whole Home Power Planner) to help others navigate their journey to energy independence. By sharing my experience and providing tools to make informed decisions.</p>
-                <p>I hope to help both newcomers to the EcoFlow community and those planning larger whole-home systems find the perfect power solution for their needs.</p>
-                <p>Don't Forget you can save 5% by using the code "solarscout" at checkout on Ecoflow.com</p>
-            </div>
-        </div>
+        <h2>Currernt Gear</h2>
+        <ul>
+            <li>2 Delta Pros</li>
+            <li>2 Delta Pros extra Batteries</li>
+            <li>3 Orginal Smart Generators</li>
+            <li>1 Orginal Smart Home Panel</li>
+            <li>1 Delta Mini</li>
+            <li>1 River 2</li>
+            <li>2kw solar panesl (split into 2 1600w 2s6p 100w arrays) </li>
+            <li>1 River 3 Plus</li>
+            <li>1 River 3 Plus 300EB extra battery</li>
+            <li>2 Rapid pack 5k magsafe battery packs</li>
+            <li>2 Rapid pack 10k magsafe battery packs</li>
+            <li>3 Rapid GaN chargers (20w, 30w, 65w)</li>
+            <li>1 Rapid Pro X</li>
+            <li>4 Ecoflow camp lights ( 3 Small ones one floor light)</li>
+            <li>3 EF blankes (2 pillow blankets and a water proof picnic blanket)</li>
+            <li>1 EF Scarf</li>
+            <li>3 EF cups (3 travel cups and 1 Titanium that works great to brew tea on my Solo Stove)</li>
+            <li>1 EF thermos</li>
+            <li>1 EF surge strip</li>
+            <li>1 EF storage box</li>
+            <li>1 EF Flashlight</li>
+            <li>1 EF River backpack</li>
+            <li>1 jackery explorer 200 (yes I do have other brands that I use as well)</li>
+        </ul>
+        <h2><strong>Why I Created these Calculator</strong></h2>
+        <p>Understanding power needs can be complicated. In the many EcoFlow Facebook groups, one of the most common questions is "Can I use my River battery or Delta battery to power my specific device?" - from CPAP machines to RV coffee makers, new users often need help determining their power requirements.</p>
+        <p>I created these calculators (Blackout Buddy and Power Planner) to help others navigate their journey to energy independence. By sharing my experience and providing tools to make informed decisions.</p>
+        <p>I hope to help both newcomers to the EcoFlow community and those planning larger whole-home systems find the perfect power solution for their needs.</p>
+        <p>Don't Forget you can save 5% by using the code "solarscout" at checkout on Ecoflow.com</p>
+        
+        <img src="assets/sslogo.jpg" alt="Solar Scout Logo" class="about-page-logo">
     </div>
+</main>
 
-    <footer>
-        © 2024 T3CHNRD - Designed with help by Claude. All rights reserved.
-    </footer>
+<footer class="footer">
+    <p>© 2025 T3CHNRD and a few of his friend, chatgpt, claude and gemini and very specaial thank you to Rob White II- All rights reserved.</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const navMenu = document.getElementById('nav-menu');
+        const menuItems = navMenu.querySelectorAll('a');
+
+        if (hamburgerMenu && navMenu) {
+            hamburgerMenu.addEventListener('click', function () {
+                navMenu.classList.toggle('active');
+                this.classList.toggle('open');
+            });
+
+            // Auto-hide menu on item click for mobile
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768 && navMenu.classList.contains('active')) {
+                        navMenu.classList.remove('active');
+                        hamburgerMenu.classList.remove('open');
+                    }
+                });
+            });
+        }
+    });
+</script>
 </body>
 </html>
