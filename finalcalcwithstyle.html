@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- The title should be updated for each page -->
-    <title>Page Title - SolarScout</title>
+    <title>Power Planner - SolarScout</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/theme.css">
 </head>
 <body>
@@ -15,17 +15,23 @@
                 <img src="assets/ssmenuicon.jpg" alt="SolarScout Logo" class="logo">
             </a>
             <nav class="nav-container">
-                <button class="menu-button" id="hamburger-menu">
-                    <img src="assets/ssmenuicon.jpg" alt="Menu" class="ss-logo">
+                <button
+                    class="menu-button"
+                    id="hamburger-menu"
+                    type="button"
+                    aria-label="Open navigation menu"
+                    aria-expanded="false"
+                    aria-controls="nav-menu">
+                    <img src="assets/ssmenuicon.jpg" alt="" class="ss-logo" aria-hidden="true">
                     <span class="menu-text">Menu</span>
                 </button>
                 <ul class="nav-menu" id="nav-menu">
                     <li><a href="index.html">Home</a></li>
                     <li><a href="about.html">About</a></li>
-                    <li><a href="finalcalcwithstyle.html">Power Planner</a></li>
+                    <li><a href="finalcalcwithstyle.html" aria-current="page">Power Planner</a></li>
                     <li><a href="blackoutbuddy.html">Blackout Buddy</a></li>
-                    <li><a href="https://www.linspyre.com/ecoholics/calc_voc.html" target="_blank">Solar Basics</a></li>
-                    <li><a href="https://us.ecoflow.com/?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" target="_blank">Save 5% at Ecoflow.com</a></li>
+                    <li><a href="https://www.linspyre.com/ecoholics/calc_voc.html" target="_blank" rel="noopener">Solar Basics</a></li>
+                    <li><a href="https://us.ecoflow.com/?sca_ref=7408943.R33f7CbNF7&utm_source=uppromote&utm_medium=community&utm_campaign=koc" target="_blank" rel="noopener">Save 5% at Ecoflow.com</a></li>
                 </ul>
             </nav>
         </div>
@@ -72,7 +78,7 @@
 
     <!-- 3. Standardized Footer -->
     <footer class="footer">
-        <p>© 2025 T3CHNRD and a few of his friends, chatgpt, claude and gemini and very specaial thank you to Rob White II- All rights reserved.</p>
+        <p>© 2025 T3CHNRD and a few of his friend, chatgpt, claude and gemini and very specaial thank you to Rob White II- All rights reserved.</p>
     </footer>
 
     <!-- 4. Standardized Scripts -->
