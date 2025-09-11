@@ -64,14 +64,14 @@ a:hover {
 .header {
     background: linear-gradient(to right, var(--color-primary), #191919);
     padding: 0.5rem 1rem;
-    position: fixed; /* Changed to fixed for reliable pinning */
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
     display: flex;
     justify-content: center;
-    height: 60px; /* Set a fixed height for the offset */
+    height: 60px;
     box-sizing: border-box;
 }
 
@@ -83,9 +83,7 @@ a:hover {
     max-width: 1200px;
 }
 
-/* Desktop/Tablet Logo (Left Side) */
 .logo-link {
-    display: block; /* Shown by default */
     flex-shrink: 0;
 }
 
@@ -99,7 +97,7 @@ a:hover {
     align-items: center;
 }
 
-/* Desktop/Tablet Navigation Menu */
+/* Desktop Navigation Menu */
 .nav-menu {
     list-style: none;
     margin: 0;
@@ -109,7 +107,7 @@ a:hover {
 }
 
 .nav-menu li {
-    margin: 0 1rem; /* This adds the necessary space between menu items */
+    margin: 0 1rem;
 }
 
 .nav-menu a {
@@ -125,31 +123,29 @@ a:hover {
     color: rgba(255, 255, 255, 0.8);
 }
 
-/* Mobile Hamburger Menu Button (Right Side) */
+/* Mobile Hamburger Menu Button */
 .menu-button {
-    display: none; /* Hidden by default */
+    display: none; /* Hidden on desktop */
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 1001; /* Above nav menu */
-    perspective: 1000px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-/* Hide menu text on desktop by default */
 .menu-text {
-    display: none;
+    color: var(--color-white);
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 .ss-logo {
     width: 40px;
     height: auto;
     border-radius: 50%;
-    transition: transform 0.3s ease;
-}
-
-.menu-button.open .ss-logo {
-    transform: rotateX(360deg);
 }
 
 /* Main Content and Cards */
@@ -440,27 +436,58 @@ select {
 }
 
 /* Responsive Styles for Mobile */
-@media (max-width: 768px) {
+@media (max-width: 900px) { /* Using a consistent breakpoint */
     .header-content {
         justify-content: space-between;
     }
 
-    .logo-link {
-        display: none; /* Hide logo on the left */
+    /* Hide the desktop nav menu items */
+    .nav-menu {
+        display: none;
+        flex-direction: column;
+        position: fixed;
+        top: 60px; /* Position below header */
+        left: 0;
+        right: 0;
+        background-color: #FFFFFF; /* White background for the dropdown */
+        width: 100%;
+        text-align: center;
+        z-index: 999; /* Below header */
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem 0;
     }
 
+    /* When the menu is active, show it */
+    .nav-menu.active {
+        display: flex;
+    }
+
+    .nav-menu li {
+        margin: 0.75rem 0;
+    }
+
+    /* Change link color for mobile dropdown */
+    .nav-menu a {
+        color: var(--color-text-dark); /* Dark text on white background */
+    }
+
+    /* Show the hamburger button on mobile */
     .menu-button {
-        display: flex; /* Use flex to align icon and text */
-        align-items: center;
-        gap: 0.5rem; /* Space between icon and text */
+        display: flex;
     }
 
-    /* Show and style menu text on mobile */
-    .menu-text {
-        display: inline;
-        color: var(--color-white);
-        font-size: 1rem;
-        font-weight: 500;
+    /* Hide the main logo and desktop menu on mobile */
+    .logo-link,
+    .header-content .nav-menu {
+        display: none;
+    }
+
+    /* Re-enable the menu inside the container */
+    .nav-container .nav-menu {
+        display: none; /* Keep it hidden until active */
+    }
+    .nav-container .nav-menu.active {
+        display: flex; /* Show when active */
     }
 
     /* Responsive styles for Blackout Buddy */
@@ -479,24 +506,6 @@ select {
     .appliance-row input::placeholder,
     .appliance-row select {
         font-size: 0.9rem;
-    }
-
-    .nav-menu {
-        display: none; /* Hide nav menu by default */
-        flex-direction: column;
-        position: fixed; /* Changed to fixed to stay on screen when scrolling */
-        top: 60px; /* Position below header */
-        left: 0;
-        right: 0;
-        background-color: var(--color-primary);
-        width: 100%;
-        text-align: center;
-        z-index: 1000;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .nav-menu.active {
-        display: flex;
     }
 
     .months-grid {
