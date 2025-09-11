@@ -64,7 +64,7 @@ a:hover {
 .header {
     background: linear-gradient(to right, var(--color-primary), #191919);
     padding: 0.5rem 1rem;
-    position: relative;
+    position: fixed; /* Changed to fixed for reliable pinning */
     top: 0;
     left: 0;
     right: 0;
@@ -97,8 +97,6 @@ a:hover {
 .nav-container {
     display: flex;
     align-items: center;
-    position: relative;
-    z-index: 1001;
 }
 
 /* Desktop/Tablet Navigation Menu */
@@ -130,17 +128,12 @@ a:hover {
 /* Mobile Hamburger Menu Button (Right Side) */
 .menu-button {
     display: none; /* Hidden by default */
-    background: transparent;
+    background: none;
     border: none;
     cursor: pointer;
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
-    padding: 0.5rem 0.75rem;
-    font: inherit;
-    position: relative;
-    z-index: 1002; /* Ensure above overlapping content */
-    touch-action: manipulation;
+    padding: 0;
+    z-index: 1001; /* Above nav menu */
+    perspective: 1000px;
 }
 
 /* Hide menu text on desktop by default */
@@ -513,50 +506,6 @@ select {
     .results-bar {
         flex-direction: column;
         gap: 1rem;
-    }
-}
-
-/* Mobile hidden state */
-@media (max-width: 900px) {
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: #ffffff;
-        border: 1px solid #e2e2e2;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-        padding: 0.75rem 1rem;
-        width: 230px;
-        z-index: 1001;
-    }
-    .nav-menu.active {
-        display: block;
-    }
-    .nav-menu li {
-        margin: 0.4rem 0;
-    }
-    .nav-menu a {
-        display: block;
-        padding: 0.4rem 0.25rem;
-    }
-}
-
-/* Desktop layout */
-@media (min-width: 901px) {
-    .menu-button {
-        display: none;
-    }
-    .nav-menu {
-        display: flex;
-        gap: 1.25rem;
-        position: static;
-        background: transparent;
-        box-shadow: none;
-        border: none;
-    }
-    .nav-menu li {
-        margin: 0;
     }
 }
 
