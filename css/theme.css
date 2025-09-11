@@ -60,7 +60,11 @@ a:hover {
     color: var(--color-accent);
 }
 
-/* Header and Navigation */
+/* ==========================================================================
+   Header and Navigation - CORRECTED
+   ========================================================================== */
+
+/* --- Main Header Bar --- */
 .header {
     background: linear-gradient(to right, var(--color-primary), #191919);
     padding: 0.5rem 1rem;
@@ -68,9 +72,7 @@ a:hover {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
+    z-index: 1030; /* Increased z-index to ensure it's above all page content */
     height: 60px;
     box-sizing: border-box;
 }
@@ -81,8 +83,10 @@ a:hover {
     align-items: center;
     width: 100%;
     max-width: 1200px;
+    margin: 0 auto;
 }
 
+/* --- Logos --- */
 .logo-link {
     flex-shrink: 0;
 }
@@ -92,18 +96,18 @@ a:hover {
     width: auto;
 }
 
+/* --- Desktop Navigation --- */
 .nav-container {
     display: flex;
     align-items: center;
 }
 
-/* Desktop Navigation Menu */
 .nav-menu {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: row;
+    display: flex; /* Display as a row on desktop */
+    align-items: center;
 }
 
 .nav-menu li {
@@ -123,15 +127,15 @@ a:hover {
     color: rgba(255, 255, 255, 0.8);
 }
 
-/* Mobile Hamburger Menu Button */
+/* --- Mobile Hamburger Button --- */
 .menu-button {
-    display: none; /* Hidden on desktop */
+    display: none; /* HIDDEN on desktop by default */
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 1001;
-    display: flex;
+    z-index: 1031; /* Ensure button is on top of the header */
+    position: relative; /* Ensure z-index is applied correctly */
     align-items: center;
     gap: 0.5rem;
 }
@@ -146,6 +150,56 @@ a:hover {
     width: 40px;
     height: auto;
     border-radius: 50%;
+}
+
+/* ==========================================================================
+   Responsive Styles for Mobile - CORRECTED
+   ========================================================================== */
+@media (max-width: 900px) {
+    /* 1. Show the hamburger button on the left */
+    .menu-button {
+        display: flex;
+    }
+
+    /* 2. Hide the main site logo (the one in the top-left on desktop) */
+    .logo-link {
+        display: none;
+    }
+
+    /* 3. Hide the desktop navigation links by default */
+    .nav-menu {
+        display: none;
+        position: fixed;
+        top: 60px; /* Position it below the header */
+        left: 0;
+        right: 0;
+        background-color: var(--color-primary); /* Changed to purple background */
+        flex-direction: column;
+        padding: 1rem 0;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1029; /* Below the header but above content */
+    }
+
+    /* 4. When the menu is active, show it */
+    .nav-menu.active {
+        display: flex;
+    }
+
+    /* 5. Style the links inside the mobile menu for readability */
+    .nav-menu.active a {
+        color: var(--color-white); /* Changed to white text */
+        display: block;
+        padding: 0.75rem 1rem;
+    }
+
+    .nav-menu.active a:hover {
+        background-color: rgba(255, 255, 255, 0.1); /* Add a subtle hover effect */
+    }
+
+    .nav-menu.active li {
+        margin: 0;
+    }
 }
 
 /* Main Content and Cards */
