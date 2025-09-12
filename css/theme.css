@@ -72,9 +72,10 @@ a:hover {
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1030; /* Increased z-index to ensure it's above all page content */
+    z-index: 99999; /* raised so header is always on top */
     height: 60px;
     box-sizing: border-box;
+    pointer-events: auto; /* ensure it can receive clicks */
 }
 
 .header-content {
@@ -134,10 +135,11 @@ a:hover {
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 1031; /* Ensure button is on top of the header */
-    position: relative; /* Ensure z-index is applied correctly */
+    z-index: 100000; /* highest priority for clickable area */
+    position: relative; /* ensure z-index is applied correctly */
     align-items: center;
     gap: 0.5rem;
+    pointer-events: auto; /* ensure clicks reach the button */
 }
 
 .menu-text {
@@ -173,12 +175,13 @@ a:hover {
         top: 60px; /* Position it below the header */
         left: 0;
         right: 0;
-        background-color: var(--color-primary); /* Changed to purple background */
+        background-color: var(--color-primary); /* purple background to match header */
         flex-direction: column;
         padding: 1rem 0;
         text-align: center;
         box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        z-index: 1029; /* Below the header but above content */
+        z-index: 99998; /* below header but high enough to be on top of content */
+        pointer-events: auto;
     }
 
     /* 4. When the menu is active, show it */
@@ -188,17 +191,18 @@ a:hover {
 
     /* 5. Style the links inside the mobile menu for readability */
     .nav-menu.active a {
-        color: var(--color-white); /* Changed to white text */
+        color: var(--color-white) !important; /* white text for contrast */
         display: block;
         padding: 0.75rem 1rem;
     }
 
     .nav-menu.active a:hover {
-        background-color: rgba(255, 255, 255, 0.1); /* Add a subtle hover effect */
+        background-color: rgba(255, 255, 255, 0.08); /* subtle hover */
     }
 
     .nav-menu.active li {
         margin: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 }
 
@@ -206,6 +210,8 @@ a:hover {
 main {
     padding: 2rem 0;
     flex: 1;
+    position: relative;
+    z-index: 0; /* keep main behind header */
 }
 
 .card {
