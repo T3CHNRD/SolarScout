@@ -105,7 +105,13 @@ const ecoFlowProducts = [
   { name: 'DELTA 3 1500', series: 'DELTA', baseCapacity: 1.536, maxPower: 1800, surgePower: 3600, expandable: true, maxCapacity: 6.048 },
   { name: 'DELTA Pro', series: 'DELTA', baseCapacity: 3.6, maxPower: 3600, surgePower: 7200, expandable: true, maxCapacity: 10.8 },
   { name: 'DELTA 3 Pro', series: 'DELTA', baseCapacity: 4.096, maxPower: 4000, surgePower: 8000, expandable: true, maxCapacity: 12.288 },
-  { name: 'DELTA Pro Ultra', series: 'DELTA', baseCapacity: 6, maxPower: 7200, surgePower: 7200, expandable: true, maxCapacity: 30 },
+  { name: 'DELTA Pro Ultra', series: 'DELTA', baseCapacity: 6, maxPower: 7200, surgePower: 7200, expandable: true, maxCapacity: 90 },
+  { name: 'DELTA 3 Classic', series: 'DELTA', baseCapacity: 1.024, maxPower: 1800, surgePower: 3600, expandable: false, maxCapacity: 1.024 },
+  { name: 'DELTA 3 Max', series: 'DELTA', baseCapacity: 2.048, maxPower: 2400, surgePower: 4800, expandable: false, maxCapacity: 2.048 },
+  { name: 'DELTA 3 Max Plus', series: 'DELTA', baseCapacity: 2.048, maxPower: 3000, surgePower: 6000, expandable: true, maxCapacity: 10.8 },
+  { name: 'DELTA 3 Ultra', series: 'DELTA', baseCapacity: 3.072, maxPower: 3600, surgePower: 7200, expandable: false, maxCapacity:  3.072 },
+  { name: 'DELTA 3 Ultra Plus', series: 'DELTA', baseCapacity: 3.072, maxPower: 3600, surgePower: 7200, expandable: false, maxCapacity: 11.8 },
+  { name: 'DELTA Pro Ultra X', series: 'DELTA', baseCapacity: 6, maxPower: 7200, surgePower: 12000, expandable: true, maxCapacity: 180 },
 
   // RAPID (DC-only, capacities in kWh)
   { name: 'Rapid 10K', series: 'RAPID', baseCapacity: 0.037, maxPower: 65, surgePower: 0, expandable: false, maxCapacity: 0.037 },
