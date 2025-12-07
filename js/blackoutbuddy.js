@@ -139,7 +139,7 @@ const ecoFlowProducts = [
   { name: 'RIVER 3 Plus', series: 'RIVER', baseCapacity: 0.286, maxPower: 600, surgePower: 1200, expandable: true, maxCapacity: 0.572 },
   { name: 'RIVER 3 Plus Max Wireless ( adds a 5k Rapid charger )', series: 'RIVER', baseCapacity: 0.858, maxPower: 600, surgePower: 1200, expandable: true, maxCapacity: 0.572 },
   { name: 'RIVER 3 Max', series: 'RIVER', baseCapacity: 0.572, maxPower: 600, surgePower: 1200, expandable: true, maxCapacity: 0.858 },
-  { name: 'RIVER 3 Max Plus', series: 'RIVER', baseCapacity: 0.858, maxPower: 600, surgePower: 1200, expandable: true }
+  { name: 'RIVER 3 Max Plus', series: 'RIVER', baseCapacity: 0.858, maxPower: 600, surgePower: 1200, expandable: true },
 ];
 
 const productAffiliateLinks = {
