@@ -149,10 +149,10 @@ const productAffiliateLinks = {
   'DELTA 3': 'https://us.ecoflow.com/products/delta-3-portable-power-station?_pos=1&_sid=f54de58a6&_ss=r&variant=42017992048713&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3',
   'DELTA 3 Plus (2 solar inputs)': 'https://us.ecoflow.com/products/delta-3-plus-portable-power-station?_pos=1&_sid=3ff778c93&_ss=r&variant=54588299575369&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 plus',
   'DELTA 3 1500': 'https://us.ecoflow.com/products/ecoflow-delta-3-1500-solar-generator?_pos=2&_sid=8d7d9a1ce&_ss=r&variant=41836896682057&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 1500',
-  'DELTA 3 Max Plus'
-  'DELTA 3 Max'
-  'DELTA 3 Classic'
-  'DELTA 3 ULTRA'
+  'DELTA 3 Max Plus': 'https://us.ecoflow.com/products/delta-3-max-series-portable-power-station?variant=54718699962441&view=d3mp&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 max plus'
+  'DELTA 3 Max': 'https://us.ecoflow.com/products/delta-3-max-series-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 max'
+  'DELTA 3 Classic': 'https://us.ecoflow.com/products/delta-3-classic-portable-power-station?_pos=1&_sid=35a92c297&_ss=r&variant=54692156801097&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 classic'
+  'DELTA 3 ULTRA': 'https://us.ecoflow.com/products/delta-3-ultra-series-portable-power-station?_pos=1&_sid=4d01aad85&_ss=r&variant=54692148871241&view=d3u&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 ultra'
   'DELTA Pro': 'https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7',
   'DELTA 3 Pro': 'https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3',
   'DELTA 3 ULTRA PLUS': 'https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3',
