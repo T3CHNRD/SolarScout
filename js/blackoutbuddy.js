@@ -105,7 +105,13 @@ const ecoFlowProducts = [
   { name: 'DELTA 3 1500', series: 'DELTA', baseCapacity: 1.536, maxPower: 1800, surgePower: 3600, expandable: true, maxCapacity: 6.048 },
   { name: 'DELTA Pro', series: 'DELTA', baseCapacity: 3.6, maxPower: 3600, surgePower: 7200, expandable: true, maxCapacity: 10.8 },
   { name: 'DELTA 3 Pro', series: 'DELTA', baseCapacity: 4.096, maxPower: 4000, surgePower: 8000, expandable: true, maxCapacity: 12.288 },
-  { name: 'DELTA Pro Ultra', series: 'DELTA', baseCapacity: 6, maxPower: 7200, surgePower: 7200, expandable: true, maxCapacity: 30 },
+  { name: 'DELTA Pro Ultra', series: 'DELTA', baseCapacity: 6, maxPower: 7200, surgePower: 7200, expandable: true, maxCapacity: 90 },
+  { name: 'DELTA 3 Classic', series: 'DELTA', baseCapacity: 1.024, maxPower: 1800, surgePower: 3600, expandable: false, maxCapacity: 1.024 },
+  { name: 'DELTA 3 Max', series: 'DELTA', baseCapacity: 2.048, maxPower: 2400, surgePower: 4800, expandable: false, maxCapacity: 2.048 },
+  { name: 'DELTA 3 Max Plus', series: 'DELTA', baseCapacity: 2.048, maxPower: 3000, surgePower: 6000, expandable: true, maxCapacity: 10.8 },
+  { name: 'DELTA 3 Ultra', series: 'DELTA', baseCapacity: 3.072, maxPower: 3600, surgePower: 7200, expandable: false, maxCapacity:  3.072 },
+  { name: 'DELTA 3 Ultra Plus', series: 'DELTA', baseCapacity: 3.072, maxPower: 3600, surgePower: 7200, expandable: false, maxCapacity: 11.8 },
+  { name: 'DELTA Pro Ultra X', series: 'DELTA', baseCapacity: 6, maxPower: 7200, surgePower: 12000, expandable: true, maxCapacity: 180 },
 
   // RAPID (DC-only, capacities in kWh)
   { name: 'Rapid 10K', series: 'RAPID', baseCapacity: 0.037, maxPower: 65, surgePower: 0, expandable: false, maxCapacity: 0.037 },
@@ -133,7 +139,7 @@ const ecoFlowProducts = [
   { name: 'RIVER 3 Plus', series: 'RIVER', baseCapacity: 0.286, maxPower: 600, surgePower: 1200, expandable: true, maxCapacity: 0.572 },
   { name: 'RIVER 3 Plus Max Wireless ( adds a 5k Rapid charger )', series: 'RIVER', baseCapacity: 0.858, maxPower: 600, surgePower: 1200, expandable: true, maxCapacity: 0.572 },
   { name: 'RIVER 3 Max', series: 'RIVER', baseCapacity: 0.572, maxPower: 600, surgePower: 1200, expandable: true, maxCapacity: 0.858 },
-  { name: 'RIVER 3 Max Plus', series: 'RIVER', baseCapacity: 0.858, maxPower: 600, surgePower: 1200, expandable: true }
+  { name: 'RIVER 3 Max Plus', series: 'RIVER', baseCapacity: 0.858, maxPower: 600, surgePower: 1200, expandable: true },
 ];
 
 const productAffiliateLinks = {
@@ -143,9 +149,15 @@ const productAffiliateLinks = {
   'DELTA 3': 'https://us.ecoflow.com/products/delta-3-portable-power-station?_pos=1&_sid=f54de58a6&_ss=r&variant=42017992048713&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3',
   'DELTA 3 Plus (2 solar inputs)': 'https://us.ecoflow.com/products/delta-3-plus-portable-power-station?_pos=1&_sid=3ff778c93&_ss=r&variant=54588299575369&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 plus',
   'DELTA 3 1500': 'https://us.ecoflow.com/products/ecoflow-delta-3-1500-solar-generator?_pos=2&_sid=8d7d9a1ce&_ss=r&variant=41836896682057&sca_ref=7408943.R33f7CbNF7&sca_source=Delta 3 1500',
+  'DELTA 3 Max Plus': 'https://us.ecoflow.com/products/delta-3-max-series-portable-power-station?variant=54718699962441&view=d3mp&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 max plus',
+  'DELTA 3 Max': 'https://us.ecoflow.com/products/delta-3-max-series-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 max',
+  'DELTA 3 Classic': 'https://us.ecoflow.com/products/delta-3-classic-portable-power-station?_pos=1&_sid=35a92c297&_ss=r&variant=54692156801097&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 classic',
+  'DELTA 3 ULTRA': 'https://us.ecoflow.com/products/delta-3-ultra-series-portable-power-station?_pos=1&_sid=4d01aad85&_ss=r&variant=54692148871241&view=d3u&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 ultra',
   'DELTA Pro': 'https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7',
   'DELTA 3 Pro': 'https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3',
-  'DELTA Pro Ultra': 'https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7',
+  'DELTA 3 ULTRA PLUS': 'https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3',
+  'DELTA Pro Ultra': 'https://us.ecoflow.com/products/delta-3-ultra-series-portable-power-station?variant=54718705107017&view=d3up&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 ultra plus',
+  'DELTA Pro Ultra X' : 'https://us.ecoflow.com/collections/delta-pro-series/products/delta-pro-ultra-x?variant=54714781171785&sca_ref=7408943.R33f7CbNF7&sca_source=delta ultra x',
   'RIVER Pro': 'https://us.ecoflow.com/products/river-pro-river-pro-extra-battery-bundle?sca_ref=7408943.R33f7CbNF7',
   'RIVER 2': 'https://us.ecoflow.com/products/river-2-portable-power-station?_pos=1&_sid=0234254f1&_ss=r&variant=40589642039369&sca_ref=7408943.R33f7CbNF7&sca_source=River 2',
   'RIVER 2 Max': 'https://us.ecoflow.com/products/river-2-max-portable-power-station?sca_ref=7408943.R33f7CbNF7',

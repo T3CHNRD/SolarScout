@@ -4,7 +4,10 @@
 const batteries = {
     pro:   { name: "Delta Pro", base: 3.6,   extra: 3.6,   maxExtras: 2, maxStacks: 2, link: "https://us.ecoflow.com/products/delta-pro-portable-power-station?sca_ref=7408943.R33f7CbNF7" },
     pro3:  { name: "Delta Pro 3", base: 4.096, extra: 4.096, maxExtras: 2, maxStacks: 2, link: "https://us.ecoflow.com/products/delta-pro-3-portable-power-station?sca_ref=7408943.R33f7CbNF7&sca_source=DELTA PRO 3" },
-    ultra: { name: "Delta Pro Ultra", base: 0,   extra: 6.0,   maxExtras: 5, maxStacks: 3, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" }
+    ultra3plus: { name: 'DELTA 3 Ultra Plus',  base: 3.072,  mmaxExtras: 2, maxStacks: 3, link: "https://us.ecoflow.com/products/delta-3-ultra-series-portable-power-station?variant=54718705107017&view=d3up&sca_ref=7408943.R33f7CbNF7&sca_source=delta 3 ultra plus"},
+    ultra: { name: "Delta Pro Ultra", base: 0,   extra: 6.0,   maxExtras: 5, maxStacks: 3, link: "https://us.ecoflow.com/products/delta-pro-ultra?sca_ref=7408943.R33f7CbNF7" },
+    ultrax:{ name: "Delta Pro Ultra X", base: 0, extra: 6.0, maxExtras: 5, maxStacks: 4, link: "https://us.ecoflow.com/collections/delta-pro-series/products/delta-pro-ultra-x?variant=54714781171785&sca_ref=7408943.R33f7CbNF7&sca_source=ultra pro x"}, 
+    
 };
 
 // --- Debugging Tools ---
